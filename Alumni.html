@@ -50,7 +50,7 @@
                                         <a href="./about" style="color:rgb(0, 0, 0);">About</a>
                                     </li>
                                     <li data-menuanchor="Regionals">
-                                        <a href="./Regionals.html" style="color:rgb(0, 0, 0);">Photos</a>
+                                        <a href="./Regionals" style="color:rgb(0, 0, 0);">Regionals</a>
                                     </li>
                                     <li data-menuanchor="Alumni">
                                         <a href="./Alumni" style="color:rgb(0, 0, 0);">Alumni</a>
@@ -81,7 +81,7 @@
                         <a href="./about" style="color:#FFFFFF;">About</a>
                     </li>
                     <li data-menuanchor="Regionals">
-                        <a href="../Regional">Regionals</a>
+                        <a href="./Regionals" style="color:#FFFFFF;">Regionals</a>
                     </li>
                     <li data-menuanchor="Alumni">
                         <a href="./Alumni" style="color:#FFFFFF;">Alumni</a>
@@ -110,35 +110,29 @@
                         <h2>Welcome ZD Alumni!</h2>
                         <h3>Chapter updates:</h3><br>
                         <p style="text-align: justify;">
-                            This semester has been an exciting one as we get better at planning COVID-friendly events.
-                            This started
-                            with an amazing Spring recruitment hosted primarily over Zoom with one in person event, all
-                            coordinated by
-                            chair Kayla Cornwell. Recruitment was a stunning success and we had ~100 rushees come out,
-                            eventually taking
-                            a pledge class of 15. Regionals was held virtually this year. It's always nice to interact
-                            with other chapters
-                            and hear from our National directors. We were chosen in 2020 to host regionals for 2021, but
-                            with COVID this
-                            was delayed. We now look forward to hosting in 2022, so be on the lookout for updates on
-                            that. Our Philanthropy
-                            chairs Chloe Mulhorn and Madasen Kasprisin are working very hard to convert the Spring
-                            Living Science Museum
-                            into an educational STEM video series. The series will feature experiments and
-                            demonstrations from three fields:
-                            environmental science, electricity, and aerospace. Keep an eye on our Facebook page for when
-                            the videos go live
-                            in April.
+                            This semester has been very exciting for Zeta Delta chapter as we return to more regular pre-COVID programming.
+                            Tailgates are back full force, chapter is back in-person, and we’re hard at work planning the first in-person
+                            philanthropy since Fall 2019. We kicked off the semester with a fantastic beach weekend planned by Social Chair Sam
+                            McCarthy and her committee. As is tradition, the brothers returned to Catalina Manor and had a blast down in Myrtle
+                            Beach. Right after beach weekend we held Info Session and the rest of our rush events. Recruitment chair Rateesh
+                            Hegneshwar planned an awesome rush, the first one held fully in person since Spring 2020. It was an incredibly
+                            competitive rush cycle with over 100 students coming out. Ultimately we decided on a great pledge class of 17. Since
+                            then we’ve been busy planning a host of events centered around our three pillars: brotherhood, profession, and
+                            service. Brotherhood chair Rachel Slattery has planned trips to Soda City, Horseshoe hang-outs, a State Fair trip,
+                            and a Founder’s Day Low Country Boil. Professional Development hit the ground running this semester with a company
+                            visit from AMD coordinated by committee chair Erin Kremer. Finally Service has returned to more normal involvement
+                            with chair Ben Gehant planning several river clean ups and dog walking events.
                         </p>
-                        <p style="text-align: justify;"> Zeta Delta chapter currently has 54 active brothers with 3
-                            brothers on co-op, 0 brothers studying abroad,
-                            and a great pledge class of 15. The current gender split is 52% male and 48% female. After
-                            taking a majority
-                            biomedical engineering pledge class last semester BME and Mechanical are tied at 24% each of
-                            our fraternity.
-                            Chemical engineering is close behind at 22%, with Computer Science, CIS, Civil, and
-                            Electrical engineering
-                            bringing up the rear.
+                        <p style="text-align: justify;"> We are also bringing back more of the traditional ZD events that had to be put on hold
+                            during the pandemic. Fall Into Science is scheduled for November 13th at Blatt field and we are hard at work
+                            building demonstration pieces and planning all of our STEM activities. FIFA nights have returned for the first time
+                            since Spring 2020. It’s been a competitive league so far this semester, with many first time FIFA players. Public
+                            Relations chair Lauren Speck is beginning planning for the annual Clemson Car Smash which is tentatively scheduled
+                            for November 22nd. We’re also busy planning the 2022 Southeastern Regionals Conference which will be held at UofSC
+                            on February 19th. It’s an honor to be able to host such a great event and we’re all really excited to have the SE
+                            Region down in Columbia. It’s a rebuilding semester for the chapter and everyone is very excited to get back to all
+                            of our favorite traditions.
+                        
                         </p>
 
                     </div>
@@ -150,31 +144,31 @@
                             <script>
                                 var slideIndex = 1;
                                 showSlides(slideIndex);
-                                
+
                                 function plusSlides(n) {
-                                  showSlides(slideIndex += n);
+                                    showSlides(slideIndex += n);
                                 }
-                                
+
                                 function currentSlide(n) {
-                                  showSlides(slideIndex = n);
+                                    showSlides(slideIndex = n);
                                 }
-                                
+
                                 function showSlides(n) {
-                                  var i;
-                                  var slides = document.getElementsByClassName("mySlides");
-                                  var dots = document.getElementsByClassName("dot");
-                                  if (n > slides.length) {slideIndex = 1}    
-                                  if (n < 1) {slideIndex = slides.length}
-                                  for (i = 0; i < slides.length; i++) {
-                                      slides[i].style.display = "none";  
-                                  }
-                                  for (i = 0; i < dots.length; i++) {
-                                      dots[i].className = dots[i].className.replace(" active", "");
-                                  }
-                                  slides[slideIndex-1].style.display = "block";  
-                                  dots[slideIndex-1].className += " active";
+                                    var i;
+                                    var slides = document.getElementsByClassName("mySlides");
+                                    var dots = document.getElementsByClassName("dot");
+                                    if (n > slides.length) { slideIndex = 1 }
+                                    if (n < 1) { slideIndex = slides.length }
+                                    for (i = 0; i < slides.length; i++) {
+                                        slides[i].style.display = "none";
+                                    }
+                                    for (i = 0; i < dots.length; i++) {
+                                        dots[i].className = dots[i].className.replace(" active", "");
+                                    }
+                                    slides[slideIndex - 1].style.display = "block";
+                                    dots[slideIndex - 1].className += " active";
                                 }
-                                </script>
+                            </script>
 
                             <!-- Full-width images with number and caption text -->
                             <div class="mySlides firstPic">
@@ -205,7 +199,7 @@
                             <div class="mySlides ">
                                 <img src="Images/Slideshow/intra.jpg" style="width:100%">
                                 <!-- <div class="text">Caption Three</div> -->
-                            </div>  
+                            </div>
 
                             <!-- Next and previous buttons -->
                             <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
