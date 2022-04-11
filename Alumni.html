@@ -56,6 +56,9 @@
                                     <li data-menuanchor="Alumni">
                                         <a href="./Alumni" style="color:rgb(0, 0, 0);">Alumni</a>
                                     </li>
+                                    <li data-menuanchor="Regionals">
+                                        <a href="./Regionals" style="color:rgb(0, 0, 0);">Regionals</a>
+                                    </li>
                                     <li data-menuanchor="rush">
                                         <a href="/rush" style="color:rgb(0, 0, 0);">Rush</a>
                                     </li>
@@ -87,6 +90,9 @@
                     </li> -->
                     <li data-menuanchor="Alumni">
                         <a href="./Alumni" style="color:#FFFFFF;">Alumni</a>
+                    </li>
+                    <li data-menuanchor="Regionals">
+                        <a href="./Regionals" style="color:rgb(0, 0, 0);">Regionals</a>
                     </li>
                     <li data-menuanchor="rush">
                         <a href="./rush" style="color:#FFFFFF;">Rush</a>
@@ -152,28 +158,28 @@
                             <script>
                                 var slideIndex = 1;
                                 showSlides(slideIndex);
-                                
+
                                 function plusSlides(n) {
                                   showSlides(slideIndex += n);
                                 }
-                                
+
                                 function currentSlide(n) {
                                   showSlides(slideIndex = n);
                                 }
-                                
+
                                 function showSlides(n) {
                                   var i;
                                   var slides = document.getElementsByClassName("mySlides");
                                   var dots = document.getElementsByClassName("dot");
-                                  if (n > slides.length) {slideIndex = 1}    
+                                  if (n > slides.length) {slideIndex = 1}
                                   if (n < 1) {slideIndex = slides.length}
                                   for (i = 0; i < slides.length; i++) {
-                                      slides[i].style.display = "none";  
+                                      slides[i].style.display = "none";
                                   }
                                   for (i = 0; i < dots.length; i++) {
                                       dots[i].className = dots[i].className.replace(" active", "");
                                   }
-                                  slides[slideIndex-1].style.display = "block";  
+                                  slides[slideIndex-1].style.display = "block";
                                   dots[slideIndex-1].className += " active";
                                 }
                                 </script>
@@ -207,7 +213,7 @@
                             <div class="mySlides ">
                                 <img src="Images/Slideshow/intra.jpg" style="width:100%">
                                 <!-- <div class="text">Caption Three</div> -->
-                            </div>  
+                            </div>
 
                             <!-- Next and previous buttons -->
                             <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
