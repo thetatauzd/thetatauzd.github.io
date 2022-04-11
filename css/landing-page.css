@@ -76,6 +76,7 @@
      text-align: center;
      margin-left: -1%;
      color: white;
+     background: url("../Images/Splash.jpg") no-repeat center center;
      background-size: cover;
  }
 
@@ -158,7 +159,6 @@
  .banner {
      padding: 100px 0;
      color: #f8f8f8;
-     background: "../Images/Splash.jpg" no-repeat center center;
      background-size: cover;
  }
 
