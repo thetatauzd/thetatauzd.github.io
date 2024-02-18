@@ -1,6 +1,6 @@
 
 const getBrothers = async ()=>{
-    const url = "https://cors-anywhere.herokuapp.com/https://thetatauzd.github.io/json/brothers.json";
+    const url = "https://thetatauzd.github.io/json/brothers.json";
 try {
     const response = await fetch(url);
     return await response.json();
