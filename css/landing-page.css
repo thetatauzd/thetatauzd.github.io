@@ -135,13 +135,13 @@
 
  .content-section-a {
      padding: 50px 0;
-     background-color: #e6e6e6;
+     background-color: rgba(209, 196, 18, 0.892);
      border-bottom: 1px solid #e7e7e7;
  }
 
  .content-section-b {
      padding: 50px 0;
-
+     background-color:#8b0000;
      border-bottom: 1px solid #e7e7e7;
  }
 
