@@ -1,13 +1,14 @@
 
 const getBrothers = async ()=>{
-    const url = "https://thetatauzd.github.io/json/brothers.json";
-try {
-    const response = await fetch(url);
-    return await response.json();
-} catch (error) {
-    console.log(error);
-}
+    const fetchPromise = fetch("https://thetatauzd.github.io/json/brothers.json");
+
+fetchPromise
+  .then((response) => response.json())
+  .then((data) => {
+    console.log(data);
+  });
 };
+
 
 const showBrothers = async () =>{
     let brothers = await getBrothers();
