@@ -1,6 +1,7 @@
 const getBrothers = async ()=>{
+    const url = "https://thetatauzd.github.io/json/brothers.json";
     try {
-        const response = await fetch("/json/brothers.json");
+        const response = await fetch(url);
         return await response.json();
     }catch (error){
         console.log(error);
@@ -45,5 +46,5 @@ const getLi = data=>{
 
 
 window.onload= ()=>{
-    showCourses();
+    showBrothers();
 }
