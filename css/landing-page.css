@@ -141,8 +141,11 @@
 
  .content-section-b {
      padding: 50px 0;
-     background-color:#8b0000;
+     background-color:#8b000092;
      border-bottom: 1px solid #e7e7e7;
+ }
+ .content-section-b .lead p{
+    color: white;
  }
 
  .section-heading {

@@ -1,3 +1,4 @@
+
 const getBrothers = async ()=>{
     const url = "https://thetatauzd.github.io/json/brothers.json";
     try {
