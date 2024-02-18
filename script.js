@@ -1,12 +1,12 @@
 
 const getBrothers = async ()=>{
-    const url = "https://thetatauzd.github.io/json/brothers.json";
-    try {
-        const response = await fetch(url);
-        return await response.json();
-    }catch (error){
-        console.log(error);
-    }
+    const url = "https://cors-anywhere.herokuapp.com/https://thetatauzd.github.io/json/brothers.json";
+try {
+    const response = await fetch(url);
+    return await response.json();
+} catch (error) {
+    console.log(error);
+}
 };
 
 const showBrothers = async () =>{
