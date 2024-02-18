@@ -3,8 +3,8 @@
         "img": "Images/brotherBios/briceOdom.jpg",
         "name":"Brice Odom" ,
         "hometown": "Cowpens, South Carolina" ,
-        "major(S)": "Computer Science and Mathematics",
-        "minor(s)": "Psychology",
+        "majors": "Computer Science and Mathematics",
+        "minors": "Psychology",
         "bio":"Hello! I am a first-year student at the University of South Carolina Honors College studying Computer Science and Mathematics in the College of Engineering and Computing and the College of Arts and Sciences (respectively). I am interested in Artificial Intelligence and computer science research. I am a runner, leader, sudoku-fanatic, and avid learner!" ,
         "linkedIn": "https://www.linkedin.com/in/brice-odom/",
         "resume":null
