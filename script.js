@@ -29,7 +29,7 @@ const getBrotherBio=(brother)=>{
     ul.append(getLi(`Resume: ${brother.resume}`));
     let img = document.createElement("img");
     section.append(img);
-    img.src = brother.img;
+    img.src = "https://thetatauzd.github.io/Images/brotherBios/" +brother.img;
     section.classList.add("brother");
     return section;
 }
@@ -38,8 +38,6 @@ const getLi = data=>{
     li.textContent= data;
     return li;
 }
-
-
 window.onload= ()=>{
     showBrothers();
 }
