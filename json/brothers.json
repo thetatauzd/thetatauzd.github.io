@@ -1,12 +1,31 @@
 [
     {   
-        "img": "Images/brotherBios/briceOdom.jpg",
+        "img": "brotherBios/briceOdom.jpg",
         "name":"Brice Odom" ,
         "hometown": "Cowpens, South Carolina" ,
         "majors": "Computer Science and Mathematics",
         "minors": "Psychology",
         "bio":"Hello! I am a first-year student at the University of South Carolina Honors College studying Computer Science and Mathematics in the College of Engineering and Computing and the College of Arts and Sciences (respectively). I am interested in Artificial Intelligence and computer science research. I am a runner, leader, sudoku-fanatic, and avid learner!" ,
         "linkedIn": "https://www.linkedin.com/in/brice-odom/",
+        "resume":null
+    },
+    {   
+        "img": "brotherBios/mattLarsen.png",
+        "name":"Matt Larsen" ,
+        "hometown": "Fargo, North Dakota" ,
+        "majors": "Computer Science",
+        "minors": "Business Administration",
+        "bio":"I'm Matt Larsen, a sophomore at the University of South Carolina, passionate about computer science. I've been honing my skills in Java, Linux, GitHub, and HTML to tackle exciting projects, both independently and as part of collaborative teams. I'm dedicated to pushing the boundaries of technology and excited to contribute my expertise to innovative endeavors. Let's connect and explore the world of possibilities together!" ,
+        "linkedIn": "https://www.linkedin.com/in/matt-larsen-140951243/",
+        "resume":null
+    },
+    {   
+        "img": "brotherBios/joePauls.jpg",
+        "name":"Joseph Pauls" ,
+        "hometown": "Layfeyette, New Jersey" ,
+        "minors": "Business Administration",
+        "bio":"I am a sophomore Electrical Engineering student at University of South Carolina on track to graduate a year early. I am currently working part time remotely at L3Harris Technologies as a Systems Engineer intern in the Space and Airborne Systems Electronic Warfare division. I am also working part time as a Research Assistant for Dr. MVS Chandrashekhar in the USC Photonics and Microelectronics Laboratory." ,
+        "linkedIn": "www.linkedin.com/in/joseph-pauls",
         "resume":null
     }
 ]
