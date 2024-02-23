@@ -19,6 +19,10 @@ const getBrotherBio=(brother)=>{
     let h3=document.createElement("h3");
     h3.innerText=brother.name;
     section.append(h3);
+    let img = document.createElement("img");
+    section.append(img);
+    img.src = "https://thetatauzd.github.io/Images/brotherBios/" +brother.img;
+    section.classList.add("brother");
     let ul = document.createElement("ul");
     section.append(ul);
     ul.append(getLi(`Hometown: ${brother.hometown}`));
@@ -27,10 +31,6 @@ const getBrotherBio=(brother)=>{
     ul.append(getLi(`Bio: ${brother.bio}`));
     ul.append(getLi(`LinkedIn: ${brother.linkedIn}`));
     ul.append(getLi(`Resume: ${brother.resume}`));
-    let img = document.createElement("img");
-    section.append(img);
-    img.src = "https://thetatauzd.github.io/Images/brotherBios/" +brother.img;
-    section.classList.add("brother");
     return section;
 }
 const getLi = data=>{
