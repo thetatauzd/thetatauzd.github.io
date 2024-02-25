@@ -375,6 +375,10 @@
     margin-left: 35px ;
     padding:15px;
 }
+.brother h3, .brother img{
+    
+    flex: 1;
+}
 .brother{
     background-color:#8b0000;
     border-radius: 15px;
