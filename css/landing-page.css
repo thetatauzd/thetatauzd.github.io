@@ -379,16 +379,16 @@
     background-color:#8b0000;
     border-radius: 15px;
     width: 75%;
-    flex: 1;
+   margin: auto;
 }
 .brother img{
     border-width: 2px;
-    border-radius: 3px;
-    margin-left:180px;
+    border-radius: 7px;
+    margin-left:480px;
 }
 .flex-container{
     display: flex;
-    flex:1;
+    
 }
 #brothers-section {
     display: flex;

@@ -2,9 +2,11 @@
 const getBrothers = async ()=>{
     try {
         console.log("hello");
-        const response = await fetch("https://thetatauzd.github.io/json/brothers.json");
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // CORS proxy
+        const targetUrl = 'https://thetatauzd.github.io/json/brothers.json';
+        const response = await fetch(proxyUrl + targetUrl);
         return response.json();
-    } catch(error){
+    } catch (error) {
         console.log(error);
     }
 };
