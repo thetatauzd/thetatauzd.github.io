@@ -330,6 +330,7 @@
    PetaboxLoader3.resolve: 65.132 (2)
  */
 
+
  /*
  Start of Spring 2024 CSS Work
  */
@@ -369,17 +370,26 @@
     font-weight: 400;
     font-style: oblique;
     color: #ffcc33;
-    list-style:circle;
+    list-style:inside;
     width: 90%;
+    margin-left: 35px ;
+    padding:5px;
 }
 .brother{
     background-color:#8b0000;
     border-radius: 15px;
-  }
+}
+.brother img{
+    border-width: 2px;
+    border-radius: 3px;
+    margin-left:180px;
+}
 .flex-container{
+    display: flex;
     flex:1;
 }
-#brothers-section  {
+#brothers-section {
     display: flex;
+    flex:1 ;
 }
   
