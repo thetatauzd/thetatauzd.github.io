@@ -32,6 +32,10 @@ const getBrotherBio=(brother)=>{
     ul.append(getLi(`Bio: ${brother.bio}`));
     ul.append(getLi(`LinkedIn: ${brother.linkedIn}`));
     ul.append(getLi(`Resume: ${brother.resume}`));
+
+    let resume= document.createElement("a");
+    section.append(resume);
+    resume.src= "https://thetatauzd.github.io/resumes/" +brother.resume;
     return section;
 }
 const getLi = data=>{
