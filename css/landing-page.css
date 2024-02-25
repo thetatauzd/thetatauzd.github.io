@@ -373,26 +373,19 @@
     list-style:inside;
     width: 90%;
     margin-left: 35px ;
-    padding:5px;
+    padding:15px;
 }
 .brother{
     background-color:#8b0000;
     border-radius: 15px;
     width: 75%;
-   margin: auto;
+    flex:1;
+    margin: auto;
 }
 .brother img{
     border-width: 2px;
     border-radius: 7px;
     margin-left:480px;
 }
-.flex-container{
-    display: flex;
-    
-}
-#brothers-section {
-    display: flex;
-    flex:1 ;
-    flex-wrap: wrap;
-}
+
   
