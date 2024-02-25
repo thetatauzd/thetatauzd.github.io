@@ -376,8 +376,8 @@
     padding:15px;
 }
 .brother h3, .brother img{
+    display: inline;
     
-    flex: 1;
 }
 .brother{
     background-color:#8b0000;
