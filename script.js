@@ -3,7 +3,7 @@ const getBrothers = async ()=>{
     try {
         console.log("hello");
         const response = await fetch("https://thetatauzd.github.io/json/brothers.json");
-        return await response.json();
+        return response.json();
     } catch(error){
         console.log(error);
     }
