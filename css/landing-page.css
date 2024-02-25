@@ -378,6 +378,8 @@
 .brother{
     background-color:#8b0000;
     border-radius: 15px;
+    width: 75%;
+    flex: 1;
 }
 .brother img{
     border-width: 2px;
