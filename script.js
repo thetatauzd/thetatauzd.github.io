@@ -1,7 +1,7 @@
-
 const getBrothers = async ()=>{
     try {
-        const response = await fetch("https://thetatauzd.github.io/json/brothers.json");
+        const response = await fetch("https://portiaportia.github.io/thetatauzd/brothers.json");
+        console.log(response);
         return await response.json();
     } catch(error){
         console.log(error);
@@ -22,7 +22,7 @@ const getBrotherBio=(brother)=>{
     section.append(h3);
     let img = document.createElement("img");
     section.append(img);
-    img.src = "https://thetatauzd.github.io/Images/brotherBios/" +brother.img;
+    img.src = "https://portiaportia.github.io/thetatauzd/images/" +brother.img;
     section.classList.add("brother");
     let ul = document.createElement("ul");
     section.append(ul);
@@ -35,7 +35,7 @@ const getBrotherBio=(brother)=>{
 
     let resume= document.createElement("a");
     section.append(resume);
-    resume.src= "https://thetatauzd.github.io/resumes/" +brother.resume;
+    resume.src= "/resumes/" +brother.resume;
     return section;
 }
 const getLi = data=>{
