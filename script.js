@@ -1,6 +1,6 @@
 const getBrothers = async ()=>{
     try {
-        const response = await fetch("https://thetatauzd/thetatauzd-json/brothers.json");
+        const response = await fetch("https://thetatauzd.org/json/brothers.json");
         console.log(response);
         return await response.json();
     } catch(error){
