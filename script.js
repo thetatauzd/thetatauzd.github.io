@@ -22,7 +22,7 @@ const getBrotherBio=(brother)=>{
     section.append(h3);
     let img = document.createElement("img");
     section.append(img);
-    img.src = "https://thetatauzd/thetatauzd-json/brotherBios/" +brother.img;
+    img.src = "https://thetatauzd.org/Images/brotherBios/" +brother.img;
     section.classList.add("brother");
     let ul = document.createElement("ul");
     section.append(ul);
