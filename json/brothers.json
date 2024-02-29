@@ -80,5 +80,15 @@
         "bio":"I am dedicated to using my skills and knowledge to make a positive impact in the fields of healthcare and engineering. My undergraduate research in Alzheimer's disease, traumatic brain injury, microtubule repair and degradation, and single molecule kinetics has given me invaluable experience in tackling complex medical problems and finding innovative solutions." ,
         "linkedIn": "https://www.linkedin.com/in/shannon-depratter",
         "resume": "shannonDepratter.pdf"
+    },
+    {
+        "img": "gavinHewitt.JPG",
+        "name":"Gavin Hewitt" ,
+        "hometown": "Charleston, South Carolina" ,
+        "majors": "Computer Science",
+        "minors": "Mathematics and Business Administration",
+        "bio":"My name is Gavin Hewitt. I'm a Junior at the University of South Carolina pursuing a Computer Science degree with a double minor in Mathematics and Business Administration. Throughout my time in academia, I've developed a multitude of skills in Java, C++, Python, R, and more. My technical experience; background and skills in customer service, leadership, problem solving, and time management; and my interests in software engineering, data analytics, machine learning, and AI make me an incredible and qualified candidate for many roles in the computing space." ,
+        "linkedIn": "www.linkedin.com/in/gavin-hewitt03",
+        "resume": "gavinHewitt.pdf"
     }
 ]
