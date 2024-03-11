@@ -90,5 +90,25 @@
         "bio":"My name is Gavin Hewitt. I'm a Junior at the University of South Carolina pursuing a Computer Science degree with a double minor in Mathematics and Business Administration. Throughout my time in academia, I've developed a multitude of skills in Java, C++, Python, R, and more. My technical experience; background and skills in customer service, leadership, problem solving, and time management; and my interests in software engineering, data analytics, machine learning, and AI make me an incredible and qualified candidate for many roles in the computing space." ,
         "linkedIn": "www.linkedin.com/in/gavin-hewitt03",
         "resume": "gavinHewitt.pdf"
+    },
+    {
+        "img": "kathleenAbrams.png",
+        "name":"Kathleen Abrams" ,
+        "hometown": "Matthews, North Carolina" ,
+        "majors": "Biomedical Engineering",
+        "minors": "Business Administration",
+        "bio":"Hello! My name is Kathleen Abrams, and I am majoring in biomedical engineering with a minor in business administration in the South Carolina Honors College. I will graduate in May 2024 with Leadership Distinction in Professional & Civic Engagement from the University of South Carolina." ,
+        "linkedIn": "www.linkedin.com/in/kathleen-abrams",
+        "resume": "kathleenAbrams.pdf"
+    },
+    {
+        "img": "jacobSchatzle.png",
+        "name":"Jacob Schatzle" ,
+        "hometown": "Beaufort, South Carolina" ,
+        "majors": "Computer Engineering",
+        "minors": "Electrical Engineering",
+        "bio":"My name is Jacob Schatzle, I am junior computer engineering student at the University of South Carolina Honors, pursuing my interests in hardware and FPGA design as well as application. I currently work in the Heterogenous and Reconfigurable Computing Lab where we use FPGAs to accelerate code as well as improve its parallelization. I plan to work in the industry as either a software or hardware developer/engineer when I graduate in the spring of 2025." ,
+        "linkedIn": "https://www.linkedin.com/in/jacob-schatzle/",
+        "resume": "jacobSchatzle.pdf"
     }
 ]
