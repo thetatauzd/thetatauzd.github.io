@@ -35,7 +35,8 @@ const getBrotherBio=(brother)=>{
 
     let resume= document.createElement("a");
     section.append(resume);
-    resume.href= "/resumes/" +brother.resume;
+    resume.href= "https://thetatauzd.org/resumes/" +brother.resume;
+    resume.target = "_blank";
     return section;
 }
 const getLi = data=>{
