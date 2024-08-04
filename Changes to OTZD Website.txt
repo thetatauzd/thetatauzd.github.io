@@ -1,5 +1,0 @@
-Changes to OTZD Website - Carolina Turner S2024
--larger text at top on nav bar, different font
--about page: different font, bigger p description text, p text centered, chair title centered, padding added
--
--

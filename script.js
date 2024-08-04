@@ -35,7 +35,7 @@ const getBrotherBio=(brother)=>{
 
     let resume= document.createElement("a");
     section.append(resume);
-    resume.src= "/resumes/" +brother.resume;
+    resume.href= "/resumes/" +brother.resume;
     return section;
 }
 const getLi = data=>{

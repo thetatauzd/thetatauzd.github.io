@@ -122,12 +122,27 @@
 
 
     <div class="brotherBio-header">
-        <h1>This is a list of our active brothers for the Spring 2024 semester and information about who they are.</h1>
+        <h1>Meet our active brothers for the Fall 2024 semester!</h1>
     </div>
        <!--<h2>2024 Executive Board</h2><section id="executive-brothers"></section>-->
-   
-    <section id="brothers-section"></section>
-    
+
+       <style>
+        .brothersSection {
+          display: flex;
+          flex-wrap: wrap;
+          margin-left: 80px;
+          gap: 25px; /* Space between items */
+        }
+        .brothers-section {
+          background-color: #f0f0f0;
+          padding: 10px;
+          border: 1px solid #ccc;
+          box-sizing: border-box;
+        }
+      </style>
+    <div class="brothersSection" id="brothers-section">
+        <!-- Items will be appended here -->
+      </div>
 
     <script src="script.js"></script>
 </html>
