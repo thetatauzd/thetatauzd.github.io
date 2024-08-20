@@ -30,14 +30,14 @@ const getBrotherBio=(brother)=>{
     ul.append(getLi(`Major(s): ${brother.majors}`));
     ul.append(getLi(`Minor(s): ${brother.minors}`));
     ul.append(getLi(`Bio: ${brother.bio}`));
-    ul.append(getLi(`LinkedIn: ${brother.linkedIn}`));
-    ul.append(getLi(`Resume: ${brother.resume}`));
+   /* ul.append(getLi(`LinkedIn: ${brother.linkedIn}`));
+    ul.append(getLi(`Resume: ${brother.resume}`));*/
 
     let resume= document.createElement("a");
     section.append(resume);
     resume.href= "https://thetatauzd.org/resumes/" +brother.resume;
-    resume.target = "_blank";
     return section;
+    
 }
 const getLi = data=>{
     const li =document.createElement("li");
