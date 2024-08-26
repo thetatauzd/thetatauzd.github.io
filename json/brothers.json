@@ -52,16 +52,6 @@
         "resume": " "
     },
     {
-        "img": "jillianGarzarella.JPG",
-        "name":"Jillian Garzarella" ,
-        "hometown": "Royersford, Pennsylvania" ,
-        "majors": "Biomedical Engineering",
-        "minors": "Business Administration",
-        "bio":"Hello! I'm Jillian Garzarella, majoring in Biomedical Engineering with a minor in Business Administration. I'm on track to graduate in May 2024 with leadership distinction, thanks to my undergraduate research experience. My dedication to patient care has been a driving force in my academic journey, leading me to intern at Merck and volunteer in clinics in rural Guatemala. Theta Tau has greatly enhanced my college experience, serving as the 2023 Scribe and previous academic chair, along with currently being our Dance Marathon team captain." ,
-        "linkedIn": "https://www.linkedin.com/in/jillian-garzarella-/",
-        "resume": "jillianGarzarella.pdf"
-    },
-    {
         "img": "jacksonGinn.jpg",
         "name":"Jackson Ginn" ,
         "hometown": "North Augusta, South Carolina" ,
@@ -90,16 +80,6 @@
         "bio":"My name is Gavin Hewitt. I'm a Junior at the University of South Carolina pursuing a Computer Science degree with a double minor in Mathematics and Business Administration. Throughout my time in academia, I've developed a multitude of skills in Java, C++, Python, R, and more. My technical experience; background and skills in customer service, leadership, problem solving, and time management; and my interests in software engineering, data analytics, machine learning, and AI make me an incredible and qualified candidate for many roles in the computing space." ,
         "linkedIn": "www.linkedin.com/in/gavin-hewitt03",
         "resume": "gavinHewitt.pdf"
-    },
-    {
-        "img": "kathleenAbrams.png",
-        "name":"Kathleen Abrams" ,
-        "hometown": "Matthews, North Carolina" ,
-        "majors": "Biomedical Engineering",
-        "minors": "Business Administration",
-        "bio":"Hello! My name is Kathleen Abrams, and I am majoring in biomedical engineering with a minor in business administration in the South Carolina Honors College. I will graduate in May 2024 with Leadership Distinction in Professional & Civic Engagement from the University of South Carolina." ,
-        "linkedIn": "www.linkedin.com/in/kathleen-abrams",
-        "resume": "kathleenAbrams.pdf"
     },
     {
         "img": "jacobSchatzle.png",
