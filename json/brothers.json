@@ -90,5 +90,35 @@
         "bio":"My name is Jacob Schatzle, I am junior computer engineering student at the University of South Carolina Honors, pursuing my interests in hardware and FPGA design as well as application. I currently work in the Heterogenous and Reconfigurable Computing Lab where we use FPGAs to accelerate code as well as improve its parallelization. I plan to work in the industry as either a software or hardware developer/engineer when I graduate in the spring of 2025." ,
         "linkedIn": "https://www.linkedin.com/in/jacob-schatzle/",
         "resume": "jacobSchatzle.pdf"
+    },
+    {
+        "img": "rodrigoRojas.jpeg",
+        "name":"Rodrigo Rojas" ,
+        "hometown": "Houston, Texas" ,
+        "majors": "Mechanical Engineering",
+        "minors": "N/A",
+        "bio":"I am a results-driven professional with a deep commitment to continuous personal and professional development. My journey has been characterized by a dedication to achieving excellence in all my endeavors. This drive has not only shaped my career path but has also enhanced my ability to adapt, learn, and thrive in diverse environments. This experience has taught me to eagerly anticipate and embrace the learning opportunities that future challenges bring. Let's connect and explore how we can drive success together." ,
+        "linkedIn": "linkedin.com/in/rojas-r",
+        "resume": "jacobSchatzle.pdf"
+    },
+    {
+        "img": "wattsLiddle.jpg",
+        "name":"Watts Liddle" ,
+        "hometown": "Easley, South Carolina" ,
+        "majors": "Electrical Engineering",
+        "minors": "Beverage Management",
+        "bio":"I am currently a Junior Electrical Engineering student at the University of South Carolina in the Capstone program. I am seeking to find work experience in the field of electrical with an interest to go into power and energy. I am also actively involved on campus as a College of Engineering and Computing ambassador, member and chair holder in Theta Tau Professional Engineering Fraternity - Zeta Delta chapter, and IEEE." ,
+        "linkedIn": "www.linkedin.com/in/emoryliddle",
+        "resume": "jacobSchatzle.pdf"
+    },
+    {
+        "img": "nicoleHoeker.jpg",
+        "name":"Nicole Hoeker" ,
+        "hometown": "Colts Neck, New Jersey" ,
+        "majors": "Biomedical Engineering",
+        "minors": "Electrical Engineering",
+        "bio":"I am a student at the University of South Carolina Honors College studying biomedical and electrical engineering, with the intent to enter the field of designing and creating prosthetics. I have previous experience in team leadership and partial management, and am driven, hard-working, and always looking for a new challenge." ,
+        "linkedIn": "www.linkedin.com/in/nicolehoeker",
+        "resume": "jacobSchatzle.pdf"
     }
 ]
