@@ -120,5 +120,15 @@
         "bio":"I am a student at the University of South Carolina Honors College studying biomedical and electrical engineering, with the intent to enter the field of designing and creating prosthetics. I have previous experience in team leadership and partial management, and am driven, hard-working, and always looking for a new challenge." ,
         "linkedIn": "www.linkedin.com/in/nicolehoeker",
         "resume": "jacobSchatzle.pdf"
+    },
+    {
+        "img": "carolineTiller.jpg",
+        "name":"Caroline Tiller" ,
+        "hometown": "Beaufort, South Carolina" ,
+        "majors": "Chemical Engineering",
+        "minors": "Computer Science",
+        "bio":"University of South Carolina Honors College student primarily interested in renewable and alternative energy sources with a passion for sustainability and innovation. Currently pursuing my interests as a research assistant in a hydrogen and fuel cell lab." ,
+        "linkedIn": "https://www.linkedin.com/in/caroline-tiller-uofsc",
+        "resume": "jacobSchatzle.pdf"
     }
 ]
