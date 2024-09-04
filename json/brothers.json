@@ -162,7 +162,7 @@
         "resume": " "
     },
     {
-        "img": "matthewYvon.jpg",
+        "img": "matthewYvon.JPG",
         "name":"Matthew Yvon",
         "hometown": "Spring Hill, Tennessee" ,
         "majors": "Biomedical Engineering",
@@ -177,7 +177,7 @@
         "hometown": "Charleston, South Carolina" ,
         "majors": "Aerospace Engineering",
         "minors": "N/A",
-        "bio":" ." ,
+        "bio":" " ,
         "linkedIn": "https://www.linkedin.com/in/john-king-4318902b1/",
         "resume": "johnKing.pdf"
     },
