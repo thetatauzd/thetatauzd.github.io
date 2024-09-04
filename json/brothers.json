@@ -7,7 +7,7 @@
         "minors": "Psychology",
         "bio":"Hello! I am a first-year student at the University of South Carolina Honors College studying Computer Science and Mathematics in the College of Engineering and Computing and the College of Arts and Sciences (respectively). I am interested in Artificial Intelligence and computer science research. I am a runner, leader, sudoku-fanatic, and avid learner!" ,
         "linkedIn": "https://www.linkedin.com/in/brice-odom/",
-        "resume":"N/A"
+        "resume":" "
     },
     {   
         "img": "mattLarsen.png",
@@ -17,7 +17,7 @@
         "minors": "Business Administration",
         "bio":"I'm Matt Larsen, a sophomore at the University of South Carolina, passionate about computer science. I've been honing my skills in Java, Linux, GitHub, and HTML to tackle exciting projects, both independently and as part of collaborative teams. I'm dedicated to pushing the boundaries of technology and excited to contribute my expertise to innovative endeavors. Let's connect and explore the world of possibilities together!" ,
         "linkedIn": "https://www.linkedin.com/in/matt-larsen-140951243/",
-        "resume":"N/A"
+        "resume":" "
     },
     {   
         "img": "joePauls.jpg",
@@ -99,7 +99,7 @@
         "minors": "N/A",
         "bio":"I am a results-driven professional with a deep commitment to continuous personal and professional development. My journey has been characterized by a dedication to achieving excellence in all my endeavors. This drive has not only shaped my career path but has also enhanced my ability to adapt, learn, and thrive in diverse environments. This experience has taught me to eagerly anticipate and embrace the learning opportunities that future challenges bring. Let's connect and explore how we can drive success together." ,
         "linkedIn": "linkedin.com/in/rojas-r",
-        "resume": "jacobSchatzle.pdf"
+        "resume": " "
     },
     {
         "img": "wattsLiddle.jpg",
@@ -109,7 +109,7 @@
         "minors": "Beverage Management",
         "bio":"I am currently a Junior Electrical Engineering student at the University of South Carolina in the Capstone program. I am seeking to find work experience in the field of electrical with an interest to go into power and energy. I am also actively involved on campus as a College of Engineering and Computing ambassador, member and chair holder in Theta Tau Professional Engineering Fraternity - Zeta Delta chapter, and IEEE." ,
         "linkedIn": "www.linkedin.com/in/emoryliddle",
-        "resume": "jacobSchatzle.pdf"
+        "resume": " "
     },
     {
         "img": "nicoleHoeker.jpg",
@@ -119,7 +119,7 @@
         "minors": "Electrical Engineering",
         "bio":"I am a student at the University of South Carolina Honors College studying biomedical and electrical engineering, with the intent to enter the field of designing and creating prosthetics. I have previous experience in team leadership and partial management, and am driven, hard-working, and always looking for a new challenge." ,
         "linkedIn": "www.linkedin.com/in/nicolehoeker",
-        "resume": "jacobSchatzle.pdf"
+        "resume": "nicoleHoeker.pdf"
     },
     {
         "img": "carolineTiller.jpg",
@@ -129,6 +129,86 @@
         "minors": "Computer Science",
         "bio":"University of South Carolina Honors College student primarily interested in renewable and alternative energy sources with a passion for sustainability and innovation. Currently pursuing my interests as a research assistant in a hydrogen and fuel cell lab." ,
         "linkedIn": "https://www.linkedin.com/in/caroline-tiller-uofsc",
-        "resume": "jacobSchatzle.pdf"
+        "resume": " "
+    },
+    {
+        "img": "carolinaTurner.jpg",
+        "name":"Carolina Turner" ,
+        "hometown": "Iowa City, Iowa" ,
+        "majors": "Computer Information Systems",
+        "minors": "Business Information Management",
+        "bio":"As a senior studying Computer Information Systems, I am passionate about creating intuitive and dynamic web applications. With a strong foundation in web development and a keen interest in front-end software engineering, I am eager to contribute my skills in building user-friendly and memorable digital experiences. I am looking forward to applying my technical knowledge and creativity in a professional setting when I graduate in the spring of 2025." ,
+        "linkedIn": "www.linkedin.com/in/carolina-n-turner",
+        "resume": " "
+    },
+    {
+        "img": "austinBraiewa.jpg",
+        "name":"Austin Braiewa" ,
+        "hometown": "Monroe, Connecticut" ,
+        "majors": "Aerospace Engineering",
+        "minors": "N/A",
+        "bio":"My name is Austin Braiewa, I am a sophomore Aerospace Engineering Major at the University of South Carolina. Theta Tau has helped me with develop my professionalism and networking skills. Other than Theta Tau I am also in the Capstone Scholars program, as well as the American Institute of Aeronautics and Astronautics (AIAA)." ,
+        "linkedIn": "www.linkedin.com/in/abraiewa",
+        "resume": "austinBraiewa.pdf"
+    },
+    {
+        "img": "zacharyGardiner.jpg",
+        "name":"Zachary Gardiner" ,
+        "hometown": "Hershey, Pennsylvania" ,
+        "majors": "Chemical Engineering",
+        "minors": "Nuclear Engineering",
+        "bio":"I am a sophomore in the Honors College and the Senior Undergraduate Researcher in the General Atomics Center for Transformational Nuclear Technologies, where I study modeling and simulating nuclear fuel behavior and waste storage. I won first place in undergraduate engineering presentations at Discover USC for my research in developing a thermochemical database for modeling salts in a molten salt reactor. I am also the Communications Officer for the American Nuclear Society. I hope to develop innovative technologies to bring about a new age of nuclear energy." ,
+        "linkedIn": "https://www.linkedin.com/in/zachary-gardiner/",
+        "resume": " "
+    },
+    {
+        "img": "matthewYvon.jpg",
+        "name":"Matthew Yvon",
+        "hometown": "Spring Hill, Tennessee" ,
+        "majors": "Biomedical Engineering",
+        "minors": "Data Science and Business Administration",
+        "bio":"I am a first-year biomedical engineering student that is interested in sports prosthesis and rehabilitation engineering but have other passions that revolve around exercise science and sports science. I am a highly self-motivated individual that is able to work in a team to get a project done within a time constraint, while contributing to the success of the other individuals in the group." ,
+        "linkedIn": "www.linkedin.com/in/matthew-yvon",
+        "resume": " "
+    },
+    {
+        "img": "johnKing.jpg",
+        "name":"John King",
+        "hometown": "Charleston, South Carolina" ,
+        "majors": "Aerospace Engineering",
+        "minors": "N/A",
+        "bio":" ." ,
+        "linkedIn": "https://www.linkedin.com/in/john-king-4318902b1/",
+        "resume": "johnKing.pdf"
+    },
+    {
+        "img": "ayushParambath.jpg",
+        "name":"Ayush Parambath",
+        "hometown": "Simpsonville, South Carolina" ,
+        "majors": "Computer Science and Mathematics",
+        "minors": "N/A",
+        "bio":"Hi! My name is Ayush Parambath and I am a freshman at the University of South Carolina's Honors College. Currently, I am pursuing a Bachelor's of Science degree in Computer Science and Mathematics. I plan to graduate in May 2027 and pursue a career in artificial intelligence or data science." ,
+        "linkedIn": "https://www.linkedin.com/in/ayush-parambath/",
+        "resume": " "
+    },
+    {
+        "img": "anavamiIsa.jpg",
+        "name":"Anavami Isa",
+        "hometown": "Orangeburg, South Carolina" ,
+        "majors": "Computer Science",
+        "minors": "Mathematics",
+        "bio":"I’m a Computer Science major at the University of South Carolina who is interested in innovative ventures and software. I’m proficient in Java, C++, and Python, and am excited about any opportunity to use my knowledge to develop creative solutions or designs." ,
+        "linkedIn": "https://www.linkedin.com/in/anavami-isa",
+        "resume": " "
+    },
+    {
+        "img": "blaiseScileppi.jpg",
+        "name":"Blaise Scileppi",
+        "hometown": "New York",
+        "majors": "Computer Science and Biological Sciences",
+        "minors": "N/A",
+        "bio":"I am an ambitious, devoted, and caring individual with a passion to learn. Throughout my college experience, I plan on pursuing research, leadership involvement, and continued community service. Some soft skills I have are dependability, resourcefulness, and time-management." ,
+        "linkedIn": "https://www.linkedin.com/in/blaise-scileppi/",
+        "resume": " "
     }
 ]
