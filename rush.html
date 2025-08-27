@@ -480,6 +480,54 @@
       .page-section.section-height--large {
         min-height: 80vh !important;
       }
+      
+      /* Fix rush header layout for medium screens */
+      .rush-header-container {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 2rem !important;
+      }
+      
+      .rush-timeline-section {
+        width: 100% !important;
+        max-width: 400px !important;
+        margin: 0 auto !important;
+      }
+      
+      .comic-graphics-section {
+        width: 100% !important;
+        max-width: 800px !important;
+        margin: 0 auto !important;
+      }
+    }
+
+    /* Additional medium screen adjustments */
+    @media (max-width: 1000px) and (min-width: 769px) {
+      .rush-header-container {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1.5rem !important;
+      }
+      
+      .rush-timeline-section {
+        width: 100% !important;
+        max-width: 350px !important;
+        margin: 0 auto 1rem auto !important;
+      }
+      
+      .comic-graphics-section {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1rem !important;
+        max-width: 700px !important;
+        margin: 0 auto !important;
+      }
+      
+      .comic-panel {
+        aspect-ratio: 1 !important;
+        max-height: 200px !important;
+      }
     }
 
     /* Responsive adjustments for small screens */
