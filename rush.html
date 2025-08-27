@@ -1,274 +1,1294 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="en-US">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Conor Campbell">
+    <meta charset="utf-8" />
+    <title>Rush &mdash; Theta Tau Zeta Delta – University of South Carolina</title>
+    <link rel="icon" type="image/x-icon" href="./Images/ThetaTau.png"/>
+    <link rel="canonical" href="rush.html"/>
+    <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
+    <meta property="og:title" content="Rush &mdash; Theta Tau Zeta Delta – University of South Carolina"/>
+    <meta property="og:url" content="rush.html"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships."/>
+    <meta property="og:image" content="./Images/ThetaTau.png"/>
+    <meta name="description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships." />
 
-    <title>Theta Tau Zeta Delta</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/site.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/static.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/brotherhood_cards.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/navigation-animations.css">
+    <style>
+    /* Basic styling */
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        background-color: #fff;
+    }
 
-    <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" type="text/css" rel="stylesheet">
+    /* Fix for the white sections */
+    .white {
+        background-color: #fff !important;
+        color: #333 !important;
+    }
+    .white .section-background {
+        background-color: #fff !important;
+    }
 
-    <!-- Custom CSS -->
-    <link href="css/landing-page.css" type="text/css" rel="stylesheet">
+    /* Header styles are now in navigation-animations.css */
+    
+    .header-menu-nav-item-content {
+        padding: 8px 0 !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MDJ12YH8QK"></script>
+    /* Rush Page Specific Styles */
+    .rush-header-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+        min-height: 100vh;
+        padding: 2rem;
+        margin-left: -5%;
+    }
+
+    .comic-graphics-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 2.5rem;
+        height: auto;
+        padding: 0;
+        position: relative;
+        margin-left: -2rem;
+    }
+
+    .comic-panel {
+        background: white;
+        border: 4px solid #333;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: 8px 8px 0px #000;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        height: 100%;
+        width: 130%;
+        margin-left: -15%;
+    }
+
+    .rush-timeline-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .rush-timeline-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .rush-timeline-image:hover {
+        transform: scale(1.02);
+    }
+
+
+
+    .comic-panel:hover {
+        transform: translateY(-8px);
+        box-shadow: 12px 12px 0px #000;
+    }
+
+    .comic-panel img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    /* HP Background Image Positioning Fix */
+    .section-background img[src*="HPBackground"] {
+        object-position: 50% 35% !important;
+        object-fit: cover !important;
+    }
+
+    .comic-panel:hover img {
+        transform: scale(1.05);
+    }
+
+    .comic-panel-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        color: white;
+        padding: 1rem;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .comic-panel:hover .comic-panel-overlay {
+        transform: translateY(0);
+    }
+
+    .comic-panel-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .comic-panel-description {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .rush-header-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            /* Ensure content starts below fixed navbar */
+            padding-top: 60px;
+            margin-left: 0;
+        }
+
+        .comic-graphics-section {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-left: 0;
+        }
+
+        /* Remove desktop width expansion that causes overlap on mobile */
+        .comic-panel {
+            border-width: 2px;
+            box-shadow: 4px 4px 0px #000;
+            width: 100%;
+            margin-left: 0;
+            min-height: 120px;
+        }
+
+        .comic-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .comic-panel-overlay {
+            padding: 0.5rem;
+        }
+
+        .comic-panel-title {
+            font-size: 0.7rem;
+        }
+
+        .comic-panel-description {
+            font-size: 0.6rem;
+        }
+
+        /* Keep the timeline image fully visible on mobile */
+        .rush-timeline-image {
+            width: 100%;
+            height: auto;
+            max-height: 50vh;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .comic-graphics-section {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        .rush-header-container {
+            padding-top: 30px; /* a bit more space on very small screens */
+        }
+
+        .comic-panel {
+            min-height: 100px;
+        }
+    }
+
+    /* Custom section height between medium and small */
+    .section-height--medium-small {
+        min-height: 55vh !important;
+        height: 55vh !important;
+    }
+
+    /* Mobile adjustments for profession section */
+    @media (max-width: 768px) {
+        /* Target the profession section specifically */
+        .page-section:nth-of-type(3) {
+            padding-top: 0 !important;
+        }
+        
+        .page-section:nth-of-type(3) .content-wrapper {
+            padding-top: 1rem !important;
+            padding-bottom: 0 !important;
+        }
+        
+        .page-section:nth-of-type(3) .sqs-html-content {
+            margin-top: -3rem !important;
+        }
+        
+        .page-section:nth-of-type(3) h2 {
+            margin-top: 0 !important;
+            font-size: 2.5rem !important;
+        }
+        
+        .page-section:nth-of-type(3) p {
+            margin-top: 1rem !important;
+        }
+        
+        /* Target the service section specifically (last section) */
+        .page-section:last-of-type {
+            padding-top: 4rem !important;
+        }
+        
+        .page-section:last-of-type .content-wrapper {
+            padding-top: 2rem !important;
+        }
+    }
+
+    /* Brotherhood Cards - Enhanced */
+    .user-items-list-item-container {
+        display: grid !important;
+        grid-template-columns: repeat(6, 1fr) !important;
+        grid-gap: 20px !important;
+        margin: 0 auto;
+        max-width: 1400px;
+        background-color: #fff !important;
+        padding: 2rem 0;
+    }
+
+    .list-item {
+        border-radius: 15px !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+        height: auto !important;
+        min-height: 320px !important;
+        background-color: #fff !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        position: relative !important;
+    }
+
+    .list-item:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+    }
+
+    .list-item-media-inner {
+        padding-bottom: 120% !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    .list-item-media-inner img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease !important;
+    }
+
+    .list-item:hover .list-item-media-inner img {
+        transform: scale(1.05) !important;
+    }
+
+    .list-item-content__title {
+        font-size: 1.1rem !important;
+        margin-bottom: 8px !important;
+        text-align: center !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        font-family: 'Poppins', Arial, sans-serif !important;
+        padding: 0 15px !important;
+    }
+
+    .list-item-content {
+        background-color: #fff !important;
+        padding: 15px 10px !important;
+        text-align: center !important;
+        border-top: 3px solid #D4AF37 !important;
+    }
+
+    /* Image Loading - always visible */
+    .list-item-media-inner img {
+        opacity: 1 !important;
+        transition: opacity 0.3s ease;
+    }
+    
+    .list-item-media-inner img.loaded {
+        opacity: 1 !important;
+    }
+    
+    /* Preload critical images */
+    .brotherhood-section {
+        contain: layout style paint;
+    }
+    
+    /* Responsive Brotherhood Cards */
+    @media (max-width: 1200px) {
+        .user-items-list-item-container {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .user-items-list-item-container {
+            grid-template-columns: repeat(3, 1fr) !important;
+            grid-gap: 15px !important;
+            padding: 1rem 0;
+        }
+        
+        .list-item {
+            min-height: 280px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .user-items-list-item-container {
+            grid-template-columns: repeat(2, 1fr) !important;
+            grid-gap: 10px !important;
+        }
+        
+        .list-item {
+            min-height: 250px !important;
+        }
+        
+        .list-item-content__title {
+            font-size: 1rem !important;
+        }
+    }
+    
+    /* Banner Fixes */
+    /* Ensure all sections maintain proper sizing */
+    .page-section.section-height--large {
+        min-height: 100vh !important;
+        height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Ensure background images fill properly */
+    .section-background {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: -1 !important;
+        overflow: hidden !important;
+    }
+    
+    .section-background img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center center !important;
+    }
+    
+    .section-background-overlay {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: #000 !important;
+        opacity: 0.35 !important;
+    }
+    
+    /* Fix content layout */
+    .content-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 2 !important;
+    }
+    
+    /* Company slideshow styling */
+    .company-slideshow-item {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 1s ease;
+        z-index: 1;
+    }
+    
+    .company-slideshow-item[data-active="true"],
+    .company-slideshow-item:first-child {
+        opacity: 1;
+        z-index: 2;
+    }
+    
+    /* Header transparency */
+    header {
+        background-color: transparent !important;
+        transition: background-color 0.4s ease !important;
+    }
+    
+    header.scrolled, 
+    header.black.scrolled {
+        background-color: rgba(0, 0, 0, 0.9) !important;
+    }
+
+    /* Make all text white except for cards */
+    body, p, h1, h2, h3, h4, h5, h6, a, li, .header-nav-item a, .header-menu-nav-item-content {
+        color: #ffffff !important;
+    }
+    
+    /* Keep card text in original color */
+    .list-item-content__title, .list-item p, .list-item h1, .list-item h2, .list-item h3, .list-item a {
+        color: #777 !important;
+    }
+    
+    /* Footer text */
+    footer p, footer a, footer strong {
+        color: #ffffff !important;
+    }
+
+    /* Responsive adjustments for medium screens */
+    @media (max-width: 1200px) {
+      .user-items-list-item-container {
+        grid-template-columns: repeat(4, 1fr) !important;
+      }
+      .page-section.section-height--large {
+        min-height: 80vh !important;
+      }
+    }
+
+    /* Responsive adjustments for small screens */
+    @media (max-width: 768px) {
+      .user-items-list-item-container {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+      .page-section.section-height--large {
+        min-height: 70vh !important;
+      }
+    }
+
+    /* Responsive adjustments for mobile */
+    @media (max-width: 480px) {
+      .user-items-list-item-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    /* Ensure brotherhood gallery images are visible and properly fitted */
+    .brotherhood-section .list-item-media-inner picture,
+    .brotherhood-section .list-item-media-inner img {
+      display: block !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      z-index: 1;
+    }
+
+    /* Make cards visually balanced by managing caption area */
+    .list-item-content {
+        background-color: #fff !important;
+        padding: 12px 10px !important;
+        text-align: center !important;
+    }
+    
+    .list-item-content__title {
+        font-size: 1rem !important;
+        margin-bottom: 6px !important;
+        text-align: center !important;
+    }
+    
+    /* Tighten spacing for small screens */
+    @media (max-width: 768px) {
+        .list-item-content { 
+            padding: 8px 8px !important; 
+        }
+        .list-item-content__title { 
+            font-size: 0.9rem !important; 
+            margin-bottom: 4px !important; 
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .list-item-content { 
+            padding: 6px 6px !important; 
+        }
+        .list-item-content__title { 
+            font-size: 0.85rem !important; 
+        }
+    }
+    </style>
+    <!-- Preload critical images -->
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/ThetaTau.png" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/MountainWeekend.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/Carowinds.webp" fetchpriority="high">
+    <!-- Preload brotherhood images for smooth loading -->
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/optimized/BeachWeekend.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/optimized/MountainWeekend.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/optimized/Tubing.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/optimized/Carowinds.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/optimized/StateFair.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/optimized/Michelle.webp" fetchpriority="high">
+    <!-- Preload service background -->
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/Background.webp" fetchpriority="high">
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
+      document.addEventListener('DOMContentLoaded', function() {
+        var header = document.querySelector('header');
+        function updateHeaderBackground() {
+          if (!header) return;
+          if (window.scrollY > 100) {
+            header.classList.add('scrolled');
+          } else {
+            header.classList.remove('scrolled');
+          }
+        }
+        updateHeaderBackground();
+        window.addEventListener('scroll', updateHeaderBackground);
 
-        gtag('config', 'G-MDJ12YH8QK');
+        var mobileMenuBtn = document.querySelector('.header-burger-btn');
+        var mobileMenu = document.querySelector('.header-menu');
+        if (mobileMenuBtn && mobileMenu) {
+          mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('menu-open');
+            document.body.classList.toggle('menu-is-open');
+          });
+        }
+      });
     </script>
 </head>
 
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
-        <div class="container topnav">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="modal" data-target="#exampleModal">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+<body id="collection-60f39ee3ec5ad00cc0939b34" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons">
+    <div id="siteWrapper" class="clearfix site-wrapper">
+      <header id="header" class="black header theme-col--primary" data-header-style="dynamic">
+        <div class="header-announcement-bar-wrapper">
+          <a href="#page" class="header-skip-link sqs-button-element--primary">
+            Skip to Content
+          </a>
+          
+          <div class="header-inner container--fluid header-mobile-layout-logo-left-nav-right header-layout-nav-right">
+            <!-- Background -->
+            <div class="header-background theme-bg--primary"></div>
+
+            <div class="header-display-desktop">
+              
+              <!-- Title and nav wrapper -->
+              <div class="header-title-nav-wrapper">
+                
+                <!-- Title -->
+                <div class="header-title">
+                  <div class="header-title-logo">
+                    <a href="index.html">
+                      <picture>
+                        <img src="../thetatauzd.org/Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
+                      </picture>
+                    </a>
+                  </div>
+                </div>
+                
+                <!-- Nav -->
+                <div class="header-nav">
+                  <div class="header-nav-wrapper">
+                    <nav class="header-nav-list">
+                      <div class="header-nav-item header-nav-item--collection header-nav-item--active">
+                        <a href="rush.html" aria-current="page">Rush</a>
+                      </div>
+                      
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="profession.html">Profession</a>
+                      </div>
+           
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="brotherhood.html">Brotherhood</a>
+                      </div>
+                      
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="service.html">Service</a>
+                      </div>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Actions -->
+              <div class="header-actions header-actions--right">
+              </div>
+
+              <!-- Burger Menu for Mobile -->
+              <div class="header-burger menu-overlay-has-visible-non-navigation-items">
+                <button class="header-burger-btn burger" data-test="header-burger">
+                  <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
+                  <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
+                  <div class="burger-box">
+                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
+                      <div class="top-bun"></div>
+                      <div class="patty"></div>
+                      <div class="bottom-bun"></div>
+                    </div>
+                  </div>
                 </button>
-                <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <ul id="menu" class="nav navbar-nav navbar-right" style="color:rgb(0, 0, 0);">
+              </div>
+            </div>
+            
+            <!-- Mobile display version -->
+            <div class="header-display-mobile">
+              <!-- Title and nav wrapper -->
+              <div class="header-title-nav-wrapper">
+                <!-- Title -->
+                <div class="header-title">
+                  <div class="header-title-logo">
+                    <a href="index.html">
+                      <picture>
+                        <img src="../thetatauzd.org/Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block">
+                      </picture>
+                    </a>
+                  </div>
+                </div>
+                
+                <!-- Nav -->
+                <div class="header-nav">
+                  <div class="header-nav-wrapper">
+                    <nav class="header-nav-list">
+                      <div class="header-nav-item header-nav-item--collection header-nav-item--active">
+                        <a href="rush.html" aria-current="page">Rush</a>
+                      </div>
+                      
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="profession.html">Profession</a>
+                      </div>
+                                            
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="brotherhood.html">Brotherhood</a>
+                      </div>
 
-                                    <li data-menuanchor="welcome">
-                                        <a href="./" style="color:rgb(0, 0, 0);">Welcome</a>
-                                    </li>
-                                    <li data-menuanchor="about">
-                                        <a href="./about" style="color:rgb(0, 0, 0);">About</a>
-                                    </li>
-                                    <!-- <li data-menuanchor="photos">
-                                        <a href="/index.html#photos" style="color:rgb(0, 0, 0);">Photos</a>
-                                    </li> -->
-                                    <li data-menuanchor="Alumni">
-                                        <a href="./Alumni" style="color:rgb(0, 0, 0);">Alumni</a>
-                                    </li>
-                                    <li data-menuanchor="Regionals">
-                                        <a href="./Regionals" style="color:rgb(0, 0, 0);">Regionals</a>
-                                    </li>
-                                    <li data-menuanchor="rush">
-                                        <a href="/rush" style="color:rgb(0, 0, 0);">Rush</a>
-                                    </li>
-                                    <li data-menuanchor="brotherBios">
-                                        <a href="./brotherBios.html" style="color:rgb(0, 0, 0);">Active Brothers</a>
-                                    </li>
-                                    <!-- <li data-menuanchor="internal">
-                                        <a href="/internal/index-protected.html" style="color:rgb(0, 0, 0);">Internal</a>
-                                    </li> -->
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            </div>
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="service.html">Service</a>
+                      </div>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Actions -->
+              <div class="header-actions header-actions--right">
+              </div>
+
+              <!-- Burger Menu for Mobile -->
+              <div class="header-burger menu-overlay-has-visible-non-navigation-items">
+                <button class="header-burger-btn burger">
+                  <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
+                  <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
+                  <div class="burger-box">
+                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
+                      <div class="top-bun"></div>
+                      <div class="patty"></div>
+                      <div class="bottom-bun"></div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mobile Menu Navigation -->
+        <div class="header-menu header-menu--folder-list">
+          <div class="header-menu-bg theme-bg--primary"></div>
+          <div class="header-menu-nav">
+            <nav class="header-menu-nav-list">
+              <div data-folder="root" class="header-menu-nav-folder">
+                <div class="header-menu-nav-folder-content">
+                  <!-- Menu Navigation -->
+                  <div class="header-menu-nav-wrapper">
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
+                      <a href="rush.html" aria-current="page">
+                        <div class="header-menu-nav-item-content">
+                          Rush
                         </div>
+                      </a>
                     </div>
-                </div>
-                <a class="navbar-brand topnav" href="./" style="color:#FFFFFF;">Theta Tau Zeta Delta</a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul id="menu" class="nav navbar-nav navbar-right" style="color:#FFFFFF;">
+                    
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="brotherhood.html">
+                        <div class="header-menu-nav-item-content">
+                          Brotherhood
+                        </div>
+                      </a>
+                    </div>
+                                        
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="profession.html">
+                        <div class="header-menu-nav-item-content">
+                          Profession
+                        </div>
+                      </a>
+                    </div>
 
-                    <li data-menuanchor="welcome">
-                        <a href="./" style="color:#FFFFFF;">Welcome</a>
-                    </li>
-                    <li data-menuanchor="about">
-                        <a href="./about" style="color:#FFFFFF;">About</a>
-                    </li>
-                    <!-- <li data-menuanchor="photos">
-                        <a href="./" style="color:#FFFFFF;">Photos</a>
-                    </li> -->
-                    <li data-menuanchor="Alumni">
-                        <a href="./Alumni" style="color:#FFFFFF;">Alumni</a>
-                    </li>
-                    <li data-menuanchor="rush">
-                        <a href="./rush" style="color:#FFFFFF;">Rush</a>
-                    </li>
-                    <li data-menuanchor="rush">
-                        <a href="./brotherBios.html" style="color:#FFFFFF;">Active Brothers</a>
-                    </li>
-                    <!-- <li data-menuanchor="admin">
-                        <a href="./internal/index-protected.html" style="color:#FFFFFF;">Internal</a>
-                    </li> -->
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="service.html">
+                        <div class="header-menu-nav-item-content">
+                          Service
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="header-menu-actions social-accounts">
+                  <div class="header-menu-actions-action header-menu-actions-action--social mobile">
+                    <a class="icon icon--lg icon--fill header-icon header-icon-border-shape-none header-icon-border-style-outline" href="https://www.instagram.com/thetatauzd/" target="_blank" aria-label="Instagram">
+                      <svg viewBox="23 23 64 64">
+                        <path d="M46.91,25.816c-0.073-1.597-0.326-2.687-0.697-3.641c-0.383-0.986-0.896-1.823-1.73-2.657c-0.834-0.834-1.67-1.347-2.657-1.73c-0.954-0.371-2.045-0.624-3.641-0.697C36.585,17.017,36.074,17,32,17s-4.585,0.017-6.184,0.09c-1.597,0.073-2.687,0.326-3.641,0.697c-0.986,0.383-1.823,0.896-2.657,1.73c-0.834,0.834-1.347,1.67-1.73,2.657c-0.371,0.954-0.624,2.045-0.697,3.641C17.017,27.415,17,27.926,17,32c0,4.074,0.017,4.585,0.09,6.184c0.073,1.597,0.326,2.687,0.697,3.641c0.383,0.986,0.896,1.823,1.73,2.657c0.834,0.834,1.67,1.347,2.657,1.73c0.954,0.371,2.045,0.624,3.641,0.697C27.415,46.983,27.926,47,32,47s4.585-0.017,6.184-0.09c1.597-0.073,2.687-0.326,3.641-0.697c0.986-0.383,1.823-0.896,2.657-1.73c0.834-0.834,1.347-1.67,1.73-2.657c0.371-0.954,0.624-2.045,0.697-3.641C46.983,36.585,47,36.074,47,32S46.983,27.415,46.91,25.816z M44.21,38.061c-0.067,1.462-0.311,2.257-0.516,2.785c-0.272,0.7-0.597,1.2-1.122,1.725c-0.525,0.525-1.025,0.85-1.725,1.122c-0.529,0.205-1.323,0.45-2.785,0.516c-1.581,0.072-2.056,0.087-6.061,0.087s-4.48-0.015-6.061-0.087c-1.462-0.067-2.257-0.311-2.785-0.516c-0.7-0.272-1.2-0.597-1.725-1.122c-0.525-0.525-0.85-1.025-1.122-1.725c-0.205-0.529-0.45-1.323-0.516-2.785c-0.072-1.582-0.087-2.056-0.087-6.061s0.015-4.48,0.087-6.061c0.067-1.462,0.311-2.257,0.516-2.785c0.272-0.7,0.597-1.2,1.122-1.725c0.525-0.525,1.025-0.85,1.725-1.122c0.529-0.205,1.323-0.45,2.785-0.516c1.582-0.072,2.056-0.087,6.061-0.087s4.48,0.015,6.061,0.087c1.462,0.067,2.257,0.311,2.785,0.516c0.7,0.272,1.2,0.597,1.725,1.122c0.525,0.525,0.85,1.025,1.122,1.725c0.205,0.529,0.45,1.323,0.516,2.785c0.072,1.582,0.087,2.056,0.087,6.061S44.282,36.48,44.21,38.061z M32,24.297c-4.254,0-7.703,3.449-7.703,7.703c0,4.254,3.449,7.703,7.703,7.703c4.254,0,7.703-3.449,7.703-7.703C39.703,27.746,36.254,24.297,32,24.297z M32,37c-2.761,0-5-2.239-5-5c0-2.761,2.239-5,5-5s5,2.239,5,5C37,34.761,34.761,37,32,37z M40.007,22.193c-0.994,0-1.8,0.806-1.8,1.8c0,0.994,0.806,1.8,1.8,1.8c0.994,0,1.8-0.806,1.8-1.8C41.807,22.999,41.001,22.193,40.007,22.193z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </nav>
+          </div>
         </div>
-        <!-- /.container -->
-    </nav>
+      </header>
 
-    <!-- Page Content -->
-    <div class="section">
-        <a name="welcome"></a>
-        <div class="content-section-a">
+      <main id="page" class="container" role="main">
+        <article class="sections" id="sections" data-page-sections="60f39ee3ec5ad00cc0939b35">
 
-            <div class="container">
-                <div class="row">
-                    <h1  style="text-align: center;">Come Join Us At Rush!</h1>
-                    <img style="display: block;
-                    margin-left: auto;
-                    margin-right: auto;" src="Images/S25 THETA TAU RUSH.jpeg">
-                    <div style="display: block; margin-left: auto; margin-right: auto;">
-                    </div>
-
-                    <div class="col-lg-5 col-sm-6">
-                        <h2 style="text-align: center; padding-top: 3%; ">
-                            Our Regent: Grace Yaegel
-                        </h2>
-                        <br />
-                        <br />
-                        <img style=" display: block; margin-left: auto; margin-right: auto; padding-top: 3.5%; width: 350px;" src="Images/Regent_Photo.png" alt="">
-                    </div>
-
-                    <div style="text-align: center;" class="col-lg-5 col-lg-offset-2 col-sm-6 ">
-                        <h2 style="text-align: center;">
-                            Spring 2025 Recruitment Chair: Jack Schmitt
-                        </h2>
-                        <img style=" display: block; margin-left: auto; padding-top: 30px;  margin-right: auto; width: 400px;" src="Images/S25_Recruitment_Chair.jpeg" alt="">
-                    </div>
-                </div>
-
-            </div>
-
-            <div>
-            <a href="https://groupme.com/join_group/105058370/MMo60BQt">
-                <h2 style="margin-top: 50px; display: block;">
-                    Click here to join the Spring 2025 Rush GroupMe
-                </h2>
-            </a> 
-            <h4 style="text-align: center;">
-                Or scan the QR code below with your phone!
-            </h4>
-            <br />
-            <img style="display: block;
-                    margin-left: auto;
-                    margin-right: auto;" src="Images/S25_QR.jpeg">
-
-            </div>
-            <!-- /.container -->
-            <h2 style="text-align: center; margin-top:110px ;">
-                Anticipated Fall 2024 Semester Rush Events:
-            </h2>
-            <h3>
-                Info Nights
-            </h3>
-            <p style="width: 60%; margin: auto;">
-                Join as we kick off rush where you’ll get an in-depth introduction to Theta Tau and our fraternity’s values. 
-                The event begins with a presentation by our Recruitment Chairs, offering insights into who we are and what we stand for. 
-                Following the presentation, there will be an open Q&A session, providing an opportunity to ask questions and learn more. 
-                Enjoy complimentary pizza while networking with our brothers and fellow attendees in a casual and welcoming environment. 
-                Attire is casual and both info nights are the same event so you only should attend one night.
-            </p>
-            <h3 style=" margin-top:50px ";>
-                Philanthropy and Committee Fair
-            </h3>
-            <p style="width: 60%; margin: auto;">
-                Discover the inner workings of Theta Tau at our Philanthropy and Committee Fair. 
-                This event highlights our chair and committee system, offering you the chance to interact and ask questions to the chairs directly. 
-                Additionally, our philanthropy team will provide tasks and activities in preparation for Living Science Museum, 
-                allowing you to get involved and gain a deeper understanding of our community impact.
-            </p>
-            <h3 style=" margin-top:50px ";>
-                Professional Development Workshop
-            </h3>
-            <p style="width: 60%; margin: auto;">
-                Refine your professional skills at our Professional Development Workshop. 
-                This workshop covers essential topics such as resume improvement, LinkedIn optimization, and mock interviews, 
-                as well as research and internship panels to elevate your career readiness. 
-                Attendees should dress in business casual attire as we work together to build and bolster your professional profile.
-            </p>
-            <h3 style=" margin-top:50px ";>
-                Professional Mixer
-            </h3>
-            <p style="width: 60%; margin: auto;">
-                Event in which brothers and rushees can network and get to know one another is a low stakes casual, professional manner.
-                The attire for this event is business casual.
-            </p>
-            <h3 style=" margin-top:50px ";>
-                Speed Dating
-            </h3>
-            <p style="width: 60%; margin: auto;">
-                A pivotal event in the recruitment process, Speed Dating offers an opportunity for one-on-one interactions with each brother through a series of quick conversations. 
-                This format allows us to learn more about you while giving you the chance to connect with others in attendance. 
-                Please come prepared with a water bottle, as this event typically lasts for an extended period and may involve some waiting time.
-                This event is mandatory to be considered for a bid.
-            </p>
-
-            <h3 style=" margin-top:50px ";>
-                Professional Dinner (Invite Only)
-            </h3>
-            <p style="width: 60%; margin: auto;">
-                This exclusive event is designed to showcase your professionalism and engagement. 
-                The evening begins with a formal dinner conversation, followed by interactive rotations that further explore your skills and potential. 
-                Additional details will be provided before the event. Business professional attire is required for all attendees.
-            </p>
-
-            <img style="display: block;
-                margin-left: auto;
-                margin-right: auto; margin-top: 60px;" src="Images/Rush Theta Tau - WITCH.jpeg">
+      <!-- Rush Header Section with Timeline and Comic Graphics -->
+      <section class="page-section background-width--full-bleed section-height--large content-width--wide horizontal-alignment--left vertical-alignment--middle has-background black">
+        <div class="section-border">
+          <div class="section-background">
+            <picture>
+                              <source srcset="..//thetatauzd.org/Images/ThetaTauRush.webp" type="image/webp">
+                <img src="..//thetatauzd.org/Images/ThetaTauRush.webp" alt="Theta Tau Rush Background" style="display:block;object-position: 50% 50%">
+            </picture>
+            <div class="section-background-overlay" style="opacity: 0.2;"></div>
+          </div>
         </div>
-        <!-- /.content-section-a -->
-    </div>
-
-
-    
-
-    <div class="section">
-        <!-- <a name="links"></a>
-        <div class="content-section-b">
-
-            <div class="container">
-
-                <div class="row">
-
-
-
-
-                </div>
-
-            </div>
-             /.container -->
-
-        <!-- </div> -->
-        <!-- /.banner -->
-        <!-- Footer -->
-        <footer>
-            <div class="container" style="text-align:center">
-                <div class="row">
-                    <div class="col-lg-12">
-                    <p class="copyright text-muted small">Copyright &copy; Theta Tau Zeta Delta <span id="year">year</span>. All Rights Reserved</p>
+        
+        <div class="content-wrapper">
+          <div class="content">
+            <div class="sqs-layout sqs-grid-12 columns-12">
+              <div class="row sqs-row">
+                <div class="col sqs-col-12 span-12">
+                  <div class="sqs-block html-block sqs-block-html">
+                    <div class="sqs-block-content">
+                      <div class="sqs-html-content">
+                        <div class="rush-header-container">
+                          <!-- Left Side - Rush Timeline -->
+                          <div class="rush-timeline-section">
+                            <img src="Images/RushTimeline.webp" alt="Rush Timeline" class="rush-timeline-image">
+                          </div>
+                          
+                          <!-- Right Side - Comic Book Style Event Graphics -->
+                          <div class="comic-graphics-section">
+                            
+                            <!-- Info Nights -->
+                            <div class="comic-panel">
+                              <img src="Images/InfoNights.webp" alt="Info Nights">
+                              <div class="comic-panel-overlay">
+                                <div class="comic-panel-title">Info Nights</div>
+                                <div class="comic-panel-description">Learn about Theta Tau and meet our brothers</div>
+                              </div>
+                            </div>
+                            
+                            <!-- PD Workshop -->
+                            <div class="comic-panel">
+                              <img src="Images/PDWorkshop.webp" alt="Professional Development Workshop">
+                              <div class="comic-panel-overlay">
+                                <div class="comic-panel-title">PD Workshop</div>
+                                <div class="comic-panel-description">Career development skills</div>
+                              </div>
+                            </div>
+                            
+                            <!-- Inside Theta Tau -->
+                            <div class="comic-panel">
+                              <img src="Images/InsideThetaTau.webp" alt="Inside Theta Tau">
+                              <div class="comic-panel-overlay">
+                                <div class="comic-panel-title">Inside Theta Tau</div>
+                                <div class="comic-panel-description">See our chairs and culture</div>
+                              </div>
+                            </div>
+                            
+                            <!-- Professional Mixer -->
+                            <div class="comic-panel">
+                              <img src="Images/ProfesionalMixer.webp" alt="Professional Mixer">
+                              <div class="comic-panel-overlay">
+                                <div class="comic-panel-title">Professional Mixer</div>
+                                <div class="comic-panel-description">Network with brothers and gain professional experience</div>
+                              </div>
+                            </div>
+                            
+                            <!-- Speed Dating -->
+                            <div class="comic-panel">
+                              <img src="Images/SpeedDating.webp" alt="Speed Dating">
+                              <div class="comic-panel-overlay">
+                                <div class="comic-panel-title">Speed Dating</div>
+                                <div class="comic-panel-description">Quick conversations with brothers</div>
+                              </div>
+                            </div>
+                            
+                            <!-- Professional Dinner -->
+                            <div class="comic-panel">
+                              <img src="Images/ProfessionalDinner.webp" alt="Professional Dinner">
+                              <div class="comic-panel-overlay">
+                                <div class="comic-panel-title">Professional Dinner</div>
+                                <div class="comic-panel-description">Formal networking event</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
+              </div>
             </div>
-        </footer>
+          </div>
+        </div>
+      </section>
 
+      <!-- Why Rush Section -->
+      <section class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background black" style="display: flex; align-items: center; justify-content: center;">
+        <div class="section-border">
+          <div class="section-background">
+                          <picture>
+                <source srcset="..//thetatauzd.org/Images/HPBackground.webp" type="image/webp">
+                <img src="..//thetatauzd.org/Images/HPBackground.jpg" alt="Background" style="display:block;object-position: 50% 0%; object-fit: cover; width: 100%; height: 100%;">
+              </picture>
+            <div class="section-background-overlay" style="opacity: 0.35;"></div>
+          </div>
+        </div>
+        
+        <div class="content-wrapper" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+          <div class="content">
+            <div class="sqs-layout sqs-grid-12 columns-12">
+              <div class="row sqs-row">
+                <div class="col sqs-col-12 span-12">
+                  <div class="sqs-block html-block sqs-block-html">
+                    <div class="sqs-block-content">
+                      <div class="sqs-html-content">
+                        <h1 style="text-align:center;white-space:pre-wrap; margin: 0;">Why Rush Theta Tau Zeta Delta?</h1>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+   
+          <!-- Profession Section -->
+          <section class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--top has-background black">
+            <div class="section-border">
+              <div class="section-background">
+                <picture>
+                  <source srcset="..//thetatauzd.org/Images/SGBackground.webp" type="image/webp">
+                  <img src="..//thetatauzd.org/Images/SGBackground.jpg" alt="Profession Background" style="display:block;object-position: 50% 50%">
+                </picture>
+                <div class="section-background-overlay" style="opacity: 0.35;"></div>
+              </div>
+            </div>
+            
+            <div class="content-wrapper">
+              <div class="content">
+                <div class="sqs-layout sqs-grid-12 columns-12">
+                  <div class="row sqs-row">
+                    <div class="col sqs-col-12 span-12">
+                      <div class="sqs-block html-block sqs-block-html">
+                        <div class="sqs-block-content">
+                          <div class="sqs-html-content">
+                            <h2 style="text-align:center;white-space:pre-wrap;">Profession</h2>
+                            <p style="text-align:center;white-space:pre-wrap;">Coming from all types of fields and backgrounds, our brothers' work experience and connections last a lifetime. Their knowledge is always passed down to younger members that wish to follow a similar path. We have a professional development chair, who is dedicated to helping all of our members gain the professional experience they need to help them beyond their time at the University of South Carolina. Enjoy a preview below of a few of the places we work:</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profession Carousel Section -->
+          <section class="page-section white">
+            <div class="section-border">
+              <div class="section-background">
+                <div style="background-color: #ffffff; width: 100%; height: 100%;"></div>
+              </div>
+            </div>
+            
+            <div class="content-wrapper">
+              <div class="content">
+                <!-- Carousel for company logos -->
+                <div class="logo-carousel-container" style="width: 100%; overflow: hidden; height: 50vh; display: flex; align-items: center;">
+                  <div class="logo-carousel-track" style="display: flex; animation: carousel 15s linear infinite;">
+                    <!-- Company logos -->
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Amazon.webp" type="image/webp"><img src="../thetatauzd.org/Images/Companies/Amazon.png" alt="Amazon" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/NASA.webp" type="image/webp"><img src="../thetatauzd.org/Images/Companies/NASA.png" alt="NASA" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/SpaceX.webp" type="image/webp"><img src="../thetatauzd.org/Images/Companies/SpaceX.png" alt="SpaceX" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Boeing.webp" type="image/webp"><img src="../thetatauzd.org/Images/Companies/Boeing.png" alt="Boeing" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Adobe.webp" type="image/webp"><img src="../thetatauzd.org/Images/Companies/Adobe.png" alt="Adobe" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/IBM.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/IBM.png" alt="IBM" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Intel.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/Intel.png" alt="Intel" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/AMD.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/AMD.png" alt="AMD" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Deloitte.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/Deloitte.png" alt="Deloitte" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/PWC.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/PWC.png" alt="PwC" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Bain.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/Bain.png" alt="Bain" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/EY.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/EY.png" alt="EY" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/BMW.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/BMW.png" alt="BMW" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/Mercedes.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/Mercedes.png" alt="Mercedes" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/BankOfAmerica.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/BankOfAmerica.png" alt="Bank of America" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                    <div class="logo-item" style="min-width: 750px; height: 450px; display: flex; align-items: center; justify-content: center; margin: 0 20px;">
+                      <picture><source srcset="../thetatauzd.org/Images/Companies/CapitalOne.png" type="image/png"><img src="../thetatauzd.org/Images/Companies/CapitalOne.png" alt="Capital One" style="max-width: 80%; max-height: 80%; object-fit: contain;"></picture>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- CSS Animation for the carousel -->
+              <style>
+                @keyframes carousel {
+                  0% {
+                    transform: translateX(0);
+                  }
+                  100% {
+                    transform: translateX(-50%); /* Move by half the width to create seamless loop */
+                  }
+                }
+                
+                /* Pause animation when hovering */
+                .logo-carousel-track:hover {
+                  animation-play-state: paused;
+                }
+                
+                /* Make logos stand out */
+                .logo-item img {
+                  transition: transform 0.3s ease;
+                }
+                
+                /* Optional hover effect */
+                .logo-item img:hover {
+                  transform: scale(1.1);
+                }
+              </style>
+            </div>
+
+          <!-- Brotherhood Section -->
+          <section class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--top has-background black">
+            <div class="section-border">
+              <div class="section-background">
+                <picture>
+                  <source srcset="..//thetatauzd.org/Images/optimized/BeachWeekend.webp" type="image/webp">
+                  <img src="..//thetatauzd.org/Images/optimized/BeachWeekend.webp" alt="Brotherhood Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high">
+                </picture>
+                <div class="section-background-overlay" style="opacity: 0.35;"></div>
+              </div>
+            </div>
+            
+            <div class="content-wrapper">
+              <div class="content">
+                <div class="sqs-layout sqs-grid-12 columns-12">
+                  <div class="row sqs-row">
+                    <div class="col sqs-col-12 span-12">
+                      <div class="sqs-block html-block sqs-block-html">
+                        <div class="sqs-block-content">
+                          <div class="sqs-html-content">
+                            <h2 style="text-align:center;white-space:pre-wrap; margin-bottom: 1.5rem; font-size: 2.5rem;">Brotherhood</h2>
+                            <p style="text-align:center;white-space:pre-wrap; font-size: 1.2rem; line-height: 1.6; max-width: 800px; margin: 0 auto;">We at Theta Tau Zeta Delta host many brotherhood events to strengthen bonds and create lasting memories. From beach and mountain retreats, we build friendships that last a lifetime.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Brotherhood Grid Gallery Section -->
+          <section class="page-section white brotherhood-section">
+            <div class="section-border">
+              <div class="section-background"></div>
+            </div>
+            
+            <div class="content-wrapper" style="padding-top: 3.3vmax; padding-bottom: 3.3vmax;">
+              <div class="content">
+                <div class="user-items-list-item-container">
+                  <!-- Beach Weekend -->
+                  <figure class="list-item">
+                    <div class="list-item-media">
+                      <div class="list-item-media-inner">
+                        <picture>
+                          <source srcset="../thetatauzd.org/Images/optimized/BeachWeekend.webp" type="image/webp">
+                          <img src="../thetatauzd.org/Images/optimized/BeachWeekend.webp" alt="Beach Weekend" style="display:block;object-fit:cover;width:100%;height:100%;" loading="eager" fetchpriority="high">
+                        </picture>
+                      </div>
+                    </div>
+                    <div class="list-item-content">
+                      <h3 class="list-item-content__title">Beach Weekend</h3>
+                    </div>
+                  </figure>
+                  
+                  <!-- Mountain Weekend -->
+                  <figure class="list-item">
+                    <div class="list-item-media">
+                      <div class="list-item-media-inner">
+                        <picture>
+                          <source srcset="../thetatauzd.org/Images/optimized/MountainWeekend.webp" type="image/webp">
+                          <img src="../thetatauzd.org/Images/optimized/MountainWeekend.webp" alt="Mountain Weekend" style="display:block;object-fit:cover;width:100%;height:100%;" loading="eager" fetchpriority="high">
+                        </picture>
+                      </div>
+                    </div>
+                    <div class="list-item-content">
+                      <h3 class="list-item-content__title">Mountain Weekend</h3>
+                    </div>
+                  </figure>
+                  
+                  <!--Tubing-->
+                  <figure class="list-item">
+                    <div class="list-item-media">
+                      <div class="list-item-media-inner">
+                        <picture>
+                          <source srcset="../thetatauzd.org/Images/optimized/Tubing.webp" type="image/webp">
+                          <img src="../thetatauzd.org/Images/optimized/Tubing.webp" alt="Tubing" style="display:block;object-fit:cover;width:100%;height:100%;" loading="eager" fetchpriority="high">
+                        </picture>
+                      </div>
+                    </div>
+                    <div class="list-item-content">
+                      <h3 class="list-item-content__title">Tubing</h3>
+                    </div>
+                  </figure>
+                  
+                  <!--Carowinds-->
+                  <figure class="list-item">
+                    <div class="list-item-media">
+                      <div class="list-item-media-inner">
+                        <picture>
+                          <source srcset="../thetatauzd.org/Images/optimized/Carowinds.webp" type="image/webp">
+                          <img src="../thetatauzd.org/Images/optimized/Carowinds.webp" alt="Carowinds" style="display:block;object-fit:cover;width:100%;height:100%;" loading="eager" fetchpriority="high">
+                        </picture>
+                      </div>
+                    </div>
+                    <div class="list-item-content">
+                      <h3 class="list-item-content__title">Carowinds</h3>
+                    </div>
+                  </figure>
+                  
+                  <!-- State Fairs -->
+                  <figure class="list-item">
+                    <div class="list-item-media">
+                      <div class="list-item-media-inner">
+                        <picture>
+                          <source srcset="../thetatauzd.org/Images/optimized/StateFair.webp" type="image/webp">
+                          <img src="../thetatauzd.org/Images/optimized/StateFair.webp" alt="State Fairs" style="display:block;object-fit:cover;width:100%;height:100%;" loading="eager" fetchpriority="high">
+                        </picture>
+                      </div>
+                    </div>
+                    <div class="list-item-content">
+                      <h3 class="list-item-content__title">State Fairs</h3>
+                    </div>
+                  </figure>
+                  
+                  <!-- And More -->
+                  <figure class="list-item">
+                    <div class="list-item-media">
+                      <div class="list-item-media-inner">
+                        <picture>
+                          <source srcset="../thetatauzd.org/Images/optimized/Michelle.webp" type="image/webp">
+                          <img src="../thetatauzd.org/Images/optimized/Michelle.webp" alt="and More!" style="display:block;object-fit:cover;width:100%;height:100%;" loading="eager" fetchpriority="high">
+                        </picture>
+                      </div>
+                    </div>
+                    <div class="list-item-content">
+                      <h3 class="list-item-content__title">and More!</h3>
+                    </div>
+                  </figure>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Service Section -->
+          <section class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--top has-background black">
+            <div class="section-border">
+              <div class="section-background">
+                <picture>
+                  <source srcset="..//thetatauzd.org/Images/Background.webp" type="image/webp">
+                  <img src="..//thetatauzd.org/Images/Background.jpg" alt="Service Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high">
+                </picture>
+                <div class="section-background-overlay" style="opacity: 0.35;"></div>
+              </div>
+            </div>
+            
+            <div class="content-wrapper">
+              <div class="content">
+                <div class="sqs-layout sqs-grid-12 columns-12">
+                  <div class="row sqs-row">
+                    <div class="col sqs-col-12 span-12">
+                      <div class="sqs-block html-block sqs-block-html">
+                        <div class="sqs-block-content">
+                          <div class="sqs-html-content">
+                            <h2 style="text-align:center;white-space:pre-wrap; margin-bottom: 1.5rem; font-size: 2.5rem;">Service</h2>
+                            <p style="text-align:center;white-space:pre-wrap; font-size: 1.2rem; line-height: 1.6; max-width: 800px; margin: 0 auto;">Here at Theta Tau Zeta Delta we work to make an impact in our community every semester. From STEM outreach events to community service projects, we are dedicated to making a difference in our community.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          
+          
+          <!-- Rush Information Section -->
+          <section class="page-section background-width--full-bleed section-height--medium content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background dark">
+            <div class="section-border">
+              <div class="section-background">
+                <img src="./Images/ThetaTauRush.webp" alt="Theta Tau Rush">
+                <div class="section-background-overlay" style="opacity: 0.15;"></div>
+              </div>
+            </div>
+            
+            <div class="content-wrapper">
+              <div class="content">
+                <div class="sqs-layout sqs-grid-12 columns-12">
+                  <div class="row sqs-row">
+                    <div class="col sqs-col-12 span-12">
+                      <div class="sqs-block html-block sqs-block-html">
+                        <div class="sqs-block-content">
+                          <div class="sqs-html-content">
+                            <h2 style="white-space:pre-wrap; margin-bottom: 2rem;">Fall 2025 Rush</h2>
+                            <p style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem;">Join The Rush GroupMe! | Schedule a Coffee Chat!</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="sqs-block image-block sqs-block-image">
+                        <div class="sqs-block-content">
+                          <figure class="sqs-block-image-figure intrinsic" style="max-width: 400px; margin: 0 auto;">
+                            <div class="image-block-wrapper">
+                              <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom: 100%; overflow: hidden;">
+                                <picture>
+                                  <source srcset="../thetatauzd.org/Images/LinkTree.png" type="image/png">
+                                  <img src="../thetatauzd.org/Images/LinkTree.png" alt="LinkTree" style="display:block;object-fit:cover;width:100%;height:100%;">
+                                </picture>
+                              </div>
+                            </div>
+                          </figure>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </article>
+      </main>
+      
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>Theta Tau Zeta Delta</h3>
+            <p>Theta Tau Zeta Delta is the University of South Carolina's premier professional engineering fraternity, fostering leadership in profession, service, and brotherhood.</p>
+          </div>
+          
+          <div class="footer-section">
+            <h3>Contact</h3>
+            <p><strong>Regent:</strong> Grace Yaegel</p>
+            <p><strong>Vice Regent:</strong> Kelly Sullivan</p>
+            <p><strong>Rush Chairs:</strong> Verissimo (Reese) Pedra, Tarun Ramkumar</p>
+            <p><strong>Alumni Correspondent:</strong> Watts Liddle</p>
+          </div>
+          
+          <div class="footer-section">
+            <h3>Quick Links</h3>
+            <p><a href="brotherhood.html">Brotherhood</a></p>
+            <p><a href="profession.html">Profession</a></p>
+            <p><a href="service.html">Service</a></p>
+            <p><a href="rush.html">Rush</a></p>
+          </div>
+          
+          <div class="footer-section">
+            <h3>Connect</h3>
+            <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
+            <p style="margin-top: 0.5rem;">
+              <a href="https://www.instagram.com/thetatauzd/" target="_blank" aria-label="Instagram">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" role="img" aria-hidden="true" style="display:inline-block;vertical-align:middle;">
+                  <defs>
+                    <linearGradient id="igGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#f58529"/>
+                      <stop offset="50%" stop-color="#dd2a7b"/>
+                      <stop offset="100%" stop-color="#8134af"/>
+                    </linearGradient>
+                  </defs>
+                  <path fill="none" d="M0 0h24v24H0z"/>
+                  <path fill="url(#igGrad)" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a5.5 5.5 0 1 1 0 11.001A5.5 5.5 0 0 1 12 7.5zm0 2a3.5 3.5 0 1 0 .001 7.001A3.5 3.5 0 0 0 12 9.5zM18 6.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
+                </svg>
+              </a>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
-
-
-
-
-</body>
-
+  </body>
 </html>

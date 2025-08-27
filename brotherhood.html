@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <title>brotherhood &mdash; Theta Tau Zeta Delta – University of South Carolina</title>
+    <link rel="icon" type="image/x-icon" href="./Images/ThetaTau.png"/>
+    <link rel="canonical" href="brotherhood.html"/>
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/brotherhood_cards.css">
+    <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
+    <meta property="og:title" content="brotherhood &mdash; Theta Tau Zeta Delta – University of South Carolina"/>
+    <meta property="og:url" content="brotherhood.html"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships."/>
+    <meta property="og:image" content="./Images/ThetaTau.png"/>
+    <meta name="description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships." />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/site.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/static.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/navigation-animations.css">
+    <!-- Preload critical images -->
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/ThetaTau.png" fetchpriority="high">
+    <link rel="preload" as="image" href="../thetatauzd.org/Images/MountainWeekend.webp" fetchpriority="high">
+    <style>
+    /* Minimal CSS to ensure the page looks decent even if external CSS files fail to load */
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        background-color: #fff;
+    }
+    
+    /* Header styles are now in navigation-animations.css */
+    
+    .section-background img {
+        width: 100%;
+        height: 100vh;
+        object-fit: cover;
+    }
+    .content-wrapper {
+        position: relative;
+        z-index: 1;
+        padding: 0 4vw;
+    }
+    .section-background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    
+    /* Add explicit styles for white sections */
+    .white {
+        background-color: #fff;
+        color: #333;
+    }
+    .white .section-background {
+        background-color: #fff;
+    }
+    
+    .header-menu-nav-item-content {
+        padding: 8px 0 !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+    
+    /* Brotherhood Story Journey - Unique Immersive Design */
+    .brotherhood-journey {
+        position: relative;
+        padding: 100px 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .journey-step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 120px;
+        position: relative;
+        min-height: 400px;
+    }
+
+    .journey-step:nth-child(even) {
+        flex-direction: row-reverse;
+    }
+
+    .journey-content {
+        flex: 1;
+        padding: 50px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+
+    .journey-step:nth-child(odd) .journey-content {
+        margin-right: 80px;
+        transform: translateX(-50px);
+    }
+
+    .journey-step:nth-child(even) .journey-content {
+        margin-left: 80px;
+        transform: translateX(50px);
+    }
+
+    .journey-image {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0 6px 0 0 #7A0010, 0 25px 50px rgba(0,0,0,0.2);
+        transform: rotate(-2deg);
+        transition: transform 0.3s ease;
+        border-bottom: 6px solid #D4AF37;
+    }
+
+    .journey-step:nth-child(even) .journey-image {
+        transform: rotate(2deg);
+    }
+
+    .journey-image:hover {
+        transform: rotate(0deg) scale(1.02);
+    }
+
+    .journey-image img {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .journey-image:hover img {
+        transform: scale(1.05);
+    }
+
+    .journey-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .journey-title::before {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #D4AF37, #B8941F);
+        border-radius: 2px;
+    }
+
+    .journey-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .journey-highlights {
+        display: none;
+    }
+
+    .highlight-tag {
+        background: linear-gradient(135deg, #D4AF37, #B8941F);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    /* Brotherhood Values Circle - Interactive Design */
+    .values-circle-section {
+        padding: 150px 0;
+        background: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .values-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 4vw;
+        text-align: center;
+    }
+
+    .values-intro {
+        margin-bottom: 100px;
+    }
+
+    .values-intro h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+    }
+
+    .values-intro p {
+        font-size: 1.3rem;
+        color: #666;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .values-circle {
+        position: relative;
+        width: 600px;
+        height: 600px;
+        margin: 0 auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(184, 148, 31, 0.1));
+        border: 3px solid rgba(212, 175, 55, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .values-center {
+        width: 200px;
+        height: 200px;
+        background: linear-gradient(135deg, #D4AF37, #B8941F);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 3;
+    }
+
+    .value-item {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        border: 3px solid #D4AF37;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #333;
+        padding: 15px;
+    }
+
+    .value-item:hover {
+        transform: scale(1.1);
+        box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+        background: linear-gradient(135deg, #D4AF37, #B8941F);
+        color: white;
+    }
+
+    /* Position values around the circle */
+    .value-item:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%) translateY(-50%); }
+    .value-item:nth-child(2) { top: 25%; right: 0; transform: translateX(50%) translateY(-50%); }
+    .value-item:nth-child(3) { bottom: 25%; right: 0; transform: translateX(50%) translateY(50%); }
+    .value-item:nth-child(4) { bottom: 0; left: 50%; transform: translateX(-50%) translateY(50%); }
+    .value-item:nth-child(5) { bottom: 25%; left: 0; transform: translateX(-50%) translateY(50%); }
+    .value-item:nth-child(6) { top: 25%; left: 0; transform: translateX(-50%) translateY(-50%); }
+
+    /* Brotherhood Activities Masonry Grid */
+    .activities-section {
+        padding: 150px 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .activities-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 4vw;
+    }
+
+    .activities-header {
+        text-align: center;
+        margin-bottom: 80px;
+    }
+
+    .activities-header h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 25px;
+    }
+
+    .activities-header p {
+        font-size: 1.3rem;
+        color: #666;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .activities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        grid-auto-rows: masonry;
+    }
+
+    .activity-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .activity-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+
+    .activity-image {
+        width: 100%;
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+        border-bottom: 4px solid #D4AF37;
+        box-shadow: 0 4px 0 0 #7A0010;
+    }
+
+    .activity-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .activity-card:hover .activity-image img {
+        transform: scale(1.1);
+    }
+
+    .activity-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.6));
+        display: flex;
+        align-items: flex-end;
+        padding: 30px;
+    }
+
+    .activity-title {
+        color: white;
+        font-size: 1.4rem;
+        font-weight: 700;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .activity-content {
+        padding: 30px;
+    }
+
+    .activity-description {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .activity-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .stat {
+        text-align: center;
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #D4AF37;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Call to Action Section */
+    .cta-section {
+        text-align: center;
+        padding: 80px 0;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 30px;
+        margin-top: 100px;
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .cta-subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 40px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .cta-button {
+        padding: 15px 35px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .cta-primary {
+        background: linear-gradient(135deg, #D4AF37, #B8941F);
+        color: white;
+        box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    }
+
+    .cta-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+    }
+
+    .cta-secondary {
+        background: transparent;
+        color: #333;
+        border-color: #333;
+    }
+
+    .cta-secondary:hover {
+        background: #333;
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .journey-step {
+            flex-direction: column !important;
+            text-align: center;
+        }
+        
+        .journey-content {
+            margin: 0 !important;
+            transform: none !important;
+        }
+        
+        .journey-image {
+            margin: 30px 0;
+            transform: none !important;
+        }
+        
+        .values-circle {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .values-center {
+            width: 150px;
+            height: 150px;
+            font-size: 1.2rem;
+        }
+        
+        .value-item {
+            width: 100px;
+            height: 100px;
+            font-size: 0.8rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .activities-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .values-circle {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .values-center {
+            width: 120px;
+            height: 120px;
+            font-size: 1rem;
+        }
+        
+                 .value-item {
+             width: 80px;
+             height: 80px;
+             font-size: 0.7rem;
+             padding: 10px;
+         }
+         
+         .cta-buttons {
+             flex-direction: column;
+             align-items: center;
+         }
+    }
+    </style>
+</head>
+
+<body id="collection-60f1b2b6e4c32d6f41f71ece" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons">
+    <div id="siteWrapper" class="clearfix site-wrapper">
+      <header id="header" class="black header theme-col--primary" data-header-style="dynamic">
+        <div class="header-announcement-bar-wrapper">
+          <a href="#page" class="header-skip-link sqs-button-element--primary">
+            Skip to Content
+          </a>
+          
+          <div class="header-inner container--fluid header-mobile-layout-logo-left-nav-right header-layout-nav-right">
+            <!-- Background -->
+            <div class="header-background theme-bg--primary"></div>
+
+            <div class="header-display-desktop">
+              
+              <!-- Title and nav wrapper -->
+              <div class="header-title-nav-wrapper">
+                
+                <!-- Title -->
+                <div class="header-title">
+                  <div class="header-title-logo">
+                    <a href="index.html">
+                        <img src="../thetatauzd.org/Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
+                    </a>
+                  </div>
+                </div>
+                
+                <!-- Nav -->
+                <div class="header-nav">
+                  <div class="header-nav-wrapper">
+                    <nav class="header-nav-list">
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="rush.html">Rush</a>
+                      </div>
+                      
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="profession.html">Profession</a>
+                      </div>
+           
+                      <div class="header-nav-item header-nav-item--collection header-nav-item--active">
+                        <a href="brotherhood.html" aria-current="page">Brotherhood</a>
+                      </div>
+                      
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="service.html">Service</a>
+                      </div>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Actions -->
+              <div class="header-actions header-actions--right">
+              </div>
+
+              <!-- Burger Menu for Mobile -->
+              <div class="header-burger menu-overlay-has-visible-non-navigation-items">
+                <button class="header-burger-btn burger" data-test="header-burger">
+                  <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
+                  <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
+                  <div class="burger-box">
+                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
+                      <div class="top-bun"></div>
+                      <div class="patty"></div>
+                      <div class="bottom-bun"></div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Mobile display version -->
+            <div class="header-display-mobile">
+              <!-- Title and nav wrapper -->
+              <div class="header-title-nav-wrapper">
+                <!-- Title -->
+                <div class="header-title">
+                  <div class="header-title-logo">
+                    <a href="index.html">
+                        <img src="../thetatauzd.org/Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
+                    </a>
+                  </div>
+                </div>
+                
+                <!-- Nav -->
+                <div class="header-nav">
+                  <div class="header-nav-wrapper">
+                    <nav class="header-nav-list">
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="rush.html">Rush</a>
+                      </div>
+
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="profession.html">Profession</a>
+                      </div>
+                                            
+                      <div class="header-nav-item header-nav-item--collection header-nav-item--active">
+                        <a href="brotherhood.html" aria-current="page">Brotherhood</a>
+                      </div>
+                      
+                      <div class="header-nav-item header-nav-item--collection">
+                        <a href="service.html">Service</a>
+                      </div>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            
+              <!-- Actions -->
+              <div class="header-actions header-actions--right">
+              </div>
+
+              <!-- Burger Menu for Mobile -->
+              <div class="header-burger menu-overlay-has-visible-non-navigation-items">
+                <button class="header-burger-btn burger">
+                  <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
+                  <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
+                  <div class="burger-box">
+                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
+                      <div class="top-bun"></div>
+                      <div class="patty"></div>
+                      <div class="bottom-bun"></div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mobile Menu Navigation -->
+        <div class="header-menu header-menu--folder-list">
+          <div class="header-menu-bg theme-bg--primary"></div>
+          <div class="header-menu-nav">
+            <nav class="header-menu-nav-list">
+              <div data-folder="root" class="header-menu-nav-folder">
+                <div class="header-menu-nav-folder-content">
+                  <!-- Menu Navigation -->
+                  <div class="header-menu-nav-wrapper">
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
+                      <a href="brotherhood.html" aria-current="page">
+                        <div class="header-menu-nav-item-content">
+                          Brotherhood
+                        </div>
+                      </a>
+                    </div>
+                                        
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="profession.html">
+                        <div class="header-menu-nav-item-content">
+                          Profession
+                        </div>
+                      </a>
+                    </div>
+                    
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="service.html">
+                        <div class="header-menu-nav-item-content">
+                          Service
+                        </div>
+                      </a>
+                    </div>
+
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="rush.html">
+                        <div class="header-menu-nav-item-content">
+                          Rush
+                        </div>
+                      </a>
+                    </div>
+                    
+
+                  </div>
+                </div>
+                
+                <div class="header-menu-actions social-accounts">
+                </div>
+              </div>
+            </nav>
+            </div>
+          </div>
+        </header>
+  
+        <main id="page" class="container" role="main">
+          <article class="sections" id="sections" data-page-sections="60f1b2b6e4c32d6f41f71ecd">
+            
+            <!-- Brotherhood Header Section -->
+            <section class="page-section background-width--full-bleed section-height--small content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background black">
+              <div class="section-border">
+                <div class="section-background">
+                  <picture>
+                                    <source srcset="../thetatauzd.org/Images/BeachWeekend.webp" type="image/webp">
+                <img src="../thetatauzd.org/Images/BeachWeekend.webp" alt="Mountain Weekend Brotherhood" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high">
+                  </picture>
+                  <div class="section-background-overlay" style="opacity: 0.35;"></div>
+                </div>
+              </div>
+              
+              <div class="content-wrapper">
+                <div class="content">
+                  <div class="sqs-layout sqs-grid-12 columns-12">
+                    <div class="row sqs-row">
+                      <div class="col sqs-col-12 span-12">
+                        <div class="sqs-block html-block sqs-block-html">
+                          <div class="sqs-block-content">
+                            <div class="sqs-html-content">
+                              <h2 style="white-space:pre-wrap;"><strong>Built on lasting friendships and shared values, our brotherhood creates lifelong bonds that extend far beyond college. We support each other through challenges, celebrate successes together, and maintain connections that span generations.</strong></h2>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+  
+            <!-- Brotherhood Journey Section -->
+            <section class="brotherhood-journey">
+              <div class="content-wrapper" style="max-width: 1400px; margin: 0 auto;">
+                
+                <div class="journey-step">
+                  <div class="journey-content">
+                    <h3 class="journey-title">The Beginning: Rush</h3>
+                    <p class="journey-description">Your journey begins with our welcoming rush process, where you'll meet current brothers, attend events, and discover what makes our brotherhood special. Through conversations with brothers and other rushees, you'll find your place in our community.</p>
+                    <div class="journey-highlights">
+                      <span class="highlight-tag">Meet Brothers</span>
+                      <span class="highlight-tag">Social Events</span>
+                      <span class="highlight-tag">Brotherhood Dinners</span>
+                            </div>
+                          </div>
+                  <div class="journey-image">
+                    <picture>
+                      <source srcset="../thetatauzd.org/Images/Carowinds.webp" type="image/webp">
+                                              <picture><source srcset="../thetatauzd.org/Images/Carowinds.webp" type="image/webp"><img src="../thetatauzd.org/Images/Carowinds.webp" alt="Rush Event at Carowinds"></picture>
+                    </picture>
+                        </div>
+                      </div>
+
+                <div class="journey-step">
+                  <div class="journey-content">
+                    <h3 class="journey-title">Building Bonds: Shared Adventures</h3>
+                    <p class="journey-description">From away weekends to theme park adventures, we create unforgettable memories together. These shared experiences form the foundation of lifelong friendships and teach us the value of supporting one another through both good times and challenges.</p>
+                    <div class="journey-highlights">
+                      <span class="highlight-tag">Mountain Retreats</span>
+                      <span class="highlight-tag">Group Adventures</span>
+                      <span class="highlight-tag">Team Building</span>
+                      <span class="highlight-tag">Lifelong Memories</span>
+                                </div>
+                              </div>
+                  <div class="journey-image">
+                    <picture>
+                                      <source srcset="../thetatauzd.org/Images/MountainWeekend.webp" type="image/webp">
+                <img src="../thetatauzd.org/Images/MountainWeekend.webp" alt="Mountain Weekend Adventure">
+                    </picture>
+                          </div>
+                        </div>
+
+                <div class="journey-step">
+                  <div class="journey-content">
+                    <h3 class="journey-title">Growth Together: Academic & Personal</h3>
+                    <p class="journey-description">Our brotherhood extends beyond fun activities to meaningful support in academics and personal development. We study together, share knowledge, mentor each other, and celebrate achievements as a unified community.</p>
+                    <div class="journey-highlights">
+                      <span class="highlight-tag">Study Groups</span>
+                      <span class="highlight-tag">Peer Mentoring</span>
+                      <span class="highlight-tag">Academic Support</span>
+                      <span class="highlight-tag">Personal Growth</span>
+                    </div>
+                  </div>
+                  <div class="journey-image">
+                    <picture>
+                      <source srcset="../thetatauzd.org/Images/Carowinds.webp" type="image/webp">
+                      <img src="../thetatauzd.org/Images/Carowinds.webp" alt="Brotherhood Study Group">
+                    </picture>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+            
+            <!-- Call to Action Section -->
+            <section class="page-section white">
+              <div class="section-border">
+                <div class="section-background"></div>
+              </div>
+              
+              <div class="content-wrapper" style="padding-top: 3.3vmax; padding-bottom: 3.3vmax;">
+                <div class="content">
+                  <div class="cta-section">
+                    <h2 class="cta-title">Ready to Join Our Brotherhood?</h2>
+                    <p class="cta-subtitle">Experience the bonds of lifelong friendship, academic support, and personal growth that define our brotherhood at MIT.</p>
+                    <div class="cta-buttons">
+                      <a href="rush.html" class="cta-button cta-primary">Join Our Brotherhood</a>
+                      <a href="#footer" class="cta-button cta-secondary" onclick="scrollToSection('footer')">Contact Us</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+            
+        <!-- Footer -->
+        <footer class="footer" id="footer">
+          <div class="footer-content">
+            <div class="footer-section">
+              <h3>Theta Tau Zeta Delta</h3>
+              <p>Theta Tau Zeta Delta is the University of South Carolina's premier professional engineering fraternity, fostering leadership in profession, service, and brotherhood.</p>
+            </div>
+            
+            <div class="footer-section">
+              <h3>Contact</h3>
+              <p><strong>Regent:</strong> Grace Yaegel</p>
+              <p><strong>Vice Regent:</strong> Kelly Sullivan</p>
+              <p><strong>Rush Chairs:</strong> Verissimo (Reese) Pedra, Tarun Ramkumar</p>
+              <p><strong>Alumni Correspondent:</strong> Watts Liddle</p>
+            </div>
+            
+            <div class="footer-section">
+              <h3>Quick Links</h3>
+              <p><a href="brotherhood.html">Brotherhood</a></p>
+              <p><a href="profession.html">Profession</a></p>
+              <p><a href="service.html">Service</a></p>
+              <p><a href="rush.html">Rush</a></p>
+            </div>
+            
+            <div class="footer-section">
+              <h3>Connect</h3>
+              <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
+              <p style="margin-top: 0.5rem;">
+                <a href="https://www.instagram.com/thetatauzd/" target="_blank" aria-label="Instagram">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" role="img" aria-hidden="true" style="display:inline-block;vertical-align:middle;">
+                    <defs>
+                      <linearGradient id="igGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f58529"/>
+                        <stop offset="50%" stop-color="#dd2a7b"/>
+                        <stop offset="100%" stop-color="#8134af"/>
+                      </linearGradient>
+                    </defs>
+                    <path fill="none" d="M0 0h24v24H0z"/>
+                    <path fill="url(#igGrad)" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a5.5 5.5 0 1 1 0 11.001A5.5 5.5 0 0 1 12 7.5zm0 2a3.5 3.5 0 1 0 .001 7.001A3.5 3.5 0 0 0 12 9.5zM18 6.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
+                  </svg>
+                </a>
+              </p>
+            </div>
+          </div>
+        </footer>
+  
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.querySelector('header');
+            const mobileMenuBtn = document.querySelector('.header-burger-btn');
+            const mobileMenu = document.querySelector('.header-menu');
+
+            // Header scroll behavior
+            function updateHeaderBackground() {
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+            
+            // Initial check
+            updateHeaderBackground();
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', updateHeaderBackground);
+
+            // Mobile menu toggle
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('header-menu--active');
+                });
+            }
+        });
+        
+        // Smooth scroll function
+        window.scrollToSection = function(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+    </script>
+</body>
+</html>

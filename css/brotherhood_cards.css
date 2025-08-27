@@ -1,0 +1,210 @@
+/* Brotherhood Grid Layout Styles */
+
+/* Main container for brotherhood list */
+.user-items-list-item-container {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-gap: 30px !important;
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+  
+  /* Individual member card */
+  .list-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+  }
+  
+  .list-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Class Header Background Styles */
+.page-section.background-width--full-bleed h2 {
+    position: relative;
+    z-index: 2;
+    padding: 60px 0;
+    margin-bottom: 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Class year section backgrounds */
+  section.page-section.background-width--full-bleed {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Add background images to class headers */
+  section.page-section.background-width--full-bleed .section-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  
+  section.page-section.background-width--full-bleed .section-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1); /* Default scale */
+    transition: transform 0.5s ease; /* Smooth transition for any hover effects */
+  }
+  
+  /* Overlay for better text readability */
+  section.page-section.background-width--full-bleed .section-background:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+  }
+  
+  /* Make the header sections taller and properly aligned */
+  .page-section.background-width--full-bleed.section-height--medium {
+    min-height: 650px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Member photo container */
+  .list-item-media {
+    margin-bottom: 0 !important;
+    width: 100% !important;
+  }
+  
+  .list-item-media-inner {
+    padding-bottom: 100%; /* Maintain aspect ratio for images */
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .list-item-media-inner img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .list-item:hover .list-item-media-inner img {
+    transform: scale(1.05);
+  }
+  
+  /* Member information container */
+  .list-item-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .list-item-content__title {
+    font-size: 1.5rem !important;
+    margin-bottom: 10px !important;
+    color: #333;
+  }
+  
+  .list-item-content__description {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  /* Quote styling */
+  .list-item-content__description em {
+    display: block;
+    font-style: italic;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    color: #777;
+    font-size: 0.85rem;
+  }
+  
+  /* Section headers */
+  .page-section h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+    padding-bottom: 15px;
+  }
+  
+  .page-section h2:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #D4AF37; /* Theta Tau gold */
+  }
+  
+  /* Class year sections spacing */
+  .page-section.background-width--full-bleed {
+    padding: 60px 0 10px !important;
+  }
+  
+  .page-section.user-items-list-section {
+    padding: 20px 0 60px !important;
+  }
+  
+  /* Responsive breakpoints */
+  @media (max-width: 1100px) {
+    .user-items-list-item-container {
+      grid-template-columns: repeat(2, 1fr) !important;
+      grid-gap: 25px !important;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .user-items-list-item-container {
+      grid-template-columns: repeat(1, 1fr) !important;
+      grid-gap: 20px !important;
+    }
+    
+    .list-item-content__title {
+      font-size: 1.3rem !important;
+    }
+    
+    .page-section.background-width--full-bleed {
+      padding: 40px 0 5px !important;
+    }
+    
+    .page-section.user-items-list-section {
+      padding: 15px 0 40px !important;
+    }
+  }
+  
+  /* Animation for cards */
+  .list-item {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Add a little delay to each card for a staggered effect */
+  .list-item:nth-child(1) { animation-delay: 0.1s; }
+  .list-item:nth-child(2) { animation-delay: 0.2s; }
+  .list-item:nth-child(3) { animation-delay: 0.3s; }
+  .list-item:nth-child(4) { animation-delay: 0.4s; }
+  .list-item:nth-child(5) { animation-delay: 0.5s; }
+  .list-item:nth-child(6) { animation-delay: 0.6s; }

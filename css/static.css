@@ -1,0 +1,213 @@
+/* 
+ * static.css
+ * Additional styling for specific elements and animations
+ */
+
+/* Enhanced Header Styles */
+.header-title-nav-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* Fixed Header Transition */
+.header.theme-col--primary {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header.theme-col--primary.scrolled {
+  background-color: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Hero Section Enhancements */
+.section-height--large .content-wrapper {
+  padding-top: 60px; /* Account for fixed header */
+}
+
+/* Custom button styles */
+.sqs-block-button-element--primary {
+  background-color: #d4af37; /* Gold color matching Theta Tau */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.sqs-block-button-element--primary:hover {
+  background-color: #c4a030;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Section Background Overlays */
+.has-background .section-background-overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%);
+}
+
+/* Image Card Hover Effects */
+.image-block-outer-wrapper {
+  transition: transform 0.3s ease;
+}
+
+.image-block-outer-wrapper:hover {
+  transform: translateY(-5px);
+}
+
+/* Footer Enhancements */
+.dark-bold {
+  background-color: #212121;
+}
+
+/* Enhanced Link Styles */
+a {
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #d4af37;
+}
+
+/* Social Icon Hover Effects */
+.social-icons-style-regular .sqs-svg-icon--wrapper:hover {
+  transform: scale(1.1);
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Apply animations to specific elements */
+.page-section:not(.hero-section) {
+  animation: fadeIn 0.8s ease forwards;
+}
+
+.sqs-block-html:not(.first-block) {
+  animation: slideUp 0.6s ease forwards;
+}
+
+/* Enhanced Mobile Menu */
+.header-menu {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.header-menu-nav-item {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.menu-open .header-menu-nav-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Delay each menu item for a staggered effect */
+.menu-open .header-menu-nav-item:nth-child(1) { transition-delay: 0.1s; }
+.menu-open .header-menu-nav-item:nth-child(2) { transition-delay: 0.15s; }
+.menu-open .header-menu-nav-item:nth-child(3) { transition-delay: 0.2s; }
+.menu-open .header-menu-nav-item:nth-child(4) { transition-delay: 0.25s; }
+.menu-open .header-menu-nav-item:nth-child(5) { transition-delay: 0.3s; }
+
+/* Custom styling for the brownstone image */
+.front-house-image {
+  border-radius: 4px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced typography for welcome section */
+.welcome-section h2 {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.welcome-section p {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Custom logo treatment */
+.header-title-logo img {
+  transition: transform 0.3s ease;
+}
+
+.header-title-logo img:hover {
+  transform: scale(1.05);
+}
+
+/* Enhanced section styling */
+.page-section .content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Prevent border on focused elements */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid #d4af37;
+}
+
+/* Custom burger menu animation */
+.burger-inner .top-bun,
+.burger-inner .patty,
+.burger-inner .bottom-bun {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Enhance image card styling */
+.image-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.image-block-outer-wrapper:hover .image-card {
+  transform: translateX(5px);
+}
+
+.image-position-right .image-block-outer-wrapper:hover .image-card {
+  transform: translateX(-5px);
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 768px) {
+  .section-background img {
+    object-position: center center !important;
+  }
+  
+  .horizontal-alignment--right .content,
+  .horizontal-alignment--left .content {
+    text-align: center;
+  }
+  
+  .sqs-block-button-container {
+    text-align: center !important;
+  }
+}
+
+/* MIT specific branding colors */
+.mit-red {
+  color: #a31f34;
+}
+
+.mit-gray {
+  color: #8a8b8c;
+}
+
+.mit-background {
+  background-color: #a31f34;
+}
+
+/* Ensure sticky header works properly on iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  .header {
+    position: sticky;
+  }
+}

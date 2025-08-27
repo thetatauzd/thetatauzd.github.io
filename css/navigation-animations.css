@@ -1,0 +1,182 @@
+/* Navigation Animations and Header Behavior */
+
+/* Header base styling */
+header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: transparent;
+    transition: all 0.4s ease;
+}
+
+/* Header when scrolled */
+header.scrolled {
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+
+/* Header inner layout */
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 4vw;
+}
+
+/* Logo styling */
+.header-title-logo img {
+    height: 60px;
+    transition: transform 0.3s ease;
+}
+
+.header-title-logo img:hover {
+    transform: scale(1.05);
+}
+
+/* Navigation list */
+.header-nav-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navigation items */
+.header-nav-item {
+    margin: 0 15px;
+    height: auto !important;
+    line-height: normal !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+/* Navigation links */
+.header-nav-item a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 0 !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    vertical-align: middle !important;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+/* Yellow line animation - the amazing effect! */
+.header-nav-item a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #D4AF37; /* Theta Tau yellow */
+    transition: width 0.3s ease;
+}
+
+/* Yellow line appears on hover and active states */
+.header-nav-item a:hover::after,
+.header-nav-item--active a::after {
+    width: 100%;
+}
+
+/* Mobile menu items - same animation */
+.header-menu-nav-item a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 0 !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+    vertical-align: middle !important;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.header-menu-nav-item a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #D4AF37;
+    transition: width 0.3s ease;
+}
+
+.header-menu-nav-item a:hover::after,
+.header-menu-nav-item--active a::after {
+    width: 100%;
+}
+
+/* Ensure header stays transparent initially */
+header:not(.scrolled) {
+    background-color: transparent !important;
+}
+
+/* Smooth transitions for all header elements */
+header * {
+    transition: all 0.3s ease;
+}
+
+/* Responsive header behavior - keep navigation visible on smaller screens */
+@media (max-width: 768px) {
+    .header-display-desktop {
+        display: flex !important;
+    }
+    
+    .header-display-mobile {
+        display: none !important;
+    }
+    
+    .header-nav {
+        display: block !important;
+    }
+    
+    .header-burger {
+        display: none !important;
+    }
+    
+    /* Make navigation more compact on smaller screens */
+    .header-nav-item {
+        margin: 0 8px;
+    }
+    
+    .header-nav-item a {
+        font-size: 0.9rem;
+        padding: 6px 0 !important;
+    }
+    
+    .header-title-logo img {
+        height: 45px;
+    }
+    
+    .header-inner {
+        padding: 10px 3vw;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-nav-item {
+        margin: 0 5px;
+    }
+    
+    .header-nav-item a {
+        font-size: 0.8rem;
+        padding: 4px 0 !important;
+    }
+    
+    .header-title-logo img {
+        height: 35px;
+    }
+    
+    .header-inner {
+        padding: 8px 2vw;
+    }
+} 

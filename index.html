@@ -1,401 +1,744 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="en-US">
 <head>
-    <meta charset="utf-8">
-    <meta https-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Conor Campbell">
+    <meta charset="utf-8" />
+    <title>Theta Tau Zeta Delta – University of South Carolina</title>
+    <link rel="icon" type="image/x-icon" href="./Images/ThetaTau.png"/>
+    <link rel="canonical" href="index.html"/>
+    <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
+    <meta property="og:title" content="Theta Tau Zeta Delta – University of South Carolina"/>
+    <meta property="og:url" content="index.html"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships."/>
+    <meta property="og:image" content="./Images/ThetaTau.png"/>
+    <meta name="description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships." />
 
-    <title>Theta Tau Zeta Delta</title>
-
-    <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" type="text/css" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link href="css/landing-page.css" type="text/css" rel="stylesheet">
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MDJ12YH8QK"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-MDJ12YH8QK');
-    </script>
-
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/site.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/static.css">
+    <link rel="stylesheet" type="text/css" href="../thetatauzd.org/css/navigation-animations.css">
+    
+    <!-- Preload critical images -->
+    <link rel="preload" as="image" href="./Images/ThetaTau.png" fetchpriority="high">
+    <link rel="preload" as="image" href="./Images/Columbia3.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="./Images/Carowinds.webp" fetchpriority="medium">
+    <link rel="preload" as="image" href="./Images/service.webp" fetchpriority="medium">
+    
+    <style>
+    /* Enhanced CSS for better scroll experience */
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        overflow-x: hidden;
+    }
+    
+    /* Remove custom header styles - let navigation-animations.css handle it */
+    
+    /* Hero Section */
+    .hero-section {
+        height: 100vh;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0; /* was -2; ensure visible above body background */
+    }
+    
+    .hero-background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: heroZoom 20s ease-in-out infinite alternate;
+    }
+    
+    @keyframes heroZoom {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.1); }
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
+        z-index: 1; /* was -1 */
+    }
+    
+    .hero-content {
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        padding: 0 4vw;
+        z-index: 2; /* above overlay */
+    }
+    
+    .hero-title {
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.1;
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero-subtitle {
+        font-size: clamp(1.2rem, 3vw, 1.5rem);
+        font-weight: 300;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s ease-out 0.6s both;
+        margin-bottom: 60px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #D4AF37 0%, #B8941F 100%);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: white;
+        padding: 15px 30px;
+        border: 2px solid white;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+        background: white;
+        color: #333;
+        transform: translateY(-2px);
+    }
+    
+    /* Scroll Indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .scroll-indicator .text {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+        opacity: 0.8;
+    }
+    
+    .scroll-indicator .arrow {
+        font-size: 1.5rem;
+        animation: arrowBounce 2s infinite;
+        display: block;
+        text-align: center;
+    }
+    
+    /* Responsive fixes for scroll indicator overlap */
+    @media (max-width: 1200px) {
+        .hero-buttons {
+            margin-bottom: 120px !important;
+        }
+        
+        .scroll-indicator {
+            bottom: 35px !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .scroll-indicator {
+            bottom: 20px;
+        }
+        
+        .scroll-indicator .text {
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .scroll-indicator .arrow {
+            font-size: 1.2rem;
+        }
+        
+        .hero-buttons {
+            margin-bottom: 60px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .scroll-indicator {
+            bottom: 15px;
+        }
+        
+        .scroll-indicator .text {
+            font-size: 0.7rem;
+            margin-bottom: 6px;
+        }
+        
+        .scroll-indicator .arrow {
+            font-size: 1rem;
+        }
+        
+        .hero-buttons {
+            margin-bottom: 50px;
+        }
+    }
+    
+    @keyframes arrowBounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Content Sections */
+    .content-section {
+        padding: 100px 4vw;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .content-section:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    /* Professional Experience section background */
+    .content-section:nth-child(4) {
+        background: white;
+    }
+    
+    /* All sections after Professional Experience (Brotherhood, Service, etc.) */
+    .content-section:nth-child(n+5) {
+        background: black;
+    }
+    
+    .section-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+    
+    .section-background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .section-background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+    }
+    
+    .section-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .section-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+    
+    .section-text {
+        color: white;
+    }
+    
+    .section-text h2 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+    
+    .section-text h4 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        color: #D4AF37;
+        font-weight: 600;
+    }
+    
+    .section-text p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: white;
+        text-align: center;
+        padding: 80px 4vw;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 3rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .stat-item {
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #D4AF37;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 1.1rem;
+        opacity: 0.8;
+    }
+    
+    /* Call to Action */
+    .cta-section {
+        background: linear-gradient(135deg, #D4AF37 0%, #B8941F 100%);
+        color: white;
+        text-align: center;
+        padding: 100px 4vw;
+    }
+    
+    .cta-content h2 {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        margin-bottom: 1rem;
+    }
+    
+    .cta-content p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    /* Footer */
+    .footer {
+        background-color: #1a1a1a;
+        color: white;
+        padding: 60px 4vw 40px;
+    }
+    
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .footer-section h3 {
+        color: #D4AF37;
+        margin-bottom: 1rem;
+    }
+    
+    .footer-section a {
+        color: white;
+        text-decoration: none;
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+    
+    .footer-section a:hover {
+        opacity: 1;
+        color: #D4AF37;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .section-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .hero-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Performance optimizations */
+    .section-background {
+        content-visibility: auto;
+        contain-intrinsic-size: 1px 100vh;
+    }
+    
+    img {
+        will-change: transform;
+        backface-visibility: hidden;
+    }
+    </style>
 </head>
 
 <body>
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous"
-        src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v10.0&appId=266065965146365"
-        nonce="Suk9GvNp"></script>
-    <!-- Navigation -->
-    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
-        <div class="container topnav">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="modal" data-target="#exampleModal">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
-                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <ul id="menu" class="nav navbar-nav navbar-right" style="color:rgb(0, 0, 0);">
-                                    <li data-menuanchor="welcome">
-                                        <a href="./" style="color:rgb(0, 0, 0);">Welcome</a>
-                                    </li>
-                                    <li data-menuanchor="about">
-                                        <a href="./about" style="color:rgb(0, 0, 0);">About</a>
-                                    </li>
-                                    <!-- <li data-menuanchor="photos">
-                                        <a href="./index.html#photos" style="color:rgb(0, 0, 0);">Photos</a>
-                                    </li> -->
-                                    <li data-menuanchor="Alumni">
-                                        <a href="./Alumni" style="color:rgb(0, 0, 0);">Alumni</a>
-                                    </li>
-                                    <li data-menuanchor="rush">
-                                        <a href="./rush" style="color:rgb(0, 0, 0);">Rush</a>
-                                    </li>
-                                    <li data-menuanchor="brotherBios">
-                                        <a href="./brotherBios.html" style="color:rgb(0, 0, 0);">Active Brothers</a>
-                                    </li>
-                                    <!-- <li data-menuanchor="internal">
-                                        <a href="./internal/index-protected.html" style="color:rgb(0, 0, 0);">Internal</a>
-                                    </li> -->
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a class="navbar-brand topnav" href="./" style="color:#FFFFFF;">Theta Tau Zeta Delta</a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul id="menu" class="nav navbar-nav navbar-right" style="color:#FFFFFF;">
-                    <li data-menuanchor="welcome">
-                        <a href="./" style="color:#FFFFFF;">Welcome</a>
-                    </li>
-                    <li data-menuanchor="about">
-                        <a href="./about" style="color:#FFFFFF;">About</a>
-                    </li>
-                    <!-- <li data-menuanchor="photos">
-                        <a href="../index.html#photos" style="color:#FFFFFF;">Photos</a>
-                    </li> -->
-                    <li data-menuanchor="Alumni">
-                        <a href="./Alumni" style="color:#FFFFFF;">Alumni</a>
-                    </li>
-                    <li data-menuanchor="rush">
-                        <a href="./rush" style="color:#FFFFFF;">Rush</a>
-                    </li>
-                    <li data-menuanchor="rush">
-                        <a href="./brotherBios.html" style="color:#FFFFFF;">Active Brothers</a>
-                    </li>
-                    <!-- <li data-menuanchor="admin">
-                        <a href="./internal/index-protected.html" style="color:#FFFFFF;">Internal</a>
-                    </li> -->
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-
-    <div id="fullpage">
+    <div id="siteWrapper" class="clearfix site-wrapper">
         <!-- Header -->
-        <a name="landing"></a>
-        <div class="section">
-            <div class="intro-header">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="intro-message">
-                                <h1>Theta Tau Zeta Delta</h1>
-                                <h2>Professional Engineering Fraternity</h2>
-                                <h4>University of South Carolina-Columbia</h4>
-                                <hr class="intro-divider">
-                                <ul class="list-inline intro-social-buttons">
-                                    <!-- <li>
-                                        <a href="https://twitter.com/thetatauzd?lang=en" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-                                    </li>
-                                    <li>
-                                        <a href="https://www.instagram.com/thetatauzd/?hl=en" class="btn btn-default btn-lg"><i class="fa fa-instagram fa-fw"></i> <span class="network-name">Instagram</span></a>
-                                    </li>
-                                    <li>
-                                        <a href="https://www.facebook.com/ThetaTauZetaDelta/" class="btn btn-default btn-lg"><i class="fa fa-facebook fa-fw"></i> <span class="network-name">Facebook</span></a>
-                                    </li> -->
-                                </ul>
+        <header id="header" class="black header theme-col--primary" data-header-style="dynamic">
+            <div class="header-announcement-bar-wrapper">
+                <a href="#page" class="header-skip-link sqs-button-element--primary">
+                    Skip to Content
+                </a>
+                
+                <div class="header-inner container--fluid header-mobile-layout-logo-left-nav-right header-layout-nav-right">
+                    <div class="header-background theme-bg--primary"></div>
+
+                    <div class="header-display-desktop">
+                        <div class="header-title-nav-wrapper">
+                            <div class="header-title">
+                                <div class="header-title-logo">
+                                    <a href="index.html">
+                                        <img src="./Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block">
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="header-nav">
+                                <div class="header-nav-wrapper">
+                                    <nav class="header-nav-list">
+                                        <div class="header-nav-item header-nav-item--collection">
+                                            <a href="rush.html">Rush</a>
+                                        </div>
+                                        <div class="header-nav-item header-nav-item--collection">
+                                            <a href="profession.html">Profession</a>
+                                        </div>
+                                        <div class="header-nav-item header-nav-item--collection">
+                                            <a href="brotherhood.html">Brotherhood</a>
+                                        </div>
+                                        <div class="header-nav-item header-nav-item--collection">
+                                            <a href="service.html">Service</a>
+                                        </div>
+                                    </nav>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                </div>
-                <!-- /.container -->
-
-
-                <!-- /.intro-header -->
-            </div>
-
-            <!-- Page Content -->
-            <div class="section">
-                <a name="welcome"></a>
-                <div class="content-section-a">
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-5 col-sm-6">
-                                <img class="img-responsive" src="Images/TTlogo.jpg">
-                                <hr class="section-heading-spacer">
-                                <div class="clearfix"></div>
-                                <p class="lead">Welcome to the official site of the University of South Carolina's
-                                    chapter of
-                                    Theta Tau! Theta Tau has become the oldest and largest Fraternity for Engineers,
-                                    with chapters
-                                    across the country, and members around the world. Our mission is to develop
-                                    engineering leaders
-                                    for <b>Service</b>, <b>Profession</b>, and <b>Brotherhood</b>. </p>
-                            </div>
-                          <div class="col-lg-5 col-lg-offset-2 col-sm-6 ">
-                                <video width="100%" height="auto" controls>
-                                    <source src="https://thetatauzd.org/Images/Video.mp4" type="video/mp4"> Your browser does not support the
-                                    video tag.
-                                </video>
-                            </div>
-
-                        </div>
-
-                    </div>
-                    <!-- /.container -->
-
-                </div>
-                <!-- /.content-section-a -->
-            </div>
-
-
-            <div class="section">
-                <a name="about"></a>
-                <div class="content-section-b">
-
-                    <div class="container">
-
-                        <div class="row">
-                            <div class="col-lg-5 col-sm-6">
-                                <b>
-                                    <h1 style="text-align: center;">About Theta Tau</h1>
-                                </b>
-                                <br>
-                                <p class="lead">
-                                    Since its founding at the University of Minnesota in 1904, over 40,000 have been
-                                    initiated over the years. With emphasis
-                                    on quality and a strong fraternal bond, the Fraternity has chapters only at ABET
-                                    accredited
-                                    schools and limits the number of student members in any one of its chapters
-                                    across the nation.
-                                    <br><br><b>Purpose</b><br> The purpose of Theta Tau is to develop and maintain a
-                                    high standard
-                                    of professional interest among its members, and to unite them in a strong bond
-                                    of fraternal
-                                    fellowship.
-                                </p>
-                            </div>
-                            <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                                <p><img class="img-responsive" src="Images/TTlogo2.jpg"></p>
-                                <p class="lead"><br>
-                                    <i>"Whatsoever thy hand findeth to do, do it with thy might."<br>
-                                        <b>~Ecclesiastes 9:10</b></i>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                    <!-- /.container -->
-
-                </div>
-                <!-- /.banner -->
-                <div class="section">
-                    <a name="about"></a>
-                    <div class="content-section-a">
-
-                        <div class="container">
-
-                            <div class="row">
-                                <div class="col-lg-5 col-sm-6">
-
-                                    <div class="fb-post"
-                                        data-href="https://www.facebook.com/ThetaTauZetaDelta/posts/4668844373132404"
-                                        data-width="450" data-show-text="false">
-                                        <blockquote
-                                            cite="https://www.facebook.com/ThetaTauZetaDelta/posts/4668844373132404"
-                                            class="fb-xfbml-parse-ignore">Posted by <a
-                                                href="https://www.facebook.com/ThetaTauZetaDelta/">Theta Tau -
-                                                Zeta Delta</a> on&nbsp;<a
-                                                href="https://www.facebook.com/ThetaTauZetaDelta/posts/4668844373132404">Sunday,
-                                                March 28, 2021</a>
-                                        </blockquote>
+                        
+                        <div class="header-actions header-actions--right"></div>
+                        
+                        <div class="header-burger menu-overlay-has-visible-non-navigation-items">
+                            <button class="header-burger-btn burger" data-test="header-burger">
+                                <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
+                                <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
+                                <div class="burger-box">
+                                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
+                                        <div class="top-bun"></div>
+                                        <div class="patty"></div>
+                                        <div class="bottom-bun"></div>
                                     </div>
                                 </div>
-                                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-                                    <center>
-                                        <blockquote class="instagram-media"
-                                            data-instgrm-permalink="https://www.instagram.com/p/COG1u9ZhseQ/?utm_source=ig_embed&amp;utm_campaign=loading"
-                                            data-instgrm-version="13"
-                                            style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:350px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);">
-                                            <div style="padding:16px;"> <a
-                                                    href="https://www.instagram.com/p/COG1u9ZhseQ/?utm_source=ig_embed&amp;utm_campaign=loading"
-                                                    style=" background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;"
-                                                    target="_blank">
-                                                    <div style=" display: flex; flex-direction: row; align-items: center;">
-                                                        <div
-                                                            style="background-color: #F4F4F4; border-radius: 50%; flex-grow: 0; height: 40px; margin-right: 14px; width: 40px;">
-                                                        </div>
-                                                        <div style="display: flex; flex-direction: column; flex-grow: 1; justify-content: center;">
-                                                            <div
-                                                                style=" background-color: #F4F4F4; border-radius: 4px; flex-grow: 0; height: 14px; margin-bottom: 6px; width: 100px;">
-                                                            </div>
-                                                            <div
-                                                                style=" background-color: #F4F4F4; border-radius: 4px; flex-grow: 0; height: 14px; width: 60px;">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div style="padding: 19% 0;"></div>
-                                                    <div style="display:block; height:50px; margin:0 auto 12px; width:50px;"><svg width="50px" height="50px"
-                                                            viewBox="0 0 60 60" version="1.1" xmlns="https://www.w3.org/2000/svg"
-                                                            xmlns:xlink="https://www.w3.org/1999/xlink">
-                                                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                                <g transform="translate(-511.000000, -20.000000)" fill="#000000">
-                                                                    <g>
-                                                                        <path
-                                                                            d="M556.869,30.41 C554.814,30.41 553.148,32.076 553.148,34.131 C553.148,36.186 554.814,37.852 556.869,37.852 C558.924,37.852 560.59,36.186 560.59,34.131 C560.59,32.076 558.924,30.41 556.869,30.41 M541,60.657 C535.114,60.657 530.342,55.887 530.342,50 C530.342,44.114 535.114,39.342 541,39.342 C546.887,39.342 551.658,44.114 551.658,50 C551.658,55.887 546.887,60.657 541,60.657 M541,33.886 C532.1,33.886 524.886,41.1 524.886,50 C524.886,58.899 532.1,66.113 541,66.113 C549.9,66.113 557.115,58.899 557.115,50 C557.115,41.1 549.9,33.886 541,33.886 M565.378,62.101 C565.244,65.022 564.756,66.606 564.346,67.663 C563.803,69.06 563.154,70.057 562.106,71.106 C561.058,72.155 560.06,72.803 558.662,73.347 C557.607,73.757 556.021,74.244 553.102,74.378 C549.944,74.521 548.997,74.552 541,74.552 C533.003,74.552 532.056,74.521 528.898,74.378 C525.979,74.244 524.393,73.757 523.338,73.347 C521.94,72.803 520.942,72.155 519.894,71.106 C518.846,70.057 518.197,69.06 517.654,67.663 C517.244,66.606 516.755,65.022 516.623,62.101 C516.479,58.943 516.448,57.996 516.448,50 C516.448,42.003 516.479,41.056 516.623,37.899 C516.755,34.978 517.244,33.391 517.654,32.338 C518.197,30.938 518.846,29.942 519.894,28.894 C520.942,27.846 521.94,27.196 523.338,26.654 C524.393,26.244 525.979,25.756 528.898,25.623 C532.057,25.479 533.004,25.448 541,25.448 C548.997,25.448 549.943,25.479 553.102,25.623 C556.021,25.756 557.607,26.244 558.662,26.654 C560.06,27.196 561.058,27.846 562.106,28.894 C563.154,29.942 563.803,30.938 564.346,32.338 C564.756,33.391 565.244,34.978 565.378,37.899 C565.522,41.056 565.552,42.003 565.552,50 C565.552,57.996 565.522,58.943 565.378,62.101 M570.82,37.631 C570.674,34.438 570.167,32.258 569.425,30.349 C568.659,28.377 567.633,26.702 565.965,25.035 C564.297,23.368 562.623,22.342 560.652,21.575 C558.743,20.834 556.562,20.326 553.369,20.18 C550.169,20.033 549.148,20 541,20 C532.853,20 531.831,20.033 528.631,20.18 C525.438,20.326 523.257,20.834 521.349,21.575 C519.376,22.342 517.703,23.368 516.035,25.035 C514.368,26.702 513.342,28.377 512.574,30.349 C511.834,32.258 511.326,34.438 511.181,37.631 C511.035,40.831 511,41.851 511,50 C511,58.147 511.035,59.17 511.181,62.369 C511.326,65.562 511.834,67.743 512.574,69.651 C513.342,71.625 514.368,73.296 516.035,74.965 C517.703,76.634 519.376,77.658 521.349,78.425 C523.257,79.167 525.438,79.673 528.631,79.82 C531.831,79.965 532.853,80.001 541,80.001 C549.148,80.001 550.169,79.965 553.369,79.82 C556.562,79.673 558.743,79.167 560.652,78.425 C562.623,77.658 564.297,76.634 565.965,74.965 C567.633,73.296 568.659,71.625 569.425,69.651 C570.167,67.743 570.674,65.562 570.82,62.369 C570.966,59.17 571,58.147 571,50 C571,41.851 570.966,40.831 570.82,37.631">
-                                                                        </path>
-                                                                    </g>
-                                                                </g>
-                                                            </g>
-                                                        </svg></div>
-                                                    <div style="padding-top: 8px;">
-                                                        <div
-                                                            style=" color:#3897f0; font-family:Arial,sans-serif; font-size:14px; font-style:normal; font-weight:550; line-height:18px;">
-                                                            View this post on Instagram</div>
-                                                    </div>
-                                                    <div style="padding: 12.5% 0;"></div>
-                                                    <div style="display: flex; flex-direction: row; margin-bottom: 14px; align-items: center;">
-                                                        <div>
-                                                            <div
-                                                                style="background-color: #F4F4F4; border-radius: 50%; height: 12.5px; width: 12.5px; transform: translateX(0px) translateY(7px);">
-                                                            </div>
-                                                            <div
-                                                                style="background-color: #F4F4F4; height: 12.5px; transform: rotate(-45deg) translateX(3px) translateY(1px); width: 12.5px; flex-grow: 0; margin-right: 14px; margin-left: 2px;">
-                                                            </div>
-                                                            <div
-                                                                style="background-color: #F4F4F4; border-radius: 50%; height: 12.5px; width: 12.5px; transform: translateX(9px) translateY(-18px);">
-                                                            </div>
-                                                        </div>
-                                                        <div style="margin-left: 8px;">
-                                                            <div
-                                                                style=" background-color: #F4F4F4; border-radius: 50%; flex-grow: 0; height: 20px; width: 20px;">
-                                                            </div>
-                                                            <div
-                                                                style=" width: 0; height: 0; border-top: 2px solid transparent; border-left: 6px solid #f4f4f4; border-bottom: 2px solid transparent; transform: translateX(16px) translateY(-4px) rotate(30deg)">
-                                                            </div>
-                                                        </div>
-                                                        <div style="margin-left: auto;">
-                                                            <div
-                                                                style=" width: 0px; border-top: 8px solid #F4F4F4; border-right: 8px solid transparent; transform: translateY(16px);">
-                                                            </div>
-                                                            <div
-                                                                style=" background-color: #F4F4F4; flex-grow: 0; height: 12px; width: 16px; transform: translateY(-4px);">
-                                                            </div>
-                                                            <div
-                                                                style=" width: 0; height: 0; border-top: 8px solid #F4F4F4; border-left: 8px solid transparent; transform: translateY(-4px) translateX(8px);">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        style="display: flex; flex-direction: column; flex-grow: 1; justify-content: center; margin-bottom: 24px;">
-                                                        <div
-                                                            style=" background-color: #F4F4F4; border-radius: 4px; flex-grow: 0; height: 14px; margin-bottom: 6px; width: 224px;">
-                                                        </div>
-                                                        <div
-                                                            style=" background-color: #F4F4F4; border-radius: 4px; flex-grow: 0; height: 14px; width: 144px;">
-                                                        </div>
-                                                    </div>
-                                                </a>
-                                                <p
-                                                    style=" color:#c9c8cd; font-family:Arial,sans-serif; font-size:14px; line-height:17px; margin-bottom:0; margin-top:8px; overflow:hidden; padding:8px 0 7px; text-align:center; text-overflow:ellipsis; white-space:nowrap;">
-                                                    <a href="https://www.instagram.com/p/COG1u9ZhseQ/?utm_source=ig_embed&amp;utm_campaign=loading"
-                                                        style=" color:#c9c8cd; font-family:Arial,sans-serif; font-size:14px; font-style:normal; font-weight:normal; line-height:17px; text-decoration:none;"
-                                                        target="_blank">A post shared by Theta Tau - Zeta Delta (@thetatauzd)</a></p>
-                                            </div>
-                                        </blockquote>
-                                        <script async src="//www.instagram.com/embed.js"></script>
-                                    </center>
-                                </div>
-                            </div>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <!-- Footer -->
-                <footer>
-                    <div class="container" style="text-align:center">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <p class="copyright text-muted small">Copyright &copy; Theta Tau Zeta Delta <span
-                                        id="year">year</span>. All Rights Reserved</p>
-                            </div>
+            </div>
+        </header>
+
+        <main id="page" class="container" role="main">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-background">
+                    <img src="./Images/Swearingen.webp" alt="University of South Carolina Campus" loading="eager">
+                </div>
+                <div class="hero-overlay"></div>
+                
+                <div class="hero-content">
+                    <h1 class="hero-title" style="font-family: 'Times New Roman', serif; font-size: 12rem; margin-bottom: -3rem;">ΘΤ</h1>
+                    <h1 class="hero-title" style="font-family: 'Times New Roman', serif; font-size: 12rem; margin-bottom: 1rem;">ΖΔ</h1>
+                    <p class="hero-subtitle">Fostering leadership in profession, brotherhood, and service at the University of South Carolina</p>
+                    <div class="hero-buttons">
+                        <a href="rush.html" class="btn-primary">Rush Theta Tau</a>
+                        <a href="#about" class="btn-secondary">Learn More</a>
+                    </div>
+                </div>
+                
+                <div class="scroll-indicator" onclick="scrollToSection('about')">
+                    <div class="text">Scroll to explore</div>
+                    <div class="arrow">↓</div>
+                </div>
+            </section>
+
+            <!-- About Section -->
+            <section id="about" class="content-section">
+                <div class="section-content">
+                    <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+                        <h2>Welcome to Theta Tau Zeta Delta</h2>
+                        <p>We are the University of South Carolina's premier professional engineering fraternity, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profession Section -->
+            <section class="content-section">
+                <div class="section-background">
+                    <img src="./Images/Columbia3.webp" alt="Professional Development" loading="lazy">
+                    <div class="section-background-overlay"></div>
+                </div>
+                <div class="section-content">
+                    <div class="section-grid">
+                        <div></div>
+                        <div class="section-text">
+                            <h4>Professional Excellence</h4>
+                            <h2>Get Ahead in Your Career</h2>
+                            <p>Connect with our network of accomplished alumni working at top companies and startups. Gain mentorship, internship opportunities, and career guidance from brothers who've walked your path.</p>
+                            <a href="profession.html" class="btn-primary">Explore Profession</a>
                         </div>
                     </div>
-                </footer>
+                </div>
+            </section>
+
+            <!-- Brotherhood Section -->
+            <section class="content-section">
+                <div class="section-background">
+                    <img src="./Images/Carowinds.webp" alt="Brotherhood Activities" loading="lazy">
+                    <div class="section-background-overlay"></div>
+                </div>
+                <div class="section-content">
+                    <div class="section-grid">
+                        <div class="section-text">
+                            <h4>Lifelong Relationships</h4>
+                            <h2>Build Lasting Friendships</h2>
+                            <p>From social events and away weekends to study groups and philantropic events, our brotherhood creates memories that last a lifetime. Join a community that supports you through every challenge.</p>
+                            <a href="brotherhood.html" class="btn-primary">Join Brotherhood</a>
+                        </div>
+                        <div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Service Section -->
+            <section class="content-section">
+                <div class="section-background">
+                    <img src="./Images/service.webp" alt="Community Service" loading="lazy">
+                    <div class="section-background-overlay"></div>
+                </div>
+                <div class="section-content">
+                    <div class="section-grid">
+                        <div></div>
+                        <div class="section-text">
+                            <h4>Service Impact</h4>
+                            <h2>Make a Difference</h2>
+                            <p>Give back to your community through service projects, mentorship programs, and campus involvement. Our brothers are leaders in making positive change both at the University of South Carolina and beyond.</p>
+                            <a href="service.html" class="btn-primary">Learn About Service</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="stats-section">
+                <div class="section-content">
+                    <h2 style="margin-bottom: 3rem; font-size: clamp(2rem, 5vw, 3rem);">Our Impact</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Brothers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">3000+</div>
+                            <div class="stat-label">Lives Impacted</div>
+                            <div class="stat-label">Through Service</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">14</div>
+                            <div class="stat-label">Years at USC</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">900+</div>
+                            <div class="stat-label">Service Hours</div>
+                            <div class="stat-label">Per Semester</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Call to Action -->
+            <section class="cta-section">
+                <div class="cta-content">
+                    <h2>Ready to Join Our Brotherhood?</h2>
+                    <p>Take the first step towards lifelong friendships, professional growth, and meaningful service.</p>
+                    <div class="hero-buttons">
+                        <a href="rush.html" class="btn-secondary">Rush Theta Tau</a>
+                        <a href="#footer" class="btn-secondary" onclick="scrollToSection('footer')">Contact Us</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" id="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Theta Tau Zeta Delta</h3>
+                    <p>Theta Tau Zeta Delta is the University of South Carolina's premier professional engineering fraternity, fostering leadership in profession, service, and brotherhood.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p><strong>Regent:</strong> Grace Yaegel</p>
+                    <p><strong>Vice Regent:</strong> Kelly Sullivan</p>
+                    <p><strong>Rush Chairs:</strong> Verissimo (Reese) Pedra, Tarun Ramkumar</p>
+                    <p><strong>Alumni Correspondent:</strong> Watts Liddle</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <p><a href="brotherhood.html">Brotherhood</a></p>
+                    <p><a href="profession.html">Profession</a></p>
+                    <p><a href="service.html">Service</a></p>
+                    <p><a href="rush.html">Rush</a></p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Connect</h3>
+                    <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
+                    <p style="margin-top: 0.5rem;">
+                        <a href="https://www.instagram.com/thetatauzd/" target="_blank" aria-label="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" role="img" aria-hidden="true" style="display:inline-block;vertical-align:middle;">
+                                <defs>
+                                    <linearGradient id="igGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#f58529"/>
+                                        <stop offset="50%" stop-color="#dd2a7b"/>
+                                        <stop offset="100%" stop-color="#8134af"/>
+                                    </linearGradient>
+                                </defs>
+                                <path fill="none" d="M0 0h24v24H0z"/>
+                                <path fill="url(#igGrad)" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a5.5 5.5 0 1 1 0 11.001A5.5 5.5 0 0 1 12 7.5zm0 2a3.5 3.5 0 1 0 .001 7.001A3.5 3.5 0 0 0 12 9.5zM18 6.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
+                            </svg>
+                        </a>
+                    </p>
+                </div>
             </div>
-        </div>
+        </footer>
     </div>
-
-<!-- The core Firebase JS SDK is always required and must be listed first -->
-<script src="/__/firebase/8.7.1/firebase-app.js"></script>
-
-<!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-
-<!-- Initialize Firebase -->
-<script src="/__/firebase/init.js"></script>
-
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Header scroll effect
+            const header = document.querySelector('header');
+            
+            function updateHeader() {
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+            
+            window.addEventListener('scroll', updateHeader);
+            updateHeader(); // Initial check
+            
+            // Smooth scroll function
+            window.scrollToSection = function(sectionId) {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+            
+            // Intersection Observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -10px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all sections for animation
+            document.querySelectorAll('.content-section, .stats-section, .cta-section').forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(section);
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.header-burger-btn');
+            const mobileMenu = document.querySelector('.header-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('active');
+                    document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+                });
+            }
+        });
+    </script>
 </body>
-
 </html>
-<!--
-     FILE ARCHIVED ON 14:01:01 Jul 04, 2020 AND RETRIEVED FROM THE
-     INTERNET ARCHIVE ON 18:13:00 Mar 07, 2021.
-     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
-
-     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
-     SECTION 108(a)(3)).
--->
-<!--
-playback timings (ms):
-  load_resource: 72.243
-  RedisCDXSource: 1.917
-  exclusion.robots: 0.391
-  LoadShardBlock: 80.558 (3)
-  PetaboxLoader3.resolve: 45.516
-  exclusion.robots.policy: 0.373
-  PetaboxLoader3.datanode: 83.707 (4)
-  esindex: 0.057
-  captures_list: 106.482
-  CDXLines.iter: 19.588 (3)
--->

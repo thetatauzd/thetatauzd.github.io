@@ -1,5 +1,23 @@
 {
+  "name": "thetatauzd-website",
+  "version": "1.0.0",
+  "description": "Theta Tau Zeta Delta - University of South Carolina Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node dev.js",
+    "serve": "npx http-server -p 8080 -o",
+    "serve-8080": "PORT=8080 node server.js",
+    "open": "echo 'Server will auto-open browser when started'",
+    "start-open": "node server.js"
+  },
+  "keywords": ["theta-tau", "fraternity", "usc", "university-of-south-carolina"],
+  "author": "Theta Tau Zeta Delta",
+  "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5"
+    "http-server": "^14.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
-}
+} 
