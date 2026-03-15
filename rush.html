@@ -289,23 +289,25 @@
 
     /* Mobile adjustments for profession section */
     @media (max-width: 768px) {
-        /* Target the profession section specifically */
-        .page-section:nth-of-type(3) {
-            padding-top: 0 !important;
+        /* Let the profession section grow to fit its text instead of clipping */
+        .section-height--medium-small {
+            min-height: auto !important;
+            height: auto !important;
+            padding: 60px 0 !important;
         }
-        
+
         .page-section:nth-of-type(3) .content-wrapper {
             padding-top: 1rem !important;
-            padding-bottom: 0 !important;
+            padding-bottom: 1rem !important;
         }
         
         .page-section:nth-of-type(3) .sqs-html-content {
-            margin-top: -3rem !important;
+            margin-top: 0 !important;
         }
         
         .page-section:nth-of-type(3) h2 {
             margin-top: 0 !important;
-            font-size: 2.5rem !important;
+            font-size: 2rem !important;
         }
         
         .page-section:nth-of-type(3) p {
@@ -692,16 +694,9 @@
         updateHeaderBackground();
         window.addEventListener('scroll', updateHeaderBackground);
 
-        var mobileMenuBtn = document.querySelector('.header-burger-btn');
-        var mobileMenu = document.querySelector('.header-menu');
-        if (mobileMenuBtn && mobileMenu) {
-          mobileMenuBtn.addEventListener('click', function() {
-            mobileMenu.classList.toggle('menu-open');
-            document.body.classList.toggle('menu-is-open');
-          });
-        }
       });
     </script>
+    <script src="./js/nav.js"></script>
 </head>
 
 <body id="collection-60f39ee3ec5ad00cc0939b34" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons page-rush">
@@ -850,48 +845,28 @@
                 <div class="header-menu-nav-folder-content">
                   <!-- Menu Navigation -->
                   <div class="header-menu-nav-wrapper">
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="index.html"><div class="header-menu-nav-item-content">Home</div></a>
+                    </div>
                     <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
-                      <a href="rush.html" aria-current="page">
-                        <div class="header-menu-nav-item-content">
-                          Rush
-                        </div>
-                      </a>
+                      <a href="rush.html" aria-current="page"><div class="header-menu-nav-item-content">Rush</div></a>
                     </div>
-                    
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="brotherhood.html">
-                        <div class="header-menu-nav-item-content">
-                          Brotherhood
-                        </div>
-                      </a>
+                      <a href="profession.html"><div class="header-menu-nav-item-content">Profession</div></a>
                     </div>
-                                        
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="profession.html">
-                        <div class="header-menu-nav-item-content">
-                          Profession
-                        </div>
-                      </a>
+                      <a href="brotherhood.html"><div class="header-menu-nav-item-content">Brotherhood</div></a>
                     </div>
-
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="service.html">
-                        <div class="header-menu-nav-item-content">
-                          Service
-                        </div>
-                      </a>
+                      <a href="service.html"><div class="header-menu-nav-item-content">Service</div></a>
+                    </div>
+                    <div class="container header-menu-nav-item">
+                      <a href="portal/index.html" style="color:#FFCC33;"><div class="header-menu-nav-item-content" style="color:#FFCC33;">Brother Portal</div></a>
                     </div>
                   </div>
                 </div>
                 
                 <div class="header-menu-actions social-accounts">
-                  <div class="header-menu-actions-action header-menu-actions-action--social mobile">
-                    <a class="icon icon--lg icon--fill header-icon header-icon-border-shape-none header-icon-border-style-outline" href="https://www.instagram.com/thetatauzd/" target="_blank" aria-label="Instagram">
-                      <svg viewBox="23 23 64 64">
-                        <path d="M46.91,25.816c-0.073-1.597-0.326-2.687-0.697-3.641c-0.383-0.986-0.896-1.823-1.73-2.657c-0.834-0.834-1.67-1.347-2.657-1.73c-0.954-0.371-2.045-0.624-3.641-0.697C36.585,17.017,36.074,17,32,17s-4.585,0.017-6.184,0.09c-1.597,0.073-2.687,0.326-3.641,0.697c-0.986,0.383-1.823,0.896-2.657,1.73c-0.834,0.834-1.347,1.67-1.73,2.657c-0.371,0.954-0.624,2.045-0.697,3.641C17.017,27.415,17,27.926,17,32c0,4.074,0.017,4.585,0.09,6.184c0.073,1.597,0.326,2.687,0.697,3.641c0.383,0.986,0.896,1.823,1.73,2.657c0.834,0.834,1.67,1.347,2.657,1.73c0.954,0.371,2.045,0.624,3.641,0.697C27.415,46.983,27.926,47,32,47s4.585-0.017,6.184-0.09c1.597-0.073,2.687-0.326,3.641-0.697c0.986-0.383,1.823-0.896,2.657-1.73c0.834-0.834,1.347-1.67,1.73-2.657c0.371-0.954,0.624-2.045,0.697-3.641C46.983,36.585,47,36.074,47,32S46.983,27.415,46.91,25.816z M44.21,38.061c-0.067,1.462-0.311,2.257-0.516,2.785c-0.272,0.7-0.597,1.2-1.122,1.725c-0.525,0.525-1.025,0.85-1.725,1.122c-0.529,0.205-1.323,0.45-2.785,0.516c-1.581,0.072-2.056,0.087-6.061,0.087s-4.48-0.015-6.061-0.087c-1.462-0.067-2.257-0.311-2.785-0.516c-0.7-0.272-1.2-0.597-1.725-1.122c-0.525-0.525-0.85-1.025-1.122-1.725c-0.205-0.529-0.45-1.323-0.516-2.785c-0.072-1.582-0.087-2.056-0.087-6.061s0.015-4.48,0.087-6.061c0.067-1.462,0.311-2.257,0.516-2.785c0.272-0.7,0.597-1.2,1.122-1.725c0.525-0.525,1.025-0.85,1.725-1.122c0.529-0.205,1.323-0.45,2.785-0.516c1.582-0.072,2.056-0.087,6.061-0.087s4.48,0.015,6.061,0.087c1.462,0.067,2.257,0.311,2.785,0.516c0.7,0.272,1.2,0.597,1.725,1.122c0.525,0.525,0.85,1.025,1.122,1.725c0.205,0.529,0.45,1.323,0.516,2.785c0.072,1.582,0.087,2.056,0.087,6.061S44.282,36.48,44.21,38.061z M32,24.297c-4.254,0-7.703,3.449-7.703,7.703c0,4.254,3.449,7.703,7.703,7.703c4.254,0,7.703-3.449,7.703-7.703C39.703,27.746,36.254,24.297,32,24.297z M32,37c-2.761,0-5-2.239-5-5c0-2.761,2.239-5,5-5s5,2.239,5,5C37,34.761,34.761,37,32,37z M40.007,22.193c-0.994,0-1.8,0.806-1.8,1.8c0,0.994,0.806,1.8,1.8,1.8c0.994,0,1.8-0.806,1.8-1.8C41.807,22.999,41.001,22.193,40.007,22.193z"/>
-                      </svg>
-                    </a>
-                  </div>
                 </div>
               </div>
             </nav>

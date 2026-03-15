@@ -125,58 +125,85 @@ header * {
     transition: all 0.3s ease;
 }
 
-/* Responsive header behavior - keep navigation visible on smaller screens */
+/* ── Mobile: swap desktop nav for hamburger ─────────────────────────── */
 @media (max-width: 768px) {
     .header-display-desktop {
         display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
     }
-    
+
     .header-display-mobile {
         display: none !important;
     }
-    
+
     .header-nav {
-        display: block !important;
-    }
-    
-    .header-burger {
         display: none !important;
     }
-    
-    /* Make navigation more compact on smaller screens */
-    .header-nav-item {
-        margin: 0 8px;
+
+    .header-actions {
+        display: none !important;
     }
-    
-    .header-nav-item a {
-        font-size: 0.9rem;
-        padding: 6px 0 !important;
+
+    .header-burger {
+        display: flex !important;
+        align-items: center;
+        margin-left: auto;
     }
-    
+
     .header-title-logo img {
         height: 45px;
     }
-    
+
     .header-inner {
         padding: 10px 3vw;
     }
 }
 
 @media (max-width: 480px) {
-    .header-nav-item {
-        margin: 0 5px;
-    }
-    
-    .header-nav-item a {
-        font-size: 0.8rem;
-        padding: 4px 0 !important;
-    }
-    
     .header-title-logo img {
         height: 35px;
     }
-    
+
     .header-inner {
         padding: 8px 2vw;
     }
-} 
+}
+
+/* Full-screen mobile menu when open */
+.header-menu.menu-open {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: menuFadeIn 0.25s ease-out;
+}
+
+.header-menu.menu-open .header-menu-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.header-menu.menu-open .header-menu-nav-item {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.header-menu.menu-open .header-menu-nav-item-content {
+    font-size: 1.6rem;
+    color: #fff;
+}
+
+.header-menu.menu-open .header-menu-nav-item a:hover .header-menu-nav-item-content {
+    color: #FFCC33;
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}

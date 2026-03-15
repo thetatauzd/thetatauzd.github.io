@@ -515,64 +515,8 @@
               </div>
             </div>
             
-            <!-- Mobile display version -->
-            <div class="header-display-mobile">
-              <!-- Title and nav wrapper -->
-              <div class="header-title-nav-wrapper">
-                <!-- Title -->
-                <div class="header-title">
-                  <div class="header-title-logo">
-                    <a href="index.html">
-                      <img src="./Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
-                    </a>
-                  </div>
-                </div>
-                
-                <!-- Nav -->
-                <div class="header-nav">
-                  <div class="header-nav-wrapper">
-                    <nav class="header-nav-list">
-                      <div class="header-nav-item header-nav-item--collection">
-                        <a href="rush.html">Rush</a>
-                      </div>
-
-                      <div class="header-nav-item header-nav-item--collection header-nav-item--active">
-                        <a href="profession.html" aria-current="page">Profession</a>
-                      </div>
-                                            
-                      <div class="header-nav-item header-nav-item--collection">
-                        <a href="brotherhood.html">Brotherhood</a>
-                      </div>
-                      
-                      <div class="header-nav-item header-nav-item--collection">
-                        <a href="service.html">Service</a>
-                      </div>
-                      <div class="header-nav-item header-nav-item--push-right">
-                        <a href="portal/index.html" style="color:#FFCC33; font-weight:600;">Brother Portal</a>
-                      </div>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            
-              <!-- Actions -->
-              <div class="header-actions header-actions--right"></div>
-
-              <!-- Burger Menu for Mobile -->
-              <div class="header-burger menu-overlay-has-visible-non-navigation-items">
-                <button class="header-burger-btn burger">
-                  <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
-                  <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
-                  <div class="burger-box">
-                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
-                      <div class="top-bun"></div>
-                      <div class="patty"></div>
-                      <div class="bottom-bun"></div>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
+            <!-- Mobile display version (hidden, using desktop display + burger instead) -->
+            <div class="header-display-mobile"></div>
           </div>
         </div>
         
@@ -586,38 +530,23 @@
                   <!-- Menu Navigation -->
                   <div class="header-menu-nav-wrapper">
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="brotherhood.html">
-                        <div class="header-menu-nav-item-content">
-                          Brotherhood
-                        </div>
-                      </a>
+                      <a href="index.html"><div class="header-menu-nav-item-content">Home</div></a>
                     </div>
-                                        
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="rush.html"><div class="header-menu-nav-item-content">Rush</div></a>
+                    </div>
                     <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
-                      <a href="profession.html" aria-current="page">
-                        <div class="header-menu-nav-item-content">
-                          Profession
-                        </div>
-                      </a>
+                      <a href="profession.html" aria-current="page"><div class="header-menu-nav-item-content">Profession</div></a>
                     </div>
-                    
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="service.html">
-                        <div class="header-menu-nav-item-content">
-                          Service
-                        </div>
-                      </a>
+                      <a href="brotherhood.html"><div class="header-menu-nav-item-content">Brotherhood</div></a>
                     </div>
-
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="rush.html">
-                        <div class="header-menu-nav-item-content">
-                          Rush
-                        </div>
-                      </a>
+                      <a href="service.html"><div class="header-menu-nav-item-content">Service</div></a>
                     </div>
-                    
-
+                    <div class="container header-menu-nav-item">
+                      <a href="portal/index.html" style="color:#FFCC33;"><div class="header-menu-nav-item-content" style="color:#FFCC33;">Brother Portal</div></a>
+                    </div>
                   </div>
                 </div>
                 
@@ -934,22 +863,11 @@
         </footer>
       </div>
   
+      <script src="./js/nav.js"></script>
       <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Mobile menu toggle
-            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            const mobileMenu = document.querySelector('.mobile-menu');
-            
-            if (mobileMenuBtn && mobileMenu) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('active');
-                    document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
-                });
-            }
-            
-            // Header background on scroll
             const header = document.querySelector('header');
-            
+
             if (header) {
                 function updateHeaderBackground() {
                     if (window.scrollY > 100) {
@@ -958,11 +876,8 @@
                         header.classList.remove('scrolled');
                     }
                 }
-                
-                // Initial check
+
                 updateHeaderBackground();
-                
-                // Add scroll event listener
                 window.addEventListener('scroll', updateHeaderBackground);
             }
         });

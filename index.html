@@ -504,6 +504,38 @@
                     </div>
                 </div>
             </div>
+
+            <div class="header-menu header-menu--folder-list">
+                <div class="header-menu-bg theme-bg--primary"></div>
+                <div class="header-menu-nav">
+                    <nav class="header-menu-nav-list">
+                        <div data-folder="root" class="header-menu-nav-folder">
+                            <div class="header-menu-nav-folder-content">
+                                <div class="header-menu-nav-wrapper">
+                                    <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
+                                        <a href="index.html"><div class="header-menu-nav-item-content">Home</div></a>
+                                    </div>
+                                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                                        <a href="rush.html"><div class="header-menu-nav-item-content">Rush</div></a>
+                                    </div>
+                                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                                        <a href="profession.html"><div class="header-menu-nav-item-content">Profession</div></a>
+                                    </div>
+                                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                                        <a href="brotherhood.html"><div class="header-menu-nav-item-content">Brotherhood</div></a>
+                                    </div>
+                                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                                        <a href="service.html"><div class="header-menu-nav-item-content">Service</div></a>
+                                    </div>
+                                    <div class="container header-menu-nav-item">
+                                        <a href="portal/index.html" style="color:#FFCC33;"><div class="header-menu-nav-item-content" style="color:#FFCC33;">Brother Portal</div></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
         </header>
 
         <main id="page" class="container" role="main">
@@ -731,17 +763,8 @@
                 observer.observe(section);
             });
             
-            // Mobile menu toggle
-            const mobileMenuBtn = document.querySelector('.header-burger-btn');
-            const mobileMenu = document.querySelector('.header-menu');
-            
-            if (mobileMenuBtn && mobileMenu) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('active');
-                    document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
-                });
-            }
         });
     </script>
+    <script src="./js/nav.js"></script>
 </body>
 </html>

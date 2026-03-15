@@ -682,39 +682,24 @@
                 <div class="header-menu-nav-folder-content">
                   <!-- Menu Navigation -->
                   <div class="header-menu-nav-wrapper">
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="index.html"><div class="header-menu-nav-item-content">Home</div></a>
+                    </div>
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="rush.html"><div class="header-menu-nav-item-content">Rush</div></a>
+                    </div>
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                      <a href="profession.html"><div class="header-menu-nav-item-content">Profession</div></a>
+                    </div>
                     <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
-                      <a href="brotherhood.html" aria-current="page">
-                        <div class="header-menu-nav-item-content">
-                          Brotherhood
-                        </div>
-                      </a>
+                      <a href="brotherhood.html" aria-current="page"><div class="header-menu-nav-item-content">Brotherhood</div></a>
                     </div>
-                                        
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="profession.html">
-                        <div class="header-menu-nav-item-content">
-                          Profession
-                        </div>
-                      </a>
+                      <a href="service.html"><div class="header-menu-nav-item-content">Service</div></a>
                     </div>
-                    
-                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="service.html">
-                        <div class="header-menu-nav-item-content">
-                          Service
-                        </div>
-                      </a>
+                    <div class="container header-menu-nav-item">
+                      <a href="portal/index.html" style="color:#FFCC33;"><div class="header-menu-nav-item-content" style="color:#FFCC33;">Brother Portal</div></a>
                     </div>
-
-                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
-                      <a href="rush.html">
-                        <div class="header-menu-nav-item-content">
-                          Rush
-                        </div>
-                      </a>
-                    </div>
-                    
-
                   </div>
                 </div>
                 
@@ -889,13 +874,11 @@
           </div>
         </footer>
   
+      <script src="./js/nav.js"></script>
       <script>
         document.addEventListener('DOMContentLoaded', function() {
             const header = document.querySelector('header');
-            const mobileMenuBtn = document.querySelector('.header-burger-btn');
-            const mobileMenu = document.querySelector('.header-menu');
 
-            // Header scroll behavior
             function updateHeaderBackground() {
                 if (window.scrollY > 100) {
                     header.classList.add('scrolled');
@@ -903,19 +886,9 @@
                     header.classList.remove('scrolled');
                 }
             }
-            
-            // Initial check
-            updateHeaderBackground();
-            
-            // Add scroll event listener
-            window.addEventListener('scroll', updateHeaderBackground);
 
-            // Mobile menu toggle
-            if (mobileMenuBtn && mobileMenu) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('header-menu--active');
-                });
-            }
+            updateHeaderBackground();
+            window.addEventListener('scroll', updateHeaderBackground);
         });
         
         // Smooth scroll function
