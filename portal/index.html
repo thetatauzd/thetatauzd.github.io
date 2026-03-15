@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Home</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header class="portal-header">
+    <h1>ΘΤ ΖΔ Brother Portal</h1>
+    <div class="user-info">
+      <a href="../index.html">Site</a>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div id="banner-active-poll" class="banner-active-poll hidden">
+      <a href="voting.html">An active poll is open – vote here.</a>
+    </div>
+
+    <div class="portal-card">
+      <h2>Portal</h2>
+      <div class="portal-nav-grid">
+        <a href="voting.html">Voting</a>
+        <a href="https://drive.google.com/drive/folders/1PBIxFjb9p-EDtErJXusBblbV75rcgqRO?usp=sharing" target="_blank" rel="noopener">Textbook Bank</a>
+        <a href="https://docs.google.com/document/d/1o8jEG5HIHyYjzFlBSH_zW4NqpFuh3T2x/edit?usp=sharing&ouid=114127059912434251470&rtpof=true&sd=true" target="_blank" rel="noopener">Chapter Bylaws</a>
+        <a href="https://forms.gle/nbsb3Z1Di8rjrke67" target="_blank" rel="noopener">Excused Absence Form</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdvPB-mNvAkJb7ftEcXGzltGifNmuLTwtPKEk7ylbLxtzMTCw/viewform" target="_blank" rel="noopener">Standards Report Form</a>
+        <a href="https://forms.gle/J6VS1uHyRY5dmMLz8" target="_blank" rel="noopener">Suggestion Box</a>
+      </div>
+    </div>
+
+    <div class="portal-card">
+      <h2>Chapter Calendar</h2>
+      <div style="position:relative; width:100%; padding-bottom:75%; overflow:hidden; border-radius:8px;">
+        <iframe
+          src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FNew_York&showPrint=0&title=Theta%20Tau%20Zeta%20Delta%20Calendar&src=dGhldGF0YXVjYWxlbmRhcjlAZ21haWwuY29t&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&src=OXNrZDhianI3cXFqZXJhN2cxNHRrczRhanVoOXVyZ2NAaW1wb3J0LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%238B0000&color=%230b8043&color=%23ef6c00"
+          style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+          frameborder="0"
+          scrolling="no"
+          loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    (function() {
+      PortalAuth.requireAuth({ page: '', forcePortalHome: true }).then(function(profile) {
+        if (!profile) return;
+        PortalAuth.initNav(profile);
+      });
+
+    })();
+  </script>
+</body>
+</html>

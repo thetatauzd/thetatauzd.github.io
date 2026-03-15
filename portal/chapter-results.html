@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter Results – Brother Portal</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .results-header { text-align: center; margin-bottom: 2rem; }
+    .results-header h1 { font-size: 2rem; color: #8B0000; margin-bottom: 0.25rem; }
+    .results-header p { color: #888; }
+    .results-section { margin-bottom: 2rem; }
+    .results-section h2 {
+      font-size: 1.25rem; margin: 0 0 1rem 0; padding-bottom: 0.5rem;
+      border-bottom: 3px solid #FFCC33; color: #8B0000;
+    }
+    .results-grid {
+      columns: 2; column-gap: 2rem; font-size: 1.15rem; line-height: 2.2;
+    }
+    .results-grid .name-item {
+      break-inside: avoid; padding: 0.1rem 0.5rem; border-radius: 4px;
+    }
+    .results-grid .name-pass { color: #1a1a1a; }
+    .results-grid .name-fail { color: #c62828; opacity: 0.65; text-decoration: line-through; }
+    .threshold-bar {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+      background: #f8f9fa; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .threshold-bar label { font-weight: 600; }
+    .threshold-bar input {
+      width: 70px; padding: 0.3rem 0.5rem; border: 1px solid #ccc; border-radius: 4px;
+      font-size: 0.95rem; text-align: center;
+    }
+    .threshold-bar button {
+      padding: 0.35rem 1rem; font-size: 0.9rem;
+    }
+    .count-badge {
+      display: inline-block; background: #FFCC33; color: #8B0000; font-weight: 700;
+      padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.85rem; margin-left: 0.5rem;
+    }
+    .no-results { text-align: center; color: #999; padding: 3rem; }
+    @media (max-width: 600px) {
+      .results-grid { columns: 1; }
+    }
+    @media print {
+      header, .threshold-bar, .btn { display: none !important; }
+      .results-grid { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="portal-header">
+    <h1>Chapter Results</h1>
+    <div class="user-info">
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div id="loading" class="portal-card" style="text-align:center; color:#999;">Loading results...</div>
+    <div id="results-content" class="hidden">
+      <div class="results-header">
+        <h1 id="session-title">Chapter Results</h1>
+        <p id="session-date"></p>
+      </div>
+      <div id="results-sections"></div>
+      <div style="text-align:center; margin-top:2rem;">
+        <a href="history.html" class="btn btn-primary" style="padding:0.5rem 1.5rem;">Back to History</a>
+      </div>
+    </div>
+    <div id="no-data" class="portal-card no-results hidden">No session data found.</div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+  (function() {
+    'use strict';
+    var db = firebase.database();
+
+    function getParam(name) {
+      var url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    function formatDate(d) {
+      if (!d) return '';
+      return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function typeTitle(t) {
+      return { rush_bid: 'Rush Bid Results', pnm_vote: 'PNM Vote Results' }[t] || t;
+    }
+
+    function buildSection(polls, type, threshold, container) {
+      var rows = [];
+      polls.forEach(function(item) {
+        var agg = item.poll.aggregation || {};
+        var total = (agg.yes || 0) + (agg.no || 0);
+        var pct = total ? Math.round(100 * agg.yes / total) : 0;
+        rows.push({ name: item.poll.name, pct: pct, pass: pct >= threshold });
+      });
+      rows.sort(function(a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+
+      var passCount = rows.filter(function(r) { return r.pass; }).length;
+      var failCount = rows.length - passCount;
+
+      var section = document.createElement('div');
+      section.className = 'results-section';
+
+      var threshBar = document.createElement('div');
+      threshBar.className = 'threshold-bar';
+      threshBar.innerHTML =
+        '<label>Threshold:</label>' +
+        '<input type="number" value="' + threshold + '" min="0" max="100" class="thresh-input"> %' +
+        '<button type="button" class="btn btn-primary">Apply</button>' +
+        '<span style="margin-left:auto;">Passed: <span class="count-badge">' + passCount + '</span> &nbsp; Did not pass: <span class="count-badge" style="background:#c62828; color:#fff;">' + failCount + '</span></span>';
+      section.appendChild(threshBar);
+
+      var heading = document.createElement('h2');
+      heading.innerHTML = typeTitle(type);
+      section.appendChild(heading);
+
+      var grid = document.createElement('div');
+      grid.className = 'results-grid';
+      rows.forEach(function(r) {
+        var div = document.createElement('div');
+        div.className = 'name-item ' + (r.pass ? 'name-pass' : 'name-fail');
+        div.textContent = r.name;
+        grid.appendChild(div);
+      });
+      section.appendChild(grid);
+
+      var applyBtn = threshBar.querySelector('button');
+      var threshInput = threshBar.querySelector('.thresh-input');
+      applyBtn.addEventListener('click', function() {
+        var newThresh = parseInt(threshInput.value, 10);
+        if (isNaN(newThresh)) return;
+        section.remove();
+        buildSection(polls, type, newThresh, container);
+      });
+
+      container.appendChild(section);
+    }
+
+    function renderResults(s, sid) {
+      document.getElementById('loading').classList.add('hidden');
+      if (!s || !s.polls) {
+        document.getElementById('no-data').classList.remove('hidden');
+        return;
+      }
+
+      var content = document.getElementById('results-content');
+      content.classList.remove('hidden');
+
+      document.getElementById('session-title').textContent = 'Chapter Results — ' + (s.accessCode || sid.substring(0, 8));
+      document.getElementById('session-date').textContent = formatDate(s.endedAt);
+
+      var polls = s.polls || {};
+      var rushBidPolls = [], pnmVotePolls = [];
+      Object.keys(polls).forEach(function(pid) {
+        var p = polls[pid];
+        if (p.type === 'rush_bid') rushBidPolls.push({ pid: pid, poll: p });
+        if (p.type === 'pnm_vote') pnmVotePolls.push({ pid: pid, poll: p });
+      });
+
+      var sections = document.getElementById('results-sections');
+      sections.innerHTML = '';
+
+      if (rushBidPolls.length > 0) {
+        var defaultThresh = (rushBidPolls[0].poll.threshold) || 75;
+        buildSection(rushBidPolls, 'rush_bid', defaultThresh, sections);
+      }
+      if (pnmVotePolls.length > 0) {
+        var defaultThresh2 = (pnmVotePolls[0].poll.threshold) || 75;
+        buildSection(pnmVotePolls, 'pnm_vote', defaultThresh2, sections);
+      }
+
+      if (rushBidPolls.length === 0 && pnmVotePolls.length === 0) {
+        sections.innerHTML = '<div class="no-results">No Rush Bid or PNM Vote polls in this session.</div>';
+      }
+    }
+
+    function init() {
+      PortalAuth.requireAdmin().then(function(profile) {
+        if (!profile) return;
+        PortalAuth.initNav(profile);
+
+        var sid = getParam('sid');
+        if (!sid) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('no-data').classList.remove('hidden');
+          return;
+        }
+
+        db.ref('sessionHistory/' + sid).once('value').then(function(snap) {
+          renderResults(snap.val(), sid);
+        }).catch(function(err) {
+          document.getElementById('loading').textContent = 'Error: ' + err.message;
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

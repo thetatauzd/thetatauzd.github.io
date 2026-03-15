@@ -1,0 +1,479 @@
+/**
+ * Brother Portal – Theta Tau branded (Dark Red #8B0000, Gold #FFCC33).
+ * Mobile-first, large tap targets for voting.
+ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #333;
+  line-height: 1.5;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.portal-header {
+  background: linear-gradient(135deg, #8B0000 0%, #6B0000 100%);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.portal-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.portal-header a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.portal-header .user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.portal-header .nav-dropdown {
+  position: relative;
+}
+
+.portal-header .nav-dropdown-toggle {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.portal-header .nav-dropdown-toggle:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.portal-header .nav-dropdown-toggle::after {
+  content: '';
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #fff;
+  margin-left: 2px;
+}
+
+.portal-header .nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  min-width: 180px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.portal-header .nav-dropdown.open .nav-dropdown-menu {
+  display: block;
+}
+
+.portal-header .nav-dropdown-menu a,
+.portal-header .nav-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.portal-header .nav-dropdown-menu a:hover,
+.portal-header .nav-dropdown-menu button:hover {
+  background: #f0f0f0;
+}
+
+.portal-header .nav-dropdown-menu .dd-divider {
+  height: 1px;
+  background: #eee;
+  margin: 0;
+}
+
+.portal-header .nav-dropdown-menu .dd-signout {
+  color: #c62828;
+}
+
+.portal-header .btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.portal-header .btn-primary {
+  background: #FFCC33;
+  color: #8B0000;
+}
+
+.portal-header .btn-ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.portal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.portal-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.portal-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #8B0000;
+}
+
+.portal-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.portal-nav-grid a,
+.portal-nav-grid .portal-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 1rem;
+  background: linear-gradient(135deg, #FFCC33 0%, #E6B800 100%);
+  color: #8B0000;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.portal-nav-grid a:hover,
+.portal-nav-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 204, 51, 0.4);
+}
+
+.banner-active-poll {
+  background: #FFCC33;
+  color: #8B0000;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.banner-active-poll a {
+  color: #8B0000;
+  text-decoration: underline;
+}
+
+/* Login / Register */
+.login-card {
+  max-width: 420px;
+  margin: 2rem auto;
+}
+
+.login-card .btn-google {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.login-card .btn-google:hover {
+  background: #f8f8f8;
+  border-color: #FFCC33;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.login-card label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+/* Voting – large tap targets */
+.vote-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.vote-btn {
+  min-width: 120px;
+  min-height: 56px;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 2px solid #8B0000;
+  background: #fff;
+  color: #8B0000;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.vote-btn:hover {
+  background: #8B0000;
+  color: #fff;
+}
+
+.vote-btn.voted {
+  background: #FFCC33;
+  border-color: #FFCC33;
+  color: #8B0000;
+}
+
+.vote-btn.ranked-plus { border-color: #2e7d32; color: #2e7d32; }
+.vote-btn.ranked-plus:hover { background: #2e7d32; color: #fff; }
+.vote-btn.ranked-minus { border-color: #c62828; color: #c62828; }
+.vote-btn.ranked-minus:hover { background: #c62828; color: #fff; }
+
+.access-code-input {
+  font-size: 1.25rem;
+  padding: 1rem;
+  text-align: center;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  max-width: 280px;
+  margin: 0 auto 1rem;
+  display: block;
+  border: 2px solid #8B0000;
+  border-radius: 8px;
+}
+
+/* Regent display – large projector-friendly text */
+.regent-screen {
+  padding: 2rem;
+  min-height: 100vh;
+  background: #8B0000;
+  color: #fff;
+}
+
+.regent-screen h1 {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.regent-screen .poll-name {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #FFCC33;
+}
+
+.regent-screen .counter {
+  font-size: clamp(2rem, 8vw, 4rem);
+  font-weight: 700;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.regent-screen .not-voted-list {
+  list-style: none;
+  columns: 2;
+  column-gap: 2rem;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.regent-screen .not-voted-list li {
+  padding: 0.25rem 0;
+  break-inside: avoid;
+}
+
+.regent-screen .banner-complete {
+  background: #2e7d32;
+  color: #fff;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+/* Standards panel */
+.standards-section {
+  margin-bottom: 2rem;
+}
+
+.standards-section h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #8B0000;
+}
+
+.standards-section input,
+.standards-section select,
+.standards-section button {
+  padding: 0.6rem 1rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.standards-section button {
+  background: #FFCC33;
+  color: #8B0000;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.standards-section button:hover {
+  background: #E6B800;
+}
+
+.standards-section button.secondary {
+  background: #666;
+  color: #fff;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.results-table th,
+.results-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.results-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+/* Admin */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+  background: #8B0000;
+  color: #fff;
+}
+
+.admin-table select {
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Pending */
+.pending-message {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  max-width: 480px;
+  margin: 2rem auto;
+}
+
+.pending-message h2 {
+  margin-bottom: 1rem;
+  color: #8B0000;
+}
+
+.pending-message p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* Reconnection indicator */
+.reconnect-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #c62828;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  z-index: 9999;
+}
+
+/* Utilities */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mb-2 { margin-bottom: 1rem; }
+.hidden { display: none !important; }
+
+@media (min-width: 768px) {
+  .portal-nav-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .regent-screen .not-voted-list {
+    columns: 3;
+  }
+}

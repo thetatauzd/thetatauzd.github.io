@@ -21,6 +21,7 @@
     <link rel="stylesheet" type="text/css" href="./css/static.css">
     <link rel="stylesheet" type="text/css" href="./css/brotherhood_cards.css">
     <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
+    <script src="./js/rush-config.js"></script>
     <style>
     /* Basic styling */
     body {
@@ -51,23 +52,25 @@
     /* Rush Page Specific Styles */
     .rush-header-container {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 0.85fr 1.15fr;
         gap: 2rem;
         align-items: center;
-        min-height: 100vh;
-        padding: 2rem;
-        margin-left: -5%;
+        min-height: 0;
+        padding: 0.5rem 2rem 2rem 2rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
     }
 
     .comic-graphics-section {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(2, 1fr);
-        gap: 2.5rem;
+        gap: 3rem;
         height: auto;
         padding: 0;
         position: relative;
-        margin-left: -2rem;
+        margin-left: 0;
     }
 
     .comic-panel {
@@ -80,8 +83,9 @@
         cursor: pointer;
         position: relative;
         height: 100%;
-        width: 130%;
-        margin-left: -15%;
+        min-height: 200px;
+        width: 100%;
+        margin-left: 0;
     }
 
     .rush-timeline-section {
@@ -121,6 +125,56 @@
     .section-background img[src*="HPBackground"] {
         object-position: 50% 35% !important;
         object-fit: cover !important;
+    }
+
+    /* Rush closed banner — shown at top when RUSH_CONFIG.isOpen is false */
+    .rush-status-banner {
+        padding: 1.5rem 2rem;
+        text-align: center;
+        background: transparent;
+        color: #fff;
+        border-bottom: none;
+        margin: 0;
+    }
+    .rush-status-banner.rush-closed h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.75rem;
+    }
+    .rush-status-banner.rush-closed p {
+        margin: 0;
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+    .rush-status-banner .rush-next {
+        margin-top: 0.75rem !important;
+        font-weight: 600;
+    }
+
+    /* Clear fixed navbar: push main content below header on rush page */
+    body.page-rush main#page {
+        padding-top: 100px;
+        background: linear-gradient(135deg, #8B0000 0%, #6B0000 100%);
+    }
+
+    /* Tighten space between "Spring 2026 Rush" heading and timeline/pictures */
+    body.page-rush .page-section.section-height--large:first-of-type .content-wrapper {
+        padding-top: 0 !important;
+    }
+    /* Remove spacing and yellow line above brotherhood pictures */
+    body.page-rush .brotherhood-section.page-section {
+        padding-top: 0 !important;
+    }
+    body.page-rush .brotherhood-section .content-wrapper {
+        padding-top: 1rem !important;
+    }
+    /* Remove gold underline under section headings on rush page */
+    body.page-rush .page-section h2::after {
+        display: none !important;
+    }
+    @media (max-width: 768px) {
+        body.page-rush main#page {
+            padding-top: 90px;
+        }
     }
 
     .comic-panel:hover img {
@@ -173,7 +227,7 @@
         .comic-graphics-section {
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 0.5rem;
+            gap: 1.25rem;
             margin-left: 0;
         }
 
@@ -183,7 +237,7 @@
             box-shadow: 4px 4px 0px #000;
             width: 100%;
             margin-left: 0;
-            min-height: 120px;
+            min-height: 160px;
         }
 
         .comic-panel:hover {
@@ -215,6 +269,7 @@
         .comic-graphics-section {
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(2, 1fr);
+            gap: 1rem;
         }
 
         .rush-header-container {
@@ -222,7 +277,7 @@
         }
 
         .comic-panel {
-            min-height: 100px;
+            min-height: 130px;
         }
     }
 
@@ -329,7 +384,7 @@
         background-color: #fff !important;
         padding: 15px 10px !important;
         text-align: center !important;
-        border-top: 3px solid #D4AF37 !important;
+        border-top: none !important;
     }
 
     /* Image Loading - always visible */
@@ -496,8 +551,9 @@
       
       .comic-graphics-section {
         width: 100% !important;
-        max-width: 800px !important;
+        max-width: 920px !important;
         margin: 0 auto !important;
+        gap: 2rem !important;
       }
     }
 
@@ -519,14 +575,15 @@
         width: 100% !important;
         display: grid !important;
         grid-template-columns: repeat(3, 1fr) !important;
-        gap: 1rem !important;
-        max-width: 700px !important;
+        gap: 1.25rem !important;
+        max-width: 820px !important;
         margin: 0 auto !important;
       }
       
       .comic-panel {
         aspect-ratio: 1 !important;
-        max-height: 200px !important;
+        min-height: 180px !important;
+        max-height: 260px !important;
       }
     }
 
@@ -620,7 +677,7 @@
     <link rel="preload" as="image" href="./Images/optimized/StateFair.webp" fetchpriority="high">
     <link rel="preload" as="image" href="./Images/optimized/Michelle.webp" fetchpriority="high">
     <!-- Preload service background -->
-    <link rel="preload" as="image" href="./Images/Background.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="./Images/rush/Background.webp" fetchpriority="high">
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         var header = document.querySelector('header');
@@ -647,7 +704,7 @@
     </script>
 </head>
 
-<body id="collection-60f39ee3ec5ad00cc0939b34" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons">
+<body id="collection-60f39ee3ec5ad00cc0939b34" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons page-rush">
     <div id="siteWrapper" class="clearfix site-wrapper">
       <header id="header" class="black header theme-col--primary" data-header-style="dynamic">
         <div class="header-announcement-bar-wrapper">
@@ -694,14 +751,16 @@
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="service.html">Service</a>
                       </div>
+                      <div class="header-nav-item header-nav-item--push-right">
+                        <a href="portal/index.html" style="color:#FFCC33; font-weight:600;">Brother Portal</a>
+                      </div>
                     </nav>
                   </div>
                 </div>
               </div>
             
               <!-- Actions -->
-              <div class="header-actions header-actions--right">
-              </div>
+              <div class="header-actions header-actions--right"></div>
 
               <!-- Burger Menu for Mobile -->
               <div class="header-burger menu-overlay-has-visible-non-navigation-items">
@@ -753,14 +812,16 @@
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="service.html">Service</a>
                       </div>
+                      <div class="header-nav-item header-nav-item--push-right">
+                        <a href="portal/index.html" style="color:#FFCC33; font-weight:600;">Brother Portal</a>
+                      </div>
                     </nav>
                   </div>
                 </div>
               </div>
             
               <!-- Actions -->
-              <div class="header-actions header-actions--right">
-              </div>
+              <div class="header-actions header-actions--right"></div>
 
               <!-- Burger Menu for Mobile -->
               <div class="header-burger menu-overlay-has-visible-non-navigation-items">
@@ -841,13 +902,24 @@
       <main id="page" class="container" role="main">
         <article class="sections" id="sections" data-page-sections="60f39ee3ec5ad00cc0939b35">
 
-      <!-- Rush Header Section with Timeline and Comic Graphics -->
-      <section class="page-section background-width--full-bleed section-height--large content-width--wide horizontal-alignment--left vertical-alignment--middle has-background black">
+      <!-- Rush status banner: shown when RUSH_CONFIG.isOpen is false -->
+      <div id="rush-closed-banner" class="rush-status-banner rush-closed" role="status" aria-live="polite" style="display: none;">
+        <h2>Rush has closed for this semester</h2>
+        <p>Check back at the start of next semester—we typically run rush within the first month of classes.</p>
+        <p class="rush-next">Next rush: <span id="rush-next-semester">next semester</span></p>
+      </div>
+
+      <!-- ============================================================
+           RUSH EVENTS SECTION — COMMENTED OUT (rush is closed)
+           Uncomment this entire block when rush is active again.
+           ============================================================ -->
+      <!--
+      <section class="page-section background-width--full-bleed section-height--large content-width--wide horizontal-alignment--center vertical-alignment--middle has-background black">
         <div class="section-border">
           <div class="section-background">
             <picture>
-                              <source srcset="./Images/ThetaTauRush.webp" type="image/webp">
-                <img src="./Images/ThetaTauRush.webp" alt="Theta Tau Rush Background" style="display:block;object-position: 50% 50%">
+                              <source srcset="./Images/rush/ThetaTauRush.webp" type="image/webp">
+                <img src="./Images/rush/ThetaTauRush.webp" alt="Theta Tau Rush Background" style="display:block;object-position: 50% 50%">
             </picture>
             <div class="section-background-overlay" style="opacity: 0.2;"></div>
           </div>
@@ -861,63 +933,50 @@
                   <div class="sqs-block html-block sqs-block-html">
                     <div class="sqs-block-content">
                       <div class="sqs-html-content">
+                        <h2 class="rush-hero-title" style="text-align: center; color: #fff; margin: 0 0 0.25rem 0; font-size: 3.5rem; font-weight: 700;">Spring 2026 Rush</h2>
                         <div class="rush-header-container">
-                          <!-- Left Side - Rush Timeline -->
                           <div class="rush-timeline-section">
-                            <img src="Images/RushTimeline.webp" alt="Rush Timeline" class="rush-timeline-image">
+                            <img src="./Images/rush/RushTimeline.webp" alt="Rush Timeline" class="rush-timeline-image">
                           </div>
                           
-                          <!-- Right Side - Comic Book Style Event Graphics -->
                           <div class="comic-graphics-section">
-                            
-                            <!-- Info Nights -->
                             <div class="comic-panel">
-                              <img src="Images/InfoNights.webp" alt="Info Nights">
+                              <img src="./Images/rush/InfoNights.webp" alt="Info Nights">
                               <div class="comic-panel-overlay">
                                 <div class="comic-panel-title">Info Nights</div>
                                 <div class="comic-panel-description">Learn about Theta Tau and meet our brothers</div>
                               </div>
                             </div>
-                            
-                            <!-- PD Workshop -->
                             <div class="comic-panel">
-                              <img src="Images/PDWorkshop.webp" alt="Professional Development Workshop">
+                              <img src="./Images/rush/PDWorkshop.webp" alt="Professional Development Workshop">
                               <div class="comic-panel-overlay">
                                 <div class="comic-panel-title">PD Workshop</div>
                                 <div class="comic-panel-description">Career development skills</div>
                               </div>
                             </div>
-                            
-                            <!-- Inside Theta Tau -->
                             <div class="comic-panel">
-                              <img src="Images/InsideThetaTau.webp" alt="Inside Theta Tau">
+                              <img src="./Images/rush/InsideThetaTau.webp" alt="Inside Theta Tau">
                               <div class="comic-panel-overlay">
                                 <div class="comic-panel-title">Inside Theta Tau</div>
                                 <div class="comic-panel-description">See our chairs and culture</div>
                               </div>
                             </div>
-                            
-                            <!-- Professional Mixer -->
                             <div class="comic-panel">
-                              <img src="Images/ProfessionalMixer.webp" alt="Professional Mixer">
+                              <img src="./Images/rush/ProfessionalMixer.webp" alt="Professional Mixer">
                               <div class="comic-panel-overlay">
                                 <div class="comic-panel-title">Professional Mixer</div>
                                 <div class="comic-panel-description">Network with brothers and gain professional experience</div>
                               </div>
                             </div>
-                            
-                            <!-- Speed Dating -->
                             <div class="comic-panel">
-                              <img src="Images/SpeedDating.webp" alt="Speed Dating">
+                              <img src="./Images/rush/SpeedDating.webp" alt="Speed Dating">
                               <div class="comic-panel-overlay">
                                 <div class="comic-panel-title">Speed Dating</div>
                                 <div class="comic-panel-description">Quick conversations with brothers</div>
                               </div>
                             </div>
-                            
-                            <!-- Professional Dinner -->
                             <div class="comic-panel">
-                              <img src="Images/ProfessionalDinner.webp" alt="Professional Dinner">
+                              <img src="./Images/rush/ProfessionalDinner.webp" alt="Professional Dinner">
                               <div class="comic-panel-overlay">
                                 <div class="comic-panel-title">Professional Dinner</div>
                                 <div class="comic-panel-description">Formal networking event</div>
@@ -934,14 +993,15 @@
           </div>
         </div>
       </section>
+      END RUSH EVENTS SECTION -->
 
       <!-- Why Rush Section -->
       <section class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background black" style="display: flex; align-items: center; justify-content: center;">
         <div class="section-border">
           <div class="section-background">
                           <picture>
-                <source srcset="./Images/HPBackground.webp" type="image/webp">
-                <img src="./Images/HPBackground.jpg" alt="Background" style="display:block;object-position: 50% 0%; object-fit: cover; width: 100%; height: 100%;">
+                <source srcset="./Images/rush/HPBackground.webp" type="image/webp">
+                <img src="./Images/rush/HPBackground.jpg" alt="Background" style="display:block;object-position: 50% 0%; object-fit: cover; width: 100%; height: 100%;">
               </picture>
             <div class="section-background-overlay" style="opacity: 0.35;"></div>
           </div>
@@ -1232,8 +1292,8 @@
             <div class="section-border">
               <div class="section-background">
                 <picture>
-                  <source srcset="./Images/Background.webp" type="image/webp">
-                  <img src="./Images/Background.jpg" alt="Service Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high">
+                  <source srcset="./Images/rush/Background.webp" type="image/webp">
+                  <img src="./Images/rush/Background.jpg" alt="Service Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high">
                 </picture>
                 <div class="section-background-overlay" style="opacity: 0.35;"></div>
               </div>
@@ -1261,11 +1321,11 @@
 
           
           
-          <!-- Rush Information Section -->
-          <section class="page-section background-width--full-bleed section-height--medium content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background dark">
+          <!-- Rush Information Section (signup CTA — hidden when rush closed) -->
+          <section id="rush-signup-section" class="page-section background-width--full-bleed section-height--medium content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background dark">
             <div class="section-border">
               <div class="section-background">
-                <img src="./Images/ThetaTauRush.webp" alt="Theta Tau Rush">
+                <img src="./Images/rush/ThetaTauRush.webp" alt="Theta Tau Rush">
                 <div class="section-background-overlay" style="opacity: 0.15;"></div>
               </div>
             </div>
@@ -1278,8 +1338,8 @@
                       <div class="sqs-block html-block sqs-block-html">
                         <div class="sqs-block-content">
                           <div class="sqs-html-content">
-                            <h2 style="white-space:pre-wrap; margin-bottom: 2rem;">Fall 2025 Rush</h2>
-                            <p style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem;">Join The Rush GroupMe! | Schedule a Coffee Chat!</p>
+                            <h2 id="rush-title" style="white-space:pre-wrap; margin-bottom: 2rem;">Fall 2025 Rush</h2>
+                            <p id="rush-cta-line" style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem;">Join The Rush GroupMe! | Schedule a Coffee Chat!</p>
                           </div>
                         </div>
                       </div>
@@ -1287,11 +1347,11 @@
                       <div class="sqs-block image-block sqs-block-image">
                         <div class="sqs-block-content">
                           <figure class="sqs-block-image-figure intrinsic" style="max-width: 400px; margin: 0 auto;">
-                            <div class="image-block-wrapper">
+                            <div class="image-block-wrapper" id="rush-link-wrapper">
                               <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom: 100%; overflow: hidden;">
                                 <picture>
-                                  <source srcset="./Images/LinkTree.png" type="image/png">
-                                  <img src="./Images/LinkTree.png" alt="LinkTree" style="display:block;object-fit:cover;width:100%;height:100%;">
+                                  <source srcset="./Images/rush/LinkTree.png" type="image/png">
+                                  <img src="./Images/rush/LinkTree.png" alt="LinkTree" style="display:block;object-fit:cover;width:100%;height:100%;">
                                 </picture>
                               </div>
                             </div>
@@ -1317,10 +1377,10 @@
           
           <div class="footer-section">
             <h3>Contact</h3>
-            <p><strong>Regent:</strong> Grace Yaegel</p>
-            <p><strong>Vice Regent:</strong> Kelly Sullivan</p>
-            <p><strong>Rush Chairs:</strong> Verissimo (Reese) Pedra, Tarun Ramkumar</p>
-            <p><strong>Alumni Correspondent:</strong> Watts Liddle</p>
+            <p><strong>Regent:</strong> Jack Schmitt</p>
+            <p><strong>Vice Regent:</strong> Nicole Hoeker</p>
+            <p><strong>Rush Chairs:</strong> Bradley Alford, Kaylee Molitor</p>
+            <p><strong>Alumni Correspondent:</strong> Carlos Arenas</p>
           </div>
           
           <div class="footer-section">
@@ -1353,5 +1413,37 @@
         </div>
       </footer>
     </div>
+    <script>
+      (function() {
+        var config = window.RUSH_CONFIG || {};
+        var banner = document.getElementById('rush-closed-banner');
+        var nextSpan = document.getElementById('rush-next-semester');
+        var signupSection = document.getElementById('rush-signup-section');
+        var titleEl = document.getElementById('rush-title');
+        var ctaEl = document.getElementById('rush-cta-line');
+        var linkWrapper = document.getElementById('rush-link-wrapper');
+
+        if (config.isOpen) {
+          if (banner) banner.style.display = 'none';
+          if (signupSection) signupSection.style.display = '';
+          if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
+          if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
+          if (config.rushLinkUrl && linkWrapper) {
+            var a = document.createElement('a');
+            a.href = config.rushLinkUrl;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            while (linkWrapper.firstChild) a.appendChild(linkWrapper.firstChild);
+            linkWrapper.appendChild(a);
+          }
+        } else {
+          if (banner) {
+            banner.style.display = 'block';
+            if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
+          }
+          if (signupSection) signupSection.style.display = 'none';
+        }
+      })();
+    </script>
   </body>
 </html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Standards – Session control</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .active-poll-card { border: 3px solid #FFCC33; }
+    .active-poll-card h3 { color: #FFCC33; }
+    .poll-status { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; margin-left: 0.5rem; }
+    .poll-status.open { background: #2e7d32; color: #fff; }
+    .poll-status.closed { background: #666; color: #fff; }
+    .poll-status.upcoming { background: #1565c0; color: #fff; }
+    .queue-item { padding: 0.6rem 0.75rem; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+    .queue-item.past { opacity: 0.45; text-decoration: line-through; }
+    .queue-item.current { background: #fffde7; border-left: 4px solid #FFCC33; }
+    .queue-item .qi-name { font-weight: 600; }
+    .queue-item .qi-type { color: #888; font-size: 0.85rem; margin-left: 0.5rem; }
+    .queue-empty { color: #999; padding: 1rem 0; }
+    .vote-count-bar { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }
+    .vote-count-bar .bar { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .vote-count-bar .bar-fill { height: 100%; background: #FFCC33; transition: width 0.3s; }
+    .active-poll-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .active-poll-type { color: #888; font-size: 0.95rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .btn-row button { min-width: 110px; }
+    .threshold-adjust { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.9rem; }
+    .threshold-adjust input { width: 70px; }
+    .brother-list { list-style: none; padding: 0; margin: 0.5rem 0 0 0; }
+    .brother-list li { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; }
+    .brother-list li .bro-name { font-weight: 500; }
+    .btn-kick { background: #c62828; color: #fff; border: none; border-radius: 4px; padding: 0.2rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .btn-kick:hover { background: #a01010; }
+    .btn-end-session { background: #c62828; color: #fff; }
+    .btn-end-session:hover { background: #a01010; }
+    .leaderboard-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .leaderboard-table th, .leaderboard-table td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid #eee; }
+    .leaderboard-table th { font-weight: 600; background: #f5f5f5; }
+    .leaderboard-cutoff td { border-bottom: 3px solid #FFCC33; }
+    .flag-item { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #ffe0b2; }
+    .flag-item:last-child { border-bottom: none; }
+    .btn-create-depledge { background: #c62828; color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .btn-create-tiebreaker { background: #1565c0; color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header class="portal-header">
+    <h1>Standards – Session control</h1>
+    <div class="user-info">
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div id="reconnect-banner" class="reconnect-banner hidden">Reconnecting…</div>
+
+    <!-- Session creation -->
+    <div class="portal-card standards-section" id="panel-session">
+      <h2>Session</h2>
+      <p>Create a session and share the access code with brothers.</p>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="session-code" placeholder="Access code (e.g. CHAPTER26)" maxlength="12" style="text-transform:uppercase;">
+        <button type="button" class="btn btn-primary" id="btn-create-session">Create session</button>
+      </div>
+      <div id="session-active-info" class="hidden" style="margin-top:1rem;">
+        <p><strong>Session active</strong> — Code: <span id="active-code" style="font-family:monospace; font-size:1.1rem; color:#FFCC33;"></span></p>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-top:0.5rem;">
+          <a href="#" id="link-open-regent" target="_blank" style="color:#FFCC33;">Open Regent board in new tab</a>
+          <button type="button" class="btn btn-end-session" id="btn-end-session">End session</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active poll -->
+    <div class="portal-card standards-section active-poll-card hidden" id="panel-active-poll">
+      <h3>Active poll</h3>
+      <div id="active-poll-content">
+        <p class="active-poll-name" id="ap-name">—</p>
+        <p class="active-poll-type" id="ap-type"></p>
+        <span class="poll-status" id="ap-status"></span>
+      </div>
+      <div class="vote-count-bar" id="ap-vote-bar">
+        <span id="ap-vote-text">0 / 0 voted</span>
+        <div class="bar"><div class="bar-fill" id="ap-bar-fill" style="width:0%;"></div></div>
+      </div>
+      <div class="threshold-adjust" id="ap-threshold-row">
+        <label>Threshold:</label>
+        <input type="number" id="ap-threshold" min="0" max="100" value="75" style="width:70px;"> <span id="ap-threshold-unit">%</span>
+        <button type="button" class="btn btn-primary" id="btn-save-threshold" style="padding:0.3rem 0.75rem; font-size:0.85rem;">Save</button>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn secondary" id="btn-prev-poll">← Previous</button>
+        <button type="button" class="btn btn-primary" id="btn-open-poll">Open poll</button>
+        <button type="button" class="btn secondary" id="btn-close-poll" style="background:#c62828; color:#fff;">Close poll</button>
+        <button type="button" class="btn secondary" id="btn-next-poll">Next poll →</button>
+      </div>
+    </div>
+
+    <!-- Poll queue -->
+    <div class="portal-card standards-section hidden" id="panel-queue">
+      <h3>Poll queue</h3>
+      <div id="poll-queue-list"></div>
+      <h3 class="mt-2">Add poll</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:flex-end;">
+        <div>
+          <label style="font-size:0.85rem;">Type</label>
+          <select id="new-poll-type">
+            <option value="rush_prelim">Rush Prelim (Ranked scorecard)</option>
+            <option value="rush_bid">Rush Bid (Yes/No/Abstain)</option>
+            <option value="motion">Motion (Yes/No/Abstain)</option>
+            <option value="pnm_vote">PNM Vote (Yes/No/Abstain)</option>
+            <option value="pnm_depledge">PNM De-pledge (Yes/No)</option>
+          </select>
+        </div>
+        <div id="name-group">
+          <label style="font-size:0.85rem;">Name</label>
+          <input type="text" id="new-poll-name" placeholder="e.g. John Smith">
+        </div>
+        <div id="threshold-group">
+          <label style="font-size:0.85rem;">Threshold %</label>
+          <input type="number" id="new-poll-threshold" value="75" min="0" max="100" style="width:70px;">
+        </div>
+        <div id="min-score-group" class="hidden">
+          <label style="font-size:0.85rem;">Min score (cutoff)</label>
+          <input type="number" id="new-poll-min-score" value="0" style="width:70px;">
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-add-poll">Add to queue</button>
+      </div>
+      <div id="candidates-group" class="hidden" style="margin-top:0.75rem;">
+        <label style="font-size:0.85rem;">Candidate names (one per line or comma-separated)</label>
+        <textarea id="new-poll-candidates" rows="6" style="width:100%; max-width:500px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Jane Doe&#10;John Smith&#10;Alice Johnson"></textarea>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="portal-card standards-section hidden" id="panel-results">
+      <h3>Results</h3>
+      <div id="results-summary" style="font-size:1.1rem; font-weight:600; margin-bottom:1rem;"></div>
+      <div id="results-leaderboard" class="hidden" style="margin-bottom:1rem;"></div>
+      <div id="results-flags" class="hidden" style="margin-bottom:1rem; padding:0.75rem; background:#fff3e0; border-radius:8px;"></div>
+      <table class="results-table" id="results-voters">
+        <thead><tr><th>Brother</th><th>Vote</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-primary mt-2" id="btn-export-excel">Export full session to Excel</button>
+    </div>
+
+    <!-- Connected brothers -->
+    <div class="portal-card standards-section hidden" id="panel-connected">
+      <h3>Connected brothers: <span id="connected-count">0</span></h3>
+      <ul class="brother-list" id="connected-list"></ul>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/standards.js"></script>
+</body>
+</html>

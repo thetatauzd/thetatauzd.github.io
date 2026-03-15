@@ -75,11 +75,11 @@ header.scrolled {
     height: 2px;
     bottom: 0;
     left: 0;
-    background-color: #D4AF37; /* Theta Tau yellow */
+    background-color: #FFCC33; /* Theta Tau gold */
     transition: width 0.3s ease;
 }
 
-/* Yellow line appears on hover and active states */
+/* Gold line appears on hover and active states */
 .header-nav-item a:hover::after,
 .header-nav-item--active a::after {
     width: 100%;
@@ -106,7 +106,7 @@ header.scrolled {
     height: 2px;
     bottom: 0;
     left: 0;
-    background-color: #D4AF37;
+    background-color: #FFCC33;
     transition: width 0.3s ease;
 }
 

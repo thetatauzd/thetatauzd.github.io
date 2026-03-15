@@ -1,0 +1,70 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards')",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && ((auth.uid === $uid && (!data.exists() || data.child('role').val() === 'pending')) || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "sessionByCode": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "sessions": {
+      "$sessionId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        "meta": {
+          ".read": "auth != null",
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        },
+        "currentPollIndex": {
+          ".read": "auth != null",
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        },
+        "pollOrder": {
+          ".read": "auth != null",
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        },
+        "polls": {
+          ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'regent')",
+          "$pollId": {
+            ".read": "auth != null",
+            ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+            "votes": {
+              ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+              "$voteUid": {
+                ".read": "auth != null && auth.uid === $voteUid",
+                ".write": "auth != null && auth.uid === $voteUid && root.child('users').child(auth.uid).child('role').val() !== 'pending'"
+              }
+            },
+            "hasVoted": {
+              ".read": "auth != null",
+              "$uid": {
+                ".write": "auth != null && auth.uid === $uid"
+              }
+            },
+            "aggregation": {
+              ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+              ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+            }
+          }
+        },
+        "connectedBrothers": {
+          ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      }
+    },
+    "sessionHistory": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    }
+  }
+}

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Session History – Brother Portal</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+  <style>
+    .session-card { cursor: pointer; transition: border-color 0.2s; }
+    .session-card:hover { border-color: #FFCC33; }
+    .session-card.expanded { border-color: #FFCC33; }
+    .session-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; color: #888; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .poll-result-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; position: relative; }
+    .poll-result-card h4 { margin: 0 0 0.25rem 0; }
+    .poll-result-card .result-line { font-weight: 600; margin: 0.25rem 0 0.5rem 0; }
+    .whatif-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #ddd; font-size: 0.85rem; }
+    .whatif-row label { font-weight: 500; }
+    .whatif-row input { width: 65px; padding: 0.2rem 0.4rem; border: 1px solid #ccc; border-radius: 4px; }
+    .whatif-row .whatif-result { font-weight: 600; margin-left: 0.5rem; }
+    .leaderboard-mini { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+    .leaderboard-mini th, .leaderboard-mini td { padding: 0.25rem 0.5rem; text-align: left; border-bottom: 1px solid #eee; }
+    .leaderboard-mini th { background: #eee; font-weight: 600; }
+    .cutoff-row td { border-bottom: 3px solid #FFCC33; }
+    .result-pass { color: #2e7d32; }
+    .result-fail { color: #c62828; }
+    .voter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.25rem 1rem; font-size: 0.9rem; }
+    .voter-grid span { padding: 0.15rem 0; }
+    .session-polls { display: none; margin-top: 1rem; }
+    .session-card.expanded .session-polls { display: block; }
+    .no-history { color: #999; text-align: center; padding: 3rem; }
+    .export-btn { font-size: 0.85rem; padding: 0.3rem 0.75rem; margin-left: 0.5rem; }
+    .delete-btn { font-size: 0.85rem; padding: 0.3rem 0.75rem; margin-left: 0.5rem; background: #c62828; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .delete-btn:hover { background: #a01010; }
+    .summary-card { background: #f0f4ff; border: 2px solid #FFCC33; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
+    .summary-card h3 { margin: 0 0 0.75rem 0; color: #8B0000; }
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .summary-table th, .summary-table td { padding: 0.35rem 0.6rem; text-align: left; border-bottom: 1px solid #ddd; }
+    .summary-table th { background: #e8eaf6; font-weight: 600; }
+    .summary-table .row-pass td { }
+    .summary-table .row-fail td { opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <header class="portal-header">
+    <h1>Session History</h1>
+    <div class="user-info">
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div id="history-list"></div>
+    <div id="loading" class="portal-card" style="text-align:center; color:#999;">Loading sessions...</div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+  (function() {
+    'use strict';
+    var db = firebase.database();
+
+    function typeLabel(t) {
+      return {
+        rush_prelim: 'Rush Prelim', rush_bid: 'Rush Bid', motion: 'Motion',
+        pnm_vote: 'PNM Vote', pnm_depledge: 'PNM De-pledge'
+      }[t] || t || '';
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      var dt = new Date(typeof d === 'number' ? d : d);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    function recalcBidResult(agg, threshold) {
+      var total = (agg.yes || 0) + (agg.no || 0);
+      var pct = total ? Math.round(100 * agg.yes / total) : 0;
+      return { pass: pct >= threshold, label: pct + '% (need ' + threshold + '%)' };
+    }
+
+    function recalcDepledgeResult(agg) {
+      var total = (agg.yes || 0) + (agg.no || 0);
+      var pct = total ? Math.round(100 * agg.yes / total) : 0;
+      return { pass: pct > 50, label: pct + '% voted yes' };
+    }
+
+    function buildPrelimLeaderboard(agg, inviteSpots, minScore) {
+      var cs = agg.candidateScores || {};
+      return Object.keys(cs).map(function(name) {
+        return { name: name, score: cs[name].total || 0 };
+      }).sort(function(a, b) { return b.score - a.score; }).map(function(c, i) {
+        return { rank: i + 1, name: c.name, score: c.score, invited: i < inviteSpots && c.score >= minScore };
+      });
+    }
+
+    function renderPollCard(pid, p, uniqueId) {
+      var agg = p.aggregation || {};
+      var voters = p.voters || {};
+      var voterKeys = Object.keys(voters);
+      var type = p.type || '';
+      var html = '<div class="poll-result-card" id="poll-' + uniqueId + '">';
+      html += '<h4>' + (p.name || '(unnamed)') + ' <span style="color:#888; font-weight:400; font-size:0.85rem;">(' + typeLabel(type) + ')</span></h4>';
+
+      if (type === 'rush_prelim') {
+        var inviteSpots = p.inviteSpots || 50;
+        var minScore = p.minimumScore || 0;
+        var board = buildPrelimLeaderboard(agg, inviteSpots, minScore);
+        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' + board.length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
+        html += renderLeaderboardTable(board, inviteSpots);
+        html += '<div class="whatif-row">';
+        html += '<label>What-if invite spots:</label><input type="number" value="' + inviteSpots + '" min="1" class="whatif-prelim-spots" data-uid="' + uniqueId + '">';
+        html += '<label>Min score:</label><input type="number" value="' + minScore + '" class="whatif-prelim-min" data-uid="' + uniqueId + '">';
+        html += '<button type="button" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.8rem;" data-uid="' + uniqueId + '" data-pid="' + pid + '">Recalculate</button>';
+        html += '</div>';
+      } else if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
+        var r = recalcBidResult(agg, p.threshold || 75);
+        html += '<p class="result-line ' + (r.pass ? 'result-pass' : 'result-fail') + '">' + (r.pass ? 'PASS' : 'FAIL') + ' — ' + r.label + '</p>';
+        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) + ' · No: ' + (agg.no || 0) + ' · Abstain: ' + (agg.abstain || 0) + '</p>';
+        if (type === 'motion') {
+          html += '<div class="whatif-row">';
+          html += '<label>What-if threshold:</label><input type="number" value="' + (p.threshold || 75) + '" min="0" max="100" class="whatif-threshold" data-uid="' + uniqueId + '"> %';
+          html += '<span class="whatif-result" id="whatif-res-' + uniqueId + '"></span>';
+          html += '</div>';
+        }
+      } else if (type === 'pnm_depledge') {
+        var dr = recalcDepledgeResult(agg);
+        html += '<p class="result-line ' + (dr.pass ? 'result-fail' : 'result-pass') + '">' + (dr.pass ? 'DE-PLEDGE' : 'REMAIN') + ' — ' + dr.label + '</p>';
+        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) + ' · No: ' + (agg.no || 0) + '</p>';
+      } else {
+        if (p.result) {
+          var isPass = (p.result || '').indexOf('PASS') === 0;
+          html += '<p class="result-line ' + (isPass ? 'result-pass' : 'result-fail') + '">' + p.result + '</p>';
+        }
+      }
+
+      if (type !== 'rush_prelim' && voterKeys.length > 0) {
+        html += '<div class="voter-grid">';
+        voterKeys.forEach(function(uid) {
+          var v = voters[uid].vote;
+          var display = typeof v === 'object' ? JSON.stringify(v) : v;
+          html += '<span><strong>' + voters[uid].name + '</strong>: ' + display + '</span>';
+        });
+        html += '</div>';
+      } else if (type !== 'rush_prelim') {
+        html += '<p style="color:#999; font-size:0.9rem;">No votes recorded.</p>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function renderLeaderboardTable(board, inviteSpots) {
+      var html = '<table class="leaderboard-mini"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Status</th></tr></thead><tbody>';
+      board.forEach(function(c) {
+        var cutoff = c.rank === inviteSpots ? ' cutoff-row' : '';
+        html += '<tr class="' + cutoff + '"><td>' + c.rank + '</td><td>' + c.name + '</td><td>' + c.score + '</td>' +
+          '<td style="color:' + (c.invited ? '#2e7d32' : '#c62828') + '; font-weight:600;">' + (c.invited ? 'INVITED' : 'Below cutoff') + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function computeBidSummary(polls, threshold) {
+      return polls.map(function(item) {
+        var agg = item.poll.aggregation || {};
+        var total = (agg.yes || 0) + (agg.no || 0);
+        var pct = total ? Math.round(100 * agg.yes / total) : 0;
+        return { name: item.poll.name, pct: pct, pass: pct >= threshold, yes: agg.yes || 0, no: agg.no || 0, abstain: agg.abstain || 0 };
+      }).sort(function(a, b) { return b.pct - a.pct; });
+    }
+
+    function renderBidSummaryCard(polls, sid, type, title) {
+      var defaultThresh = (polls[0] && polls[0].poll.threshold) || 75;
+      var rows = computeBidSummary(polls, defaultThresh);
+      var uid = sid + '-summary-' + type;
+      var html = '<div class="summary-card" id="summary-' + uid + '">';
+      html += '<h3>' + title + ' (' + rows.length + ' polls)</h3>';
+      html += '<div class="whatif-row" style="margin-top:0; padding-top:0; border-top:none;">';
+      html += '<label>Threshold for all:</label><input type="number" value="' + defaultThresh + '" min="0" max="100" class="whatif-summary-thresh" data-uid="' + uid + '" data-type="' + type + '"> %';
+      html += '<button type="button" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.8rem;" data-uid="' + uid + '" data-type="' + type + '">Recalculate</button>';
+      html += '</div>';
+      html += '<div id="summary-table-' + uid + '">' + renderSummaryTable(rows) + '</div>';
+      html += '</div>';
+      return html;
+    }
+
+    function renderSummaryTable(rows) {
+      var passed = rows.filter(function(r) { return r.pass; }).length;
+      var html = '<p style="font-size:0.9rem; margin:0.5rem 0;"><strong>' + passed + '</strong> of ' + rows.length + ' passed</p>';
+      html += '<table class="summary-table"><thead><tr><th>Name</th><th>Yes %</th><th>Yes</th><th>No</th><th>Abstain</th><th>Result</th></tr></thead><tbody>';
+      rows.forEach(function(r) {
+        html += '<tr class="' + (r.pass ? 'row-pass' : 'row-fail') + '">';
+        html += '<td>' + r.name + '</td><td>' + r.pct + '%</td>';
+        html += '<td>' + r.yes + '</td><td>' + r.no + '</td><td>' + r.abstain + '</td>';
+        html += '<td style="font-weight:600; color:' + (r.pass ? '#2e7d32' : '#c62828') + ';">' + (r.pass ? 'PASS' : 'FAIL') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    var sessionDataCache = {};
+
+    function renderSession(sid, s) {
+      sessionDataCache[sid] = s;
+      var polls = s.polls || {};
+      var pollIds = Object.keys(polls);
+      var card = document.createElement('div');
+      card.className = 'portal-card session-card';
+
+      var header = '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">';
+      header += '<h3 style="margin:0;">Session: ' + (s.accessCode || sid.substring(0, 8)) + '</h3>';
+      header += '<div><a class="btn btn-primary chapter-view-btn" href="chapter-results.html?sid=' + sid + '" style="text-decoration:none; font-size:0.85rem; padding:0.3rem 0.75rem; margin-right:0.35rem;">Chapter View</a>';
+      header += '<button class="btn btn-primary export-btn" data-sid="' + sid + '">Export Excel</button>';
+      header += '<button class="delete-btn" data-sid="' + sid + '">Delete</button></div>';
+      header += '</div>';
+      header += '<div class="session-meta">';
+      header += '<span>Ended: ' + formatDate(s.endedAt) + '</span>';
+      header += '<span>Polls: ' + pollIds.length + '</span>';
+      header += '</div>';
+      header += '<p style="font-size:0.85rem; color:#aaa; margin:0;">Click to expand</p>';
+
+      var pollsHtml = '<div class="session-polls">';
+
+      var rushBidPolls = [], pnmVotePolls = [];
+      pollIds.forEach(function(pid) {
+        var p = polls[pid];
+        if (p.type === 'rush_bid') rushBidPolls.push({ pid: pid, poll: p });
+        if (p.type === 'pnm_vote') pnmVotePolls.push({ pid: pid, poll: p });
+      });
+
+      if (rushBidPolls.length > 0) {
+        pollsHtml += renderBidSummaryCard(rushBidPolls, sid, 'rush_bid', 'Rush Bid Summary');
+      }
+      if (pnmVotePolls.length > 0) {
+        pollsHtml += renderBidSummaryCard(pnmVotePolls, sid, 'pnm_vote', 'PNM Vote Summary');
+      }
+
+      pollIds.forEach(function(pid, i) {
+        pollsHtml += renderPollCard(pid, polls[pid], sid + '-' + i);
+      });
+      pollsHtml += '</div>';
+
+      card.innerHTML = header + pollsHtml;
+
+      card.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.closest('a')) return;
+        card.classList.toggle('expanded');
+      });
+
+      card.querySelector('.export-btn').addEventListener('click', function() {
+        exportSessionExcel(s, sid);
+      });
+      card.querySelector('.delete-btn').addEventListener('click', function() {
+        deleteSession(sid, s.accessCode, card);
+      });
+
+      card.querySelectorAll('.whatif-threshold').forEach(function(input) {
+        input.addEventListener('change', function() {
+          var uid = this.getAttribute('data-uid');
+          var thresh = parseInt(this.value, 10) || 75;
+          var parts = uid.split('-');
+          var sesId = parts.slice(0, -1).join('-');
+          var idx = parseInt(parts[parts.length - 1], 10);
+          var sesData = sessionDataCache[sesId];
+          if (!sesData) return;
+          var pids = Object.keys(sesData.polls || {});
+          var p = (sesData.polls || {})[pids[idx]];
+          if (!p) return;
+          var agg = p.aggregation || {};
+          var r = recalcBidResult(agg, thresh);
+          var el = document.getElementById('whatif-res-' + uid);
+          if (el) {
+            el.textContent = (r.pass ? 'PASS' : 'FAIL') + ' — ' + r.label;
+            el.style.color = r.pass ? '#2e7d32' : '#c62828';
+          }
+        });
+      });
+
+      card.querySelectorAll('.whatif-row button[data-type]').forEach(function(btn) {
+        if (btn.hasAttribute('data-pid')) return;
+        btn.addEventListener('click', function() {
+          var uid = this.getAttribute('data-uid');
+          var type = this.getAttribute('data-type');
+          var input = card.querySelector('.whatif-summary-thresh[data-uid="' + uid + '"]');
+          if (!input) return;
+          var thresh = parseInt(input.value, 10) || 75;
+          var sesData = sessionDataCache[sid];
+          if (!sesData) return;
+          var polls = [];
+          Object.keys(sesData.polls || {}).forEach(function(pid) {
+            var p = sesData.polls[pid];
+            if (p.type === type) polls.push({ pid: pid, poll: p });
+          });
+          var rows = computeBidSummary(polls, thresh);
+          var tableDiv = document.getElementById('summary-table-' + uid);
+          if (tableDiv) tableDiv.innerHTML = renderSummaryTable(rows);
+        });
+      });
+
+      card.querySelectorAll('.whatif-row button[data-pid]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var uid = this.getAttribute('data-uid');
+          var pid = this.getAttribute('data-pid');
+          var spotsInput = card.querySelector('.whatif-prelim-spots[data-uid="' + uid + '"]');
+          var minInput = card.querySelector('.whatif-prelim-min[data-uid="' + uid + '"]');
+          if (!spotsInput || !minInput) return;
+          var spots = parseInt(spotsInput.value, 10) || 50;
+          var min = parseInt(minInput.value, 10) || 0;
+          var parts = uid.split('-');
+          var sesId = parts.slice(0, -1).join('-');
+          var idx = parseInt(parts[parts.length - 1], 10);
+          var sesData = sessionDataCache[sesId];
+          if (!sesData) return;
+          var pids = Object.keys(sesData.polls || {});
+          var p = (sesData.polls || {})[pids[idx]];
+          if (!p || !p.aggregation) return;
+          var board = buildPrelimLeaderboard(p.aggregation, spots, min);
+          var container = document.getElementById('poll-' + uid);
+          var existing = container.querySelector('.leaderboard-mini');
+          if (existing) existing.outerHTML = renderLeaderboardTable(board, spots);
+        });
+      });
+
+      return card;
+    }
+
+    function exportSessionExcel(s, sid) {
+      if (typeof XLSX === 'undefined') { alert('SheetJS not loaded.'); return; }
+      var polls = s.polls || {};
+      var pollIds = Object.keys(polls);
+      var wb = XLSX.utils.book_new();
+
+      var summaryRows = [['Poll', 'Type', 'Result', 'Yes', 'No', 'Abstain', 'Voters']];
+      pollIds.forEach(function(pid, i) {
+        var p = polls[pid];
+        var agg = p.aggregation || {};
+        var voters = p.voters || {};
+        var voterKeys = Object.keys(voters);
+
+        summaryRows.push([
+          p.name || '', typeLabel(p.type), p.result || '',
+          agg.yes || 0, agg.no || 0, agg.abstain || 0, voterKeys.length
+        ]);
+
+        var pollRows;
+        if (p.type === 'rush_prelim') {
+          var board = buildPrelimLeaderboard(agg, p.inviteSpots || 50, p.minimumScore || 0);
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: Rush Prelim'], ['Invite spots: ' + (p.inviteSpots || 50)], [],
+            ['Rank', 'Candidate', 'Score', 'Status']];
+          board.forEach(function(c) {
+            pollRows.push([c.rank, c.name, c.score, c.invited ? 'INVITED' : 'Below cutoff']);
+          });
+        } else {
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], ['Result: ' + (p.result || '')], [], ['Brother', 'Vote']];
+          voterKeys.forEach(function(uid) {
+            var v = voters[uid].vote;
+            pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
+          });
+        }
+        var sheetName = (i + 1) + '. ' + (p.name || 'Poll').substring(0, 25);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pollRows), sheetName);
+      });
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), 'Summary');
+      XLSX.writeFile(wb, 'session_' + (s.accessCode || sid.substring(0, 8)) + '.xlsx');
+    }
+
+    function deleteSession(sid, code, cardEl) {
+      if (!confirm('Delete this session and all its data? This cannot be undone.')) return;
+
+      var updates = {};
+      updates['sessionHistory/' + sid] = null;
+      updates['sessions/' + sid] = null;
+
+      db.ref().update(updates).then(function() {
+        cardEl.remove();
+        delete sessionDataCache[sid];
+        var container = document.getElementById('history-list');
+        if (!container.children.length) {
+          container.innerHTML = '<div class="no-history portal-card">No session history yet. Sessions are saved here when Standards ends them.</div>';
+        }
+      }).catch(function(err) {
+        alert('Failed to delete: ' + err.message);
+      });
+    }
+
+    function init() {
+      PortalAuth.requireAdmin().then(function(profile) {
+        if (!profile) return;
+        PortalAuth.initNav(profile);
+
+        db.ref('sessionHistory').orderByChild('endedAt').once('value', function(snap) {
+          document.getElementById('loading').classList.add('hidden');
+          var data = snap.val();
+          if (!data) {
+            document.getElementById('history-list').innerHTML = '<div class="no-history portal-card">No session history yet. Sessions are saved here when Standards ends them.</div>';
+            return;
+          }
+
+          var sids = Object.keys(data);
+          sids.sort(function(a, b) {
+            var da = data[a].endedAt || '';
+            var db2 = data[b].endedAt || '';
+            return da > db2 ? -1 : da < db2 ? 1 : 0;
+          });
+
+          var container = document.getElementById('history-list');
+          sids.forEach(function(sid) {
+            container.appendChild(renderSession(sid, data[sid]));
+          });
+        });
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

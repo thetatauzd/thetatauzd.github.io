@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regent – Display Board</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body class="regent-screen">
+  <header class="portal-header">
+    <h1>Regent display</h1>
+    <div class="user-info">
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="portal-container">
+    <div id="regent-join" class="portal-card" style="text-align:center;">
+      <h2>Enter session code</h2>
+      <p style="margin-bottom:0.75rem;">Enter the access code to connect to the voting session.</p>
+      <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+        <input type="text" id="regent-code" placeholder="CODE" maxlength="12" style="text-transform:uppercase; font-size:1.1rem; padding:0.5rem 1rem; width:160px; text-align:center;">
+        <button type="button" class="btn btn-primary" id="btn-regent-join" style="padding:0.5rem 1.5rem;">Connect</button>
+      </div>
+      <p id="regent-join-error" class="hidden" style="color:#c62828; margin-top:0.5rem;"></p>
+    </div>
+    <div id="regent-board" class="hidden">
+      <h1>Current poll</h1>
+      <p class="poll-name" id="regent-poll-name">—</p>
+      <p class="counter" id="regent-counter">0 / 0</p>
+      <p id="regent-type-label" class="hidden"></p>
+      <ul class="not-voted-list" id="regent-not-voted"></ul>
+      <div id="regent-banner-complete" class="banner-complete hidden">Poll complete — ready for results</div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/regent.js"></script>
+</body>
+</html>

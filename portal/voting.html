@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Voting</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header class="portal-header">
+    <h1>ΘΤ ΖΔ Voting</h1>
+    <div class="user-info">
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div id="step-enter-code" class="portal-card">
+      <h2>Enter session code</h2>
+      <p class="mb-2">Enter the access code shared by Standards to join the voting session.</p>
+      <input type="text" class="access-code-input" id="access-code" placeholder="CODE" maxlength="12" autocomplete="off">
+      <div class="text-center">
+        <button type="button" class="btn btn-primary" id="btn-join" style="padding: 0.75rem 1.5rem;">Join session</button>
+      </div>
+      <p id="join-error" class="hidden" style="color: #c62828; margin-top: 0.5rem; text-align: center;"></p>
+    </div>
+
+    <div id="step-waiting" class="portal-card hidden">
+      <h2>Joined session</h2>
+      <p id="poll-counter" style="font-weight:600; font-size:1.1rem; margin-bottom:0.5rem;"></p>
+      <p>Waiting for Standards to open a poll. This page will update automatically.</p>
+      <p id="waiting-next" style="font-weight:600; color:#FFCC33; margin-top:0.75rem;"></p>
+      <p id="waiting-debug" style="color:#999; font-size:0.85rem; margin-top:0.5rem;"></p>
+    </div>
+
+    <div id="step-vote" class="portal-card hidden">
+      <p id="vote-counter" style="font-weight:600; font-size:1.1rem; margin-bottom:0.5rem;"></p>
+      <h2 id="poll-title"></h2>
+      <p id="poll-type-label" class="mb-2"></p>
+      <div id="vote-options" class="vote-options"></div>
+      <p id="vote-confirm" class="hidden text-center">Your vote has been recorded. You cannot change it.</p>
+      <p id="vote-next" class="hidden" style="font-weight:500; color:#FFCC33; margin-top:0.75rem; text-align:center;"></p>
+      <p id="vote-error" class="hidden" style="color: #c62828; text-align: center;"></p>
+    </div>
+
+    <div id="step-kicked" class="portal-card hidden" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:1rem;">🚫</div>
+      <h2 style="color:#c62828;">You have been removed from the session</h2>
+      <p style="margin:1rem 0;">Standards has removed you from this voting session. If you think this was a mistake, contact your Standards chair.</p>
+      <button type="button" class="btn btn-primary" id="btn-rejoin" style="padding:0.75rem 1.5rem; margin-top:1rem;">Back to code entry</button>
+    </div>
+
+    <div id="step-ended" class="portal-card hidden" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+      <h2>Session has ended</h2>
+      <p style="margin:1rem 0;">Standards has closed this voting session. Thank you for participating.</p>
+      <button type="button" class="btn btn-primary" id="btn-rejoin-ended" style="padding:0.75rem 1.5rem; margin-top:1rem;">Back to code entry</button>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/voting.js"></script>
+</body>
+</html>

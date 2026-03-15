@@ -90,6 +90,11 @@
 	display: flex;
 	list-style: none;
   }
+
+  /* Allow a specific nav item to push to the far right */
+  .header-nav-item--push-right {
+	margin-left: auto;
+  }
   
   .header-nav-item {
 	margin: 0 15px;
@@ -610,7 +615,7 @@
 }
 
 .footer-section h3 {
-	color: #D4AF37;
+	color: #FFCC33;
 	margin-bottom: 1rem;
 }
 
@@ -623,12 +628,12 @@
 
 .footer-section a:hover {
 	opacity: 1;
-	color: #D4AF37;
+	color: #FFCC33;
 }
 
 /* Footer refinements: enforce gold headers and spacing */
 .footer .footer-section h3 {
-	color: #D4AF37 !important;
+	color: #FFCC33 !important;
 	margin-bottom: 1rem !important;
 }
 

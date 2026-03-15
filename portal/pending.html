@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Pending approval</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header class="portal-header">
+    <h1>ΘΤ ΖΔ Brother Portal</h1>
+    <div class="user-info">
+      <span id="user-email"></span>
+      <button type="button" class="btn btn-ghost" id="btn-signout">Sign out</button>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div class="portal-card pending-message">
+      <h2>Waiting for approval</h2>
+      <p>Your registration has been submitted. An admin will approve your account soon. You’ll be able to access the brother portal and voting after that.</p>
+      <p>If you have questions, contact the Regent or Standards.</p>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function() {
+      PortalAuth.requireAuth({ page: 'pending', redirect: true }).then(function(profile) {
+        if (!profile) return;
+        document.getElementById('user-email').textContent = profile.email || '';
+      });
+      document.getElementById('btn-signout').addEventListener('click', function() {
+        PortalAuth.signOut().then(function() {
+          window.location.href = 'login.html';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

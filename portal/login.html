@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Sign In</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header class="portal-header">
+    <h1>ΘΤ ΖΔ Brother Portal</h1>
+    <a href="../index.html">Back to site</a>
+  </header>
+
+  <main class="portal-container">
+    <div class="portal-card login-card">
+      <h2>Brother Portal</h2>
+      <p style="font-weight:600; color:#8B0000; margin-bottom:0.5rem;">Access is restricted to active brothers of Theta Tau, Zeta Delta chapter.</p>
+      <p class="mb-2">Sign in with your USC email or personal Gmail account. If this is your first time, you’ll complete a short registration and your account will be approved after review.</p>
+      <button type="button" class="btn-google" id="btn-google">
+        Sign in with Google
+      </button>
+      <div id="register-form" class="hidden">
+        <p class="mb-2">Complete your registration:</p>
+        <label for="reg-name">Full name</label>
+        <input type="text" id="reg-name" placeholder="Your name">
+        <label for="reg-roll">Roll number</label>
+        <input type="text" id="reg-roll" placeholder="Roll number">
+        <button type="button" class="btn btn-primary" id="btn-submit-register" style="width:100%; padding: 0.75rem;">Submit for approval</button>
+      </div>
+      <p id="login-error" class="hidden" style="color: #c62828; margin-top: 0.5rem;"></p>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function() {
+      var btnGoogle = document.getElementById('btn-google');
+      var registerForm = document.getElementById('register-form');
+      var btnSubmitReg = document.getElementById('btn-submit-register');
+      var regName = document.getElementById('reg-name');
+      var regRoll = document.getElementById('reg-roll');
+      var loginError = document.getElementById('login-error');
+
+      function showError(msg) {
+        loginError.textContent = msg || '';
+        loginError.classList.toggle('hidden', !msg);
+      }
+
+      function redirectAfterLogin(profile) {
+        if (profile.role === 'pending') {
+          window.location.href = 'pending.html';
+          return;
+        }
+        if (profile.role === 'admin') {
+          window.location.href = 'admin.html';
+          return;
+        }
+        var redirect = (window.location.search.match(/redirect=([^&]+)/) || [])[1];
+        if (redirect) {
+          try { redirect = decodeURIComponent(redirect); } catch (e) {}
+          if (redirect.indexOf('/portal/') !== -1 || redirect.indexOf('portal') !== -1) {
+            window.location.href = redirect;
+            return;
+          }
+        }
+        window.location.href = 'index.html';
+      }
+
+      btnGoogle.addEventListener('click', function() {
+        showError('');
+        PortalAuth.signInWithGoogle().then(function(result) {
+          var user = result.user;
+          return PortalAuth.getUserProfile(user.uid).then(function(profile) {
+            if (!profile) {
+              registerForm.classList.remove('hidden');
+              btnGoogle.classList.add('hidden');
+              regName.value = user.displayName || '';
+              regRoll.value = '';
+              return;
+            }
+            redirectAfterLogin(profile);
+          });
+        }).catch(function(err) {
+          showError(err.message || 'Sign-in failed.');
+        });
+      });
+
+      btnSubmitReg.addEventListener('click', function() {
+        var user = firebase.auth().currentUser;
+        if (!user) {
+          showError('Please sign in with Google first.');
+          return;
+        }
+        var name = (regName.value || '').trim();
+        var roll = (regRoll.value || '').trim();
+        if (!name) {
+          showError('Please enter your name.');
+          return;
+        }
+        showError('');
+        PortalAuth.registerBrother(user.uid, user.email, name, roll).then(function() {
+          window.location.href = 'pending.html';
+        }).catch(function(err) {
+          showError(err.message || 'Registration failed.');
+        });
+      });
+
+      // Already signed in? If user exists BUT no DB profile, treat as new and show registration form.
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (!user) return;
+        PortalAuth.getUserProfile(user.uid).then(function(dbProfile) {
+          if (!dbProfile) {
+            // No record in Realtime Database yet – show registration form instead of redirecting.
+            registerForm.classList.remove('hidden');
+            btnGoogle.classList.add('hidden');
+            regName.value = user.displayName || '';
+            regRoll.value = '';
+            return;
+          }
+          // Existing DB profile – redirect by role.
+          if (dbProfile.role !== 'pending') {
+            redirectAfterLogin(dbProfile);
+          } else {
+            window.location.href = 'pending.html';
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
