@@ -10,7 +10,7 @@
 </head>
 <body>
   <header class="portal-header">
-    <h1>ΘΤ ΖΔ Voting</h1>
+    <div class="header-brand"><img src="../Images/ThetaTau.png" alt="ΘΤ"><h1>ΘΤ ΖΔ Voting</h1></div>
     <div class="user-info">
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
@@ -21,6 +21,7 @@
           <a href="standards.html" id="link-standards" class="hidden">Standards</a>
           <a href="history.html" id="link-history" class="hidden">Session History</a>
           <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <a href="timer.html" id="link-timer" class="hidden">Event Timer</a>
           <div class="dd-divider"></div>
           <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
         </div>
@@ -29,7 +30,8 @@
   </header>
 
   <main class="portal-container">
-    <div id="step-enter-code" class="portal-card">
+    <div id="step-enter-code" class="portal-card" style="text-align:center;">
+      <img src="../Images/ThetaTau.png" alt="Theta Tau" style="height:56px; width:56px; object-fit:contain; margin-bottom:0.75rem;">
       <h2>Enter session code</h2>
       <p class="mb-2">Enter the access code shared by Standards to join the voting session.</p>
       <input type="text" class="access-code-input" id="access-code" placeholder="CODE" maxlength="12" autocomplete="off">
@@ -39,7 +41,7 @@
       <p id="join-error" class="hidden" style="color: #c62828; margin-top: 0.5rem; text-align: center;"></p>
     </div>
 
-    <div id="step-waiting" class="portal-card hidden">
+    <div id="step-waiting" class="portal-card hidden" style="text-align:center;">
       <h2>Joined session</h2>
       <p id="poll-counter" style="font-weight:600; font-size:1.1rem; margin-bottom:0.5rem;"></p>
       <p>Waiting for Standards to open a poll. This page will update automatically.</p>
@@ -47,10 +49,10 @@
       <p id="waiting-debug" style="color:#999; font-size:0.85rem; margin-top:0.5rem;"></p>
     </div>
 
-    <div id="step-vote" class="portal-card hidden">
+    <div id="step-vote" class="portal-card hidden" style="text-align:center;">
       <p id="vote-counter" style="font-weight:600; font-size:1.1rem; margin-bottom:0.5rem;"></p>
       <h2 id="poll-title"></h2>
-      <p id="poll-type-label" class="mb-2"></p>
+      <p id="poll-type-label" class="mb-2" style="color:#888; font-size:0.9rem;"></p>
       <div id="vote-options" class="vote-options"></div>
       <p id="vote-confirm" class="hidden text-center">Your vote has been recorded. You cannot change it.</p>
       <p id="vote-next" class="hidden" style="font-weight:500; color:#FFCC33; margin-top:0.75rem; text-align:center;"></p>
@@ -64,11 +66,11 @@
       <button type="button" class="btn btn-primary" id="btn-rejoin" style="padding:0.75rem 1.5rem; margin-top:1rem;">Back to code entry</button>
     </div>
 
-    <div id="step-ended" class="portal-card hidden" style="text-align:center;">
-      <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
-      <h2>Session has ended</h2>
-      <p style="margin:1rem 0;">Standards has closed this voting session. Thank you for participating.</p>
-      <button type="button" class="btn btn-primary" id="btn-rejoin-ended" style="padding:0.75rem 1.5rem; margin-top:1rem;">Back to code entry</button>
+    <div id="step-ended" class="portal-card hidden" style="text-align:center; padding:2.5rem 1.5rem;">
+      <div style="font-size:3.5rem; margin-bottom:1rem;">✅</div>
+      <h2 style="margin-bottom:0.5rem;">Session Complete</h2>
+      <p style="margin:0.75rem 0; color:#666; font-size:1.05rem;">This voting session has been closed by Standards.<br>Thank you for participating.</p>
+      <button type="button" class="btn btn-primary" id="btn-rejoin-ended" style="padding:0.75rem 1.5rem; margin-top:1.5rem;">Join Another Session</button>
     </div>
   </main>
 

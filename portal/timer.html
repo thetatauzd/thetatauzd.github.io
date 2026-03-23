@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event Timer – Brother Portal</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body class="timer-screen">
+  <header class="portal-header">
+    <div class="header-brand"><img src="../Images/ThetaTau.png" alt="ΘΤ"><h1>Event Timer</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="index.html">Portal home</a>
+          <a href="voting.html">Voting</a>
+          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
+          <a href="history.html" id="link-history" class="hidden">Session History</a>
+          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <a href="timer.html" id="link-timer" class="hidden">Event Timer</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="portal-container">
+
+    <div id="timer-idle" class="timer-idle-msg">
+      <img src="../Images/ThetaTau.png" alt="Theta Tau" style="height:64px; width:64px; object-fit:contain; margin-bottom:1rem; opacity:0.4;">
+      <p>No active timer</p>
+      <p style="font-size:0.9rem; margin-top:0.5rem;">An admin or rush chair can start an event timer.</p>
+    </div>
+
+    <div id="timer-active" class="hidden">
+      <div id="timer-display" class="timer-display-area timer-phase-main">
+        <p class="timer-event-title" id="timer-title-display"></p>
+        <div class="timer-round-badge" id="timer-round-display">Round 1</div>
+        <div class="timer-countdown" id="timer-countdown">0:00</div>
+        <p class="timer-phase-label" id="timer-phase-label">Main Timer</p>
+      </div>
+    </div>
+
+    <div id="timer-controls" class="timer-controls-panel hidden">
+      <h3>Timer Setup</h3>
+      <label for="timer-title-input">Event Title</label>
+      <input type="text" id="timer-title-input" placeholder="e.g. Speed Dating - Table Rotation" maxlength="80">
+
+      <div class="timer-input-row">
+        <div>
+          <label for="timer-dur-min">Duration (min)</label>
+          <input type="number" id="timer-dur-min" value="2" min="0" max="120">
+        </div>
+        <div>
+          <label for="timer-dur-sec">Duration (sec)</label>
+          <input type="number" id="timer-dur-sec" value="0" min="0" max="59">
+        </div>
+        <div>
+          <label for="timer-switch-sec">Switch time (sec)</label>
+          <input type="number" id="timer-switch-sec" value="30" min="0" max="300">
+        </div>
+      </div>
+
+      <label class="timer-repeat-toggle">
+        <input type="checkbox" id="timer-repeat" checked> Repeat after each cycle
+      </label>
+
+      <div class="timer-btn-row">
+        <button type="button" class="timer-btn timer-btn-start" id="btn-timer-start">Start</button>
+        <button type="button" class="timer-btn timer-btn-pause hidden" id="btn-timer-pause">Pause</button>
+        <button type="button" class="timer-btn timer-btn-resume hidden" id="btn-timer-resume">Resume</button>
+        <button type="button" class="timer-btn timer-btn-reset" id="btn-timer-reset">Reset</button>
+        <button type="button" class="timer-btn timer-btn-stop" id="btn-timer-stop">Stop</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/timer.js"></script>
+</body>
+</html>

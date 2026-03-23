@@ -22,8 +22,7 @@
         '<td><select data-uid="' + uid + '" class="role-select">' +
         '<option value="pending"' + (u.role === 'pending' ? ' selected' : '') + '>pending</option>' +
         '<option value="brother"' + (u.role === 'brother' ? ' selected' : '') + '>brother</option>' +
-        '<option value="regent"' + (u.role === 'regent' ? ' selected' : '') + '>regent</option>' +
-        '<option value="standards"' + (u.role === 'standards' ? ' selected' : '') + '>standards</option>' +
+        '<option value="rush_chair"' + (u.role === 'rush_chair' ? ' selected' : '') + '>rush chair</option>' +
         '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>admin</option>' +
         '</select></td>' +
         '<td>' +

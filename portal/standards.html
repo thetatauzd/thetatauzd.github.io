@@ -40,15 +40,27 @@
     .leaderboard-table th, .leaderboard-table td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid #eee; }
     .leaderboard-table th { font-weight: 600; background: #f5f5f5; }
     .leaderboard-cutoff td { border-bottom: 3px solid #FFCC33; }
-    .flag-item { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #ffe0b2; }
-    .flag-item:last-child { border-bottom: none; }
-    .btn-create-depledge { background: #c62828; color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
-    .btn-create-tiebreaker { background: #1565c0; color: #fff; border: none; border-radius: 4px; padding: 0.25rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+    .session-type-picker { display: flex; gap: 1rem; margin: 1rem 0; flex-wrap: wrap; }
+    .session-type-btn { flex: 1; min-width: 180px; padding: 1.25rem 1rem; border: 2px solid #ddd; border-radius: 10px; background: #fff; cursor: pointer; text-align: center; transition: border-color 0.2s, background 0.2s; }
+    .session-type-btn:hover { border-color: #FFCC33; }
+    .session-type-btn.selected { border-color: #FFCC33; background: #fffde7; }
+    .session-type-btn h4 { margin: 0 0 0.25rem; color: #8B0000; }
+    .session-type-btn p { margin: 0; font-size: 0.85rem; color: #666; }
+    .option-presets { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
+    .option-preset-btn { padding: 0.5rem 1rem; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 0.9rem; transition: border-color 0.2s; }
+    .option-preset-btn:hover { border-color: #FFCC33; }
+    .option-preset-btn.selected { border-color: #FFCC33; background: #fffde7; font-weight: 600; }
+    .batch-toggle { font-size: 0.85rem; color: #FFCC33; cursor: pointer; border: none; background: none; text-decoration: underline; padding: 0; }
+    .ending-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 999; }
+    .ending-box { background: #fff; border-radius: 12px; padding: 2.5rem; text-align: center; max-width: 400px; }
+    .ending-box h3 { color: #8B0000; margin-bottom: 0.75rem; }
+    .ending-box .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid #eee; border-top-color: #FFCC33; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <header class="portal-header">
-    <h1>Standards – Session control</h1>
+    <div class="header-brand"><img src="../Images/ThetaTau.png" alt="ΘΤ"><h1>Standards – Session control</h1></div>
     <div class="user-info">
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
@@ -59,6 +71,7 @@
           <a href="standards.html" id="link-standards" class="hidden">Standards</a>
           <a href="history.html" id="link-history" class="hidden">Session History</a>
           <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <a href="timer.html" id="link-timer" class="hidden">Event Timer</a>
           <div class="dd-divider"></div>
           <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
         </div>
@@ -71,14 +84,40 @@
 
     <!-- Session creation -->
     <div class="portal-card standards-section" id="panel-session">
-      <h2>Session</h2>
-      <p>Create a session and share the access code with brothers.</p>
+      <h2>Create a Session</h2>
+      <p>Choose a session type and share the access code with brothers.</p>
+
+      <div class="session-type-picker" id="session-type-picker">
+        <div class="session-type-btn" data-type="ranked">
+          <h4>Ranked Scorecard</h4>
+          <p>Brothers rate candidates +2 to -2. For rush prelims.</p>
+        </div>
+        <div class="session-type-btn" data-type="regular">
+          <h4>Regular Vote</h4>
+          <p>Brothers pick from options you define. For bids, motions, etc.</p>
+        </div>
+      </div>
+
+      <div id="regular-options-setup" class="hidden" style="margin-bottom:1rem;">
+        <label style="font-size:0.9rem; font-weight:600;">Vote options for this session:</label>
+        <div class="option-presets" id="option-presets">
+          <button type="button" class="option-preset-btn" data-preset="yes_no_idk">Yes / No / I Don't Know</button>
+          <button type="button" class="option-preset-btn" data-preset="yes_no">Yes / No</button>
+          <button type="button" class="option-preset-btn" data-preset="custom">Custom</button>
+        </div>
+        <div id="custom-options-group" class="hidden" style="margin-top:0.5rem;">
+          <label style="font-size:0.85rem;">Custom options (one per line)</label>
+          <textarea id="custom-options-text" rows="4" style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Option A&#10;Option B&#10;Option C"></textarea>
+        </div>
+      </div>
+
       <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
         <input type="text" id="session-code" placeholder="Access code (e.g. CHAPTER26)" maxlength="12" style="text-transform:uppercase;">
         <button type="button" class="btn btn-primary" id="btn-create-session">Create session</button>
       </div>
       <div id="session-active-info" class="hidden" style="margin-top:1rem;">
-        <p><strong>Session active</strong> — Code: <span id="active-code" style="font-family:monospace; font-size:1.1rem; color:#FFCC33;"></span></p>
+        <p><strong>Session active</strong> — Code: <span id="active-code" style="font-family:monospace; font-size:1.1rem; color:#FFCC33;"></span>
+          <span id="active-session-type" style="margin-left:0.75rem; font-size:0.9rem; color:#888;"></span></p>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-top:0.5rem;">
           <a href="#" id="link-open-regent" target="_blank" style="color:#FFCC33;">Open Regent board in new tab</a>
           <button type="button" class="btn btn-end-session" id="btn-end-session">End session</button>
@@ -98,9 +137,9 @@
         <span id="ap-vote-text">0 / 0 voted</span>
         <div class="bar"><div class="bar-fill" id="ap-bar-fill" style="width:0%;"></div></div>
       </div>
-      <div class="threshold-adjust" id="ap-threshold-row">
-        <label>Threshold:</label>
-        <input type="number" id="ap-threshold" min="0" max="100" value="75" style="width:70px;"> <span id="ap-threshold-unit">%</span>
+      <div class="threshold-adjust hidden" id="ap-threshold-row">
+        <label>Min score:</label>
+        <input type="number" id="ap-threshold" min="-100" max="100" value="0" style="width:70px;">
         <button type="button" class="btn btn-primary" id="btn-save-threshold" style="padding:0.3rem 0.75rem; font-size:0.85rem;">Save</button>
       </div>
       <div class="btn-row">
@@ -116,34 +155,43 @@
       <h3>Poll queue</h3>
       <div id="poll-queue-list"></div>
       <h3 class="mt-2">Add poll</h3>
-      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:flex-end;">
-        <div>
-          <label style="font-size:0.85rem;">Type</label>
-          <select id="new-poll-type">
-            <option value="rush_prelim">Rush Prelim (Ranked scorecard)</option>
-            <option value="rush_bid">Rush Bid (Yes/No/Abstain)</option>
-            <option value="motion">Motion (Yes/No/Abstain)</option>
-            <option value="pnm_vote">PNM Vote (Yes/No/Abstain)</option>
-            <option value="pnm_depledge">PNM De-pledge (Yes/No)</option>
-          </select>
+
+      <!-- Ranked session: name + candidates + min score -->
+      <div id="add-ranked-form" class="hidden">
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:flex-end;">
+          <div>
+            <label style="font-size:0.85rem;">Poll name</label>
+            <input type="text" id="ranked-poll-name" placeholder="e.g. Rush Round 1 Prelim">
+          </div>
+          <div>
+            <label style="font-size:0.85rem;">Min score (cutoff)</label>
+            <input type="number" id="ranked-min-score" value="0" style="width:70px;">
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-add-ranked">Add to queue</button>
         </div>
-        <div id="name-group">
-          <label style="font-size:0.85rem;">Name</label>
-          <input type="text" id="new-poll-name" placeholder="e.g. John Smith">
+        <div style="margin-top:0.75rem;">
+          <label style="font-size:0.85rem;">Candidate names (one per line or comma-separated)</label>
+          <textarea id="ranked-candidates" rows="6" style="width:100%; max-width:500px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Jane Doe&#10;John Smith&#10;Alice Johnson"></textarea>
         </div>
-        <div id="threshold-group">
-          <label style="font-size:0.85rem;">Threshold %</label>
-          <input type="number" id="new-poll-threshold" value="75" min="0" max="100" style="width:70px;">
-        </div>
-        <div id="min-score-group" class="hidden">
-          <label style="font-size:0.85rem;">Min score (cutoff)</label>
-          <input type="number" id="new-poll-min-score" value="0" style="width:70px;">
-        </div>
-        <button type="button" class="btn btn-primary" id="btn-add-poll">Add to queue</button>
       </div>
-      <div id="candidates-group" class="hidden" style="margin-top:0.75rem;">
-        <label style="font-size:0.85rem;">Candidate names (one per line or comma-separated)</label>
-        <textarea id="new-poll-candidates" rows="6" style="width:100%; max-width:500px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Jane Doe&#10;John Smith&#10;Alice Johnson"></textarea>
+
+      <!-- Regular session: name only (options inherited from session) -->
+      <div id="add-regular-form" class="hidden">
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:flex-end;">
+          <div>
+            <label style="font-size:0.85rem;">Poll name</label>
+            <input type="text" id="regular-poll-name" placeholder="e.g. John Smith">
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-add-regular">Add to queue</button>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <button type="button" class="batch-toggle" id="btn-toggle-batch">+ Batch add multiple</button>
+          <div id="batch-group" class="hidden" style="margin-top:0.5rem;">
+            <label style="font-size:0.85rem;">Paste names (one per line) to queue all at once</label>
+            <textarea id="batch-names" rows="6" style="width:100%; max-width:500px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="John Smith&#10;Jane Doe&#10;Alice Johnson"></textarea>
+            <button type="button" class="btn btn-primary mt-2" id="btn-batch-add" style="margin-top:0.5rem;">Add all to queue</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -152,7 +200,6 @@
       <h3>Results</h3>
       <div id="results-summary" style="font-size:1.1rem; font-weight:600; margin-bottom:1rem;"></div>
       <div id="results-leaderboard" class="hidden" style="margin-bottom:1rem;"></div>
-      <div id="results-flags" class="hidden" style="margin-bottom:1rem; padding:0.75rem; background:#fff3e0; border-radius:8px;"></div>
       <table class="results-table" id="results-voters">
         <thead><tr><th>Brother</th><th>Vote</th></tr></thead>
         <tbody></tbody>

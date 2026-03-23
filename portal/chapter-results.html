@@ -10,6 +10,7 @@
   <style>
     .results-header { text-align: center; margin-bottom: 2rem; }
     .results-header h1 { font-size: 2rem; color: #8B0000; margin-bottom: 0.25rem; }
+    .results-header img { height: 64px; width: 64px; object-fit: contain; margin-bottom: 0.75rem; }
     .results-header p { color: #888; }
     .results-section { margin-bottom: 2rem; }
     .results-section h2 {
@@ -24,36 +25,34 @@
     }
     .results-grid .name-pass { color: #1a1a1a; }
     .results-grid .name-fail { color: #c62828; opacity: 0.65; text-decoration: line-through; }
-    .threshold-bar {
-      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-      background: #f8f9fa; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-    }
-    .threshold-bar label { font-weight: 600; }
-    .threshold-bar input {
-      width: 70px; padding: 0.3rem 0.5rem; border: 1px solid #ccc; border-radius: 4px;
-      font-size: 0.95rem; text-align: center;
-    }
-    .threshold-bar button {
-      padding: 0.35rem 1rem; font-size: 0.9rem;
-    }
     .count-badge {
       display: inline-block; background: #FFCC33; color: #8B0000; font-weight: 700;
       padding: 0.15rem 0.6rem; border-radius: 12px; font-size: 0.85rem; margin-left: 0.5rem;
     }
     .no-results { text-align: center; color: #999; padding: 3rem; }
+    .leaderboard-chapter { width: 100%; border-collapse: collapse; font-size: 1rem; margin-bottom: 1rem; }
+    .leaderboard-chapter th, .leaderboard-chapter td { padding: 0.4rem 0.75rem; text-align: left; border-bottom: 1px solid #eee; }
+    .leaderboard-chapter th { background: #f5f5f5; font-weight: 600; }
+    .regular-poll-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+    .regular-poll-card h4 { margin: 0 0 0.5rem; }
+    .option-counts-row { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 1rem; }
+    .option-counts-row span { font-weight: 600; }
+    .summary-info {
+      background: #f8f9fa; padding: 0.6rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+      font-size: 0.95rem; color: #555;
+    }
     @media (max-width: 600px) {
       .results-grid { columns: 1; }
     }
     @media print {
-      header, .threshold-bar, .btn { display: none !important; }
+      header, .btn { display: none !important; }
       .results-grid { font-size: 1rem; }
     }
   </style>
 </head>
 <body>
   <header class="portal-header">
-    <h1>Chapter Results</h1>
+    <div class="header-brand"><img src="../Images/ThetaTau.png" alt="ΘΤ"><h1>Chapter Results</h1></div>
     <div class="user-info">
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
@@ -64,6 +63,7 @@
           <a href="standards.html" id="link-standards" class="hidden">Standards</a>
           <a href="history.html" id="link-history" class="hidden">Session History</a>
           <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <a href="timer.html" id="link-timer" class="hidden">Event Timer</a>
           <div class="dd-divider"></div>
           <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
         </div>
@@ -75,12 +75,13 @@
     <div id="loading" class="portal-card" style="text-align:center; color:#999;">Loading results...</div>
     <div id="results-content" class="hidden">
       <div class="results-header">
+        <img src="../Images/ThetaTau.png" alt="Theta Tau">
         <h1 id="session-title">Chapter Results</h1>
         <p id="session-date"></p>
       </div>
       <div id="results-sections"></div>
       <div style="text-align:center; margin-top:2rem;">
-        <a href="history.html" class="btn btn-primary" style="padding:0.5rem 1.5rem;">Back to History</a>
+        <a href="index.html" class="btn btn-primary" style="padding:0.5rem 1.5rem;">Back to Portal</a>
       </div>
     </div>
     <div id="no-data" class="portal-card no-results hidden">No session data found.</div>
@@ -98,8 +99,7 @@
     var db = firebase.database();
 
     function getParam(name) {
-      var url = new URL(window.location.href);
-      return url.searchParams.get(name);
+      return new URL(window.location.href).searchParams.get(name);
     }
 
     function formatDate(d) {
@@ -107,19 +107,40 @@
       return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     }
 
-    function typeTitle(t) {
-      return { rush_bid: 'Rush Bid Results', pnm_vote: 'PNM Vote Results' }[t] || t;
+    function isYesNoPoll(poll) {
+      var agg = poll.aggregation || {};
+      var oc = agg.optionCounts || {};
+      var keys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
+      return keys.indexOf('yes') !== -1 && keys.indexOf('no') !== -1;
     }
 
-    function buildSection(polls, type, threshold, container) {
+    function getYesNoFromRegular(agg) {
+      var oc = agg.optionCounts || {};
+      var yes = 0, no = 0;
+      Object.keys(oc).forEach(function(k) {
+        var lk = k.toLowerCase();
+        if (lk === 'yes') yes = oc[k];
+        else if (lk === 'no') no = oc[k];
+      });
+      return { yes: yes, no: no };
+    }
+
+    function buildYesNoSection(polls, threshold, container) {
       var rows = [];
       polls.forEach(function(item) {
         var agg = item.poll.aggregation || {};
-        var total = (agg.yes || 0) + (agg.no || 0);
-        var pct = total ? Math.round(100 * agg.yes / total) : 0;
+        var yes, no;
+        if (item.poll.type === 'regular') {
+          var parsed = getYesNoFromRegular(agg);
+          yes = parsed.yes; no = parsed.no;
+        } else {
+          yes = agg.yes || 0; no = agg.no || 0;
+        }
+        var total = yes + no;
+        var pct = total ? Math.round(100 * yes / total) : 0;
         rows.push({ name: item.poll.name, pct: pct, pass: pct >= threshold });
       });
-      rows.sort(function(a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+      rows.sort(function(a, b) { return b.pct - a.pct; });
 
       var passCount = rows.filter(function(r) { return r.pass; }).length;
       var failCount = rows.length - passCount;
@@ -127,18 +148,16 @@
       var section = document.createElement('div');
       section.className = 'results-section';
 
-      var threshBar = document.createElement('div');
-      threshBar.className = 'threshold-bar';
-      threshBar.innerHTML =
-        '<label>Threshold:</label>' +
-        '<input type="number" value="' + threshold + '" min="0" max="100" class="thresh-input"> %' +
-        '<button type="button" class="btn btn-primary">Apply</button>' +
-        '<span style="margin-left:auto;">Passed: <span class="count-badge">' + passCount + '</span> &nbsp; Did not pass: <span class="count-badge" style="background:#c62828; color:#fff;">' + failCount + '</span></span>';
-      section.appendChild(threshBar);
-
       var heading = document.createElement('h2');
-      heading.innerHTML = typeTitle(type);
+      heading.textContent = 'Vote Results';
       section.appendChild(heading);
+
+      var info = document.createElement('div');
+      info.className = 'summary-info';
+      info.innerHTML = 'Threshold: <strong>' + threshold + '%</strong> &nbsp;·&nbsp; ' +
+        'Passed: <span class="count-badge">' + passCount + '</span> &nbsp; ' +
+        'Did not pass: <span class="count-badge" style="background:#c62828; color:#fff;">' + failCount + '</span>';
+      section.appendChild(info);
 
       var grid = document.createElement('div');
       grid.className = 'results-grid';
@@ -149,14 +168,90 @@
         grid.appendChild(div);
       });
       section.appendChild(grid);
+      container.appendChild(section);
+    }
 
-      var applyBtn = threshBar.querySelector('button');
-      var threshInput = threshBar.querySelector('.thresh-input');
-      applyBtn.addEventListener('click', function() {
-        var newThresh = parseInt(threshInput.value, 10);
-        if (isNaN(newThresh)) return;
-        section.remove();
-        buildSection(polls, type, newThresh, container);
+    function buildRankedSection(polls, rminParams, container) {
+      polls.forEach(function(item) {
+        var poll = item.poll;
+        var agg = poll.aggregation || {};
+        var cs = agg.candidateScores || {};
+        var minScore = rminParams[item.pid] != null ? rminParams[item.pid] : (poll.minimumScore || 0);
+
+        var sorted = Object.keys(cs).map(function(name) {
+          return { name: name, score: cs[name].total || 0 };
+        }).sort(function(a, b) { return b.score - a.score; });
+
+        var passCount = sorted.filter(function(c) { return c.score >= minScore; }).length;
+        var failCount = sorted.length - passCount;
+
+        var section = document.createElement('div');
+        section.className = 'results-section';
+
+        var heading = document.createElement('h2');
+        heading.textContent = poll.name || 'Ranked Scorecard';
+        section.appendChild(heading);
+
+        var info = document.createElement('div');
+        info.className = 'summary-info';
+        info.innerHTML = sorted.length + ' candidates · ' + (agg.totalVoters || 0) + ' voters · min score: <strong>' + minScore + '</strong> &nbsp;·&nbsp; ' +
+          'Passed: <span style="color:#2e7d32; font-weight:600;">' + passCount + '</span> · ' +
+          'Did not pass: <span style="color:#c62828; font-weight:600;">' + failCount + '</span>';
+        section.appendChild(info);
+
+        var table = document.createElement('table');
+        table.className = 'leaderboard-chapter';
+        table.innerHTML = '<thead><tr><th>#</th><th>Name</th><th>Score</th><th>Status</th></tr></thead>';
+        var tbody = document.createElement('tbody');
+        sorted.forEach(function(c, i) {
+          var passes = c.score >= minScore;
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + (i + 1) + '</td><td>' + c.name + '</td><td>' + c.score + '</td>' +
+            '<td style="color:' + (passes ? '#2e7d32' : '#c62828') + '; font-weight:600;">' + (passes ? 'PASS' : 'Below cutoff') + '</td>';
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        section.appendChild(table);
+        container.appendChild(section);
+      });
+    }
+
+    function buildRegularSection(polls, container) {
+      var section = document.createElement('div');
+      section.className = 'results-section';
+
+      var heading = document.createElement('h2');
+      heading.textContent = 'Vote Results';
+      section.appendChild(heading);
+
+      polls.forEach(function(item) {
+        var poll = item.poll;
+        var agg = poll.aggregation || {};
+        var oc = agg.optionCounts || {};
+        var totalVoters = agg.totalVoters || 0;
+
+        var card = document.createElement('div');
+        card.className = 'regular-poll-card';
+
+        var h4 = document.createElement('h4');
+        h4.textContent = poll.name || '(unnamed)';
+        card.appendChild(h4);
+
+        var countsRow = document.createElement('div');
+        countsRow.className = 'option-counts-row';
+        Object.keys(oc).forEach(function(opt) {
+          var span = document.createElement('span');
+          span.textContent = opt + ': ' + oc[opt];
+          countsRow.appendChild(span);
+        });
+        card.appendChild(countsRow);
+
+        var voters = document.createElement('p');
+        voters.style.cssText = 'font-size:0.85rem; color:#888; margin:0.25rem 0 0;';
+        voters.textContent = totalVoters + ' voters';
+        card.appendChild(voters);
+
+        section.appendChild(card);
       });
 
       container.appendChild(section);
@@ -172,37 +267,60 @@
       var content = document.getElementById('results-content');
       content.classList.remove('hidden');
 
-      document.getElementById('session-title').textContent = 'Chapter Results — ' + (s.accessCode || sid.substring(0, 8));
+      document.getElementById('session-title').textContent = 'Chapter Results';
       document.getElementById('session-date').textContent = formatDate(s.endedAt);
 
+      var threshold = parseInt(getParam('thresh'), 10);
+      if (isNaN(threshold)) threshold = 75;
+
+      var rminParams = {};
+      var url = new URL(window.location.href);
+      url.searchParams.forEach(function(val, key) {
+        if (key.indexOf('rmin_') === 0) {
+          rminParams[key.substring(5)] = parseInt(val, 10) || 0;
+        }
+      });
+
       var polls = s.polls || {};
-      var rushBidPolls = [], pnmVotePolls = [];
+      var rankedPolls = [], regularPolls = [], yesNoPolls = [];
       Object.keys(polls).forEach(function(pid) {
         var p = polls[pid];
-        if (p.type === 'rush_bid') rushBidPolls.push({ pid: pid, poll: p });
-        if (p.type === 'pnm_vote') pnmVotePolls.push({ pid: pid, poll: p });
+        if (p.type === 'ranked' || p.type === 'rush_prelim') rankedPolls.push({ pid: pid, poll: p });
+        else if (p.type === 'regular') {
+          if (isYesNoPoll(p)) {
+            yesNoPolls.push({ pid: pid, poll: p });
+          } else {
+            regularPolls.push({ pid: pid, poll: p });
+          }
+        }
+        else if (p.type === 'rush_bid' || p.type === 'pnm_vote' || p.type === 'motion') yesNoPolls.push({ pid: pid, poll: p });
       });
 
       var sections = document.getElementById('results-sections');
       sections.innerHTML = '';
+      var hasContent = false;
 
-      if (rushBidPolls.length > 0) {
-        var defaultThresh = (rushBidPolls[0].poll.threshold) || 75;
-        buildSection(rushBidPolls, 'rush_bid', defaultThresh, sections);
+      if (rankedPolls.length > 0) {
+        buildRankedSection(rankedPolls, rminParams, sections);
+        hasContent = true;
       }
-      if (pnmVotePolls.length > 0) {
-        var defaultThresh2 = (pnmVotePolls[0].poll.threshold) || 75;
-        buildSection(pnmVotePolls, 'pnm_vote', defaultThresh2, sections);
+      if (yesNoPolls.length > 0) {
+        buildYesNoSection(yesNoPolls, threshold, sections);
+        hasContent = true;
+      }
+      if (regularPolls.length > 0) {
+        buildRegularSection(regularPolls, sections);
+        hasContent = true;
       }
 
-      if (rushBidPolls.length === 0 && pnmVotePolls.length === 0) {
-        sections.innerHTML = '<div class="no-results">No Rush Bid or PNM Vote polls in this session.</div>';
+      if (!hasContent) {
+        sections.innerHTML = '<div class="no-results">No displayable polls in this session.</div>';
       }
     }
 
     function init() {
-      PortalAuth.requireAdmin().then(function(profile) {
-        if (!profile) return;
+      PortalAuth.requireAuth({ redirect: true }).then(function(profile) {
+        if (!profile || profile.role === 'pending') return;
         PortalAuth.initNav(profile);
 
         var sid = getParam('sid');

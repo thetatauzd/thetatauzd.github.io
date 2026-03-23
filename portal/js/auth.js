@@ -142,12 +142,9 @@
     });
   }
 
-  /**
-   * Require regent or admin for regent view.
-   */
   function requireRegent() {
     return requireAuth({ page: 'regent' }).then(function(profile) {
-      if (profile && profile.role !== 'regent' && profile.role !== 'admin') {
+      if (profile && profile.role !== 'admin') {
         window.location.href = 'index.html';
         return null;
       }
@@ -155,12 +152,19 @@
     });
   }
 
-  /**
-   * Require standards or admin for standards view.
-   */
   function requireStandards() {
     return requireAuth({ page: 'standards' }).then(function(profile) {
-      if (profile && profile.role !== 'standards' && profile.role !== 'admin') {
+      if (profile && profile.role !== 'admin') {
+        window.location.href = 'index.html';
+        return null;
+      }
+      return profile;
+    });
+  }
+
+  function requireRushChair() {
+    return requireAuth({ page: 'timer' }).then(function(profile) {
+      if (profile && profile.role !== 'rush_chair' && profile.role !== 'admin') {
         window.location.href = 'index.html';
         return null;
       }
@@ -217,19 +221,19 @@
     var nameEl = document.getElementById('user-name');
     if (nameEl) nameEl.textContent = profile.name || profile.email || 'Brother';
 
-    if (role === 'regent' || role === 'admin') {
+    if (role === 'admin') {
       var r = document.getElementById('link-regent');
       if (r) r.classList.remove('hidden');
-    }
-    if (role === 'standards' || role === 'admin') {
       var s = document.getElementById('link-standards');
       if (s) s.classList.remove('hidden');
-    }
-    if (role === 'admin') {
       var a = document.getElementById('link-admin');
       if (a) a.classList.remove('hidden');
       var h = document.getElementById('link-history');
       if (h) h.classList.remove('hidden');
+    }
+    if (role === 'rush_chair' || role === 'admin') {
+      var t = document.getElementById('link-timer');
+      if (t) t.classList.remove('hidden');
     }
 
     var ddToggle = document.getElementById('dd-toggle');
@@ -259,6 +263,7 @@
     requireAdmin: requireAdmin,
     requireRegent: requireRegent,
     requireStandards: requireStandards,
+    requireRushChair: requireRushChair,
     signInWithGoogle: signInWithGoogle,
     signOut: signOut,
     registerBrother: registerBrother,

@@ -4,6 +4,12 @@
         var menu = document.querySelector('.header-menu');
         if (!btn || !menu) return;
 
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'menu-close-btn';
+        closeBtn.setAttribute('aria-label', 'Close Menu');
+        closeBtn.innerHTML = '&#x2715;';
+        menu.appendChild(closeBtn);
+
         function open() {
             menu.classList.add('menu-open');
             document.body.classList.add('menu-is-open');
@@ -19,6 +25,8 @@
         btn.addEventListener('click', function () {
             menu.classList.contains('menu-open') ? close() : open();
         });
+
+        closeBtn.addEventListener('click', close);
 
         menu.querySelectorAll('a').forEach(function (link) {
             link.addEventListener('click', close);

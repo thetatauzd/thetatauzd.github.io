@@ -673,3 +673,14 @@ main:last-of-type {
 html, body {
 	background-color: #000; /* match overall dark theme so any 1px remainder isn't visible */
 }
+
+/* ── Footer mobile centering ──────────────────────────────────────── */
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr !important;
+    }
+
+    .footer-section {
+        text-align: center;
+    }
+}

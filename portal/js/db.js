@@ -1,17 +1,19 @@
 /**
  * Realtime Database helpers for sessions, polls, votes, aggregation.
- * Poll types: rush_prelim, rush_bid, motion, pnm_vote, pnm_depledge.
+ * Poll types: ranked, regular.
  * Structure:
  *   sessionByCode/{code} = sessionId
- *   sessions/{sessionId}/meta = { accessCode, createdBy, createdAt, status }
+ *   sessions/{sessionId}/meta = { accessCode, createdBy, createdAt, status, sessionType, voteOptions? }
  *   sessions/{sessionId}/currentPollIndex = number
  *   sessions/{sessionId}/pollOrder = [ pollId0, pollId1, ... ]
- *   sessions/{sessionId}/polls/{pollId} = { name, type, threshold, status, candidates?, inviteSpots?, pledgeSpots?, minimumScore? }
+ *   sessions/{sessionId}/polls/{pollId} = { name, type, status, candidates?, minimumScore? }
+ *     - ranked polls have: candidates[], minimumScore
+ *     - regular polls inherit voteOptions from session meta
  *   sessions/{sessionId}/polls/{pollId}/votes/{uid} = { vote, votedAt }
- *     - For rush_prelim, vote is an object { candidateName: score }
- *     - For all others, vote is a string ('yes', 'no', 'abstain')
+ *     - For ranked, vote is an object { candidateName: score }
+ *     - For regular, vote is a string (one of the session's voteOptions)
  *   sessions/{sessionId}/polls/{pollId}/hasVoted/{uid} = true
- *   sessions/{sessionId}/polls/{pollId}/aggregation = { yes, no, abstain } or { candidateScores, totalVoters }
+ *   sessions/{sessionId}/polls/{pollId}/aggregation = { optionCounts, totalVoters } or { candidateScores, totalVoters }
  *   sessions/{sessionId}/connectedBrothers/{uid} = timestamp (presence)
  *   sessionHistory/{sessionId} = snapshot of session data
  */
@@ -21,6 +23,8 @@
   const db = typeof firebase !== 'undefined' ? firebase.database() : null;
 
   const POLL_TYPES = {
+    RANKED: 'ranked',
+    REGULAR: 'regular',
     RUSH_PRELIM: 'rush_prelim',
     RUSH_BID: 'rush_bid',
     MOTION: 'motion',
@@ -80,9 +84,6 @@
     return r ? r.child('connectedBrothers') : null;
   }
 
-  /**
-   * Resolve access code to sessionId (shallow: only this key).
-   */
   function getSessionIdByCode(code) {
     return new Promise(function(resolve, reject) {
       var ref = sessionByCodeRef(code);
@@ -98,9 +99,6 @@
     });
   }
 
-  /**
-   * Get current poll for session (using currentPollIndex and pollOrder). Returns { pollId, name, type, options, threshold, status, minimumScore } or null.
-   */
   function getCurrentPoll(sessionId) {
     return new Promise(function(resolve, reject) {
       var idxRef = sessionCurrentPollIndexRef(sessionId);
@@ -145,9 +143,6 @@
     });
   }
 
-  /**
-   * Listen to current poll (light: only poll meta). Calls callback with current poll or null.
-   */
   function onCurrentPoll(sessionId, callback) {
     var orderRef = sessionPollOrderRef(sessionId);
     var idxRef = sessionCurrentPollIndexRef(sessionId);
@@ -182,9 +177,6 @@
     };
   }
 
-  /**
-   * Submit vote. Writes to votes/{uid} and hasVoted/{uid}. Aggregation is updated by Standards (or cloud function); for simplicity we can update aggregation in client for Standards when they close poll, or increment on write via transaction. Spec says use aggregation node that updates incrementally – so when a brother writes a vote, we need to update aggregation. But brothers cannot write aggregation (rules). So we have two options: (1) use a Cloud Function to update aggregation on vote write, or (2) Standards view recalculates from votes when displaying (and we use transaction on close). For no server-side, we'll have Standards recalculate when they view results and store in aggregation when they close the poll. So brother only writes votes/{uid} and hasVoted/{uid}.
-   */
   function submitVote(sessionId, pollId, uid, vote) {
     var vRef = votesRef(sessionId, pollId);
     var hRef = hasVotedRef(sessionId, pollId);
@@ -196,9 +188,6 @@
     return db.ref().update(updates);
   }
 
-  /**
-   * Check if current user already voted (read own vote).
-   */
   function getMyVote(sessionId, pollId, uid) {
     var ref = votesRef(sessionId, pollId);
     if (!ref) return Promise.resolve(null);
@@ -207,9 +196,6 @@
     });
   }
 
-  /**
-   * Shallow listen: hasVoted list only (for Regent view – who has not voted).
-   */
   function onHasVoted(sessionId, pollId, callback) {
     var ref = hasVotedRef(sessionId, pollId);
     if (!ref) return function() {};
@@ -218,9 +204,6 @@
     });
   }
 
-  /**
-   * Listen to aggregation (for Regent/Standards results).
-   */
   function onAggregation(sessionId, pollId, callback) {
     var ref = aggregationRef(sessionId, pollId);
     if (!ref) return function() {};
@@ -229,9 +212,6 @@
     });
   }
 
-  /**
-   * Presence: set connected in connectedBrothers/{uid}.
-   */
   function setConnected(sessionId, uid, connected) {
     var ref = connectedBrothersRef(sessionId);
     if (!ref) return Promise.resolve();
@@ -242,9 +222,6 @@
     }
   }
 
-  /**
-   * Listen to connected brothers count (for Standards).
-   */
   function onConnectedBrothers(sessionId, callback) {
     var ref = connectedBrothersRef(sessionId);
     if (!ref) return function() {};
@@ -256,15 +233,15 @@
 
   /**
    * Compute aggregation from votes snapshot.
-   * For rush_prelim, each vote is an object { candidateName: score }.
-   * For rush_bid / motion / pnm_vote: yes/no/abstain counts.
-   * For pnm_depledge: yes/no counts only.
+   * For ranked (and legacy rush_prelim): each vote is { candidateName: score }, sums scores.
+   * For regular: counts votes per option string.
+   * For legacy yes/no/abstain types: counts yes/no/abstain.
    */
   function computeAggregation(pollType, votesObj, candidates) {
     var votes = votesObj || {};
     var uids = Object.keys(votes);
 
-    if (pollType === POLL_TYPES.RUSH_PRELIM) {
+    if (pollType === POLL_TYPES.RANKED || pollType === POLL_TYPES.RUSH_PRELIM) {
       var candidateScores = {};
       (candidates || []).forEach(function(c) { candidateScores[c] = { total: 0, count: 0 }; });
       uids.forEach(function(uid) {
@@ -280,6 +257,18 @@
       return { candidateScores: candidateScores, totalVoters: uids.length };
     }
 
+    if (pollType === POLL_TYPES.REGULAR) {
+      var optionCounts = {};
+      uids.forEach(function(uid) {
+        var v = votes[uid].vote;
+        if (typeof v === 'string') {
+          optionCounts[v] = (optionCounts[v] || 0) + 1;
+        }
+      });
+      return { optionCounts: optionCounts, totalVoters: uids.length };
+    }
+
+    // Legacy types: yes/no/abstain counting
     var yes = 0, no = 0, abstain = 0;
     uids.forEach(function(uid) {
       var v = votes[uid].vote;

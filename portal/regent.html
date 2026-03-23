@@ -10,7 +10,7 @@
 </head>
 <body class="regent-screen">
   <header class="portal-header">
-    <h1>Regent display</h1>
+    <div class="header-brand"><img src="../Images/ThetaTau.png" alt="ΘΤ"><h1>Regent Display</h1></div>
     <div class="user-info">
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
@@ -21,6 +21,7 @@
           <a href="standards.html" id="link-standards" class="hidden">Standards</a>
           <a href="history.html" id="link-history" class="hidden">Session History</a>
           <a href="admin.html" id="link-admin" class="hidden">Admin</a>
+          <a href="timer.html" id="link-timer" class="hidden">Event Timer</a>
           <div class="dd-divider"></div>
           <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
         </div>
@@ -39,12 +40,25 @@
       <p id="regent-join-error" class="hidden" style="color:#c62828; margin-top:0.5rem;"></p>
     </div>
     <div id="regent-board" class="hidden">
-      <h1>Current poll</h1>
+      <h1 id="regent-heading">Current poll</h1>
       <p class="poll-name" id="regent-poll-name">—</p>
-      <p class="counter" id="regent-counter">0 / 0</p>
       <p id="regent-type-label" class="hidden"></p>
-      <ul class="not-voted-list" id="regent-not-voted"></ul>
-      <div id="regent-banner-complete" class="banner-complete hidden">Poll complete — ready for results</div>
+      <div id="regent-waiting-open" class="hidden" style="text-align:center; padding:2rem 0;">
+        <p style="font-size:1.5rem; color:#FFCC33; font-weight:600;">Poll hasn't opened yet</p>
+        <p style="color:rgba(255,255,255,0.6); margin-top:0.5rem;">Waiting for Standards to open this poll...</p>
+      </div>
+      <div id="regent-live-board">
+        <p class="counter" id="regent-counter">0 / 0</p>
+        <h3 id="regent-not-voted-heading" style="text-align:center; color:#FFCC33; font-size:1.1rem; margin-bottom:0.75rem;">Still need to vote:</h3>
+        <ul class="not-voted-list" id="regent-not-voted"></ul>
+        <div id="regent-banner-complete" class="banner-complete hidden">Everyone has voted</div>
+      </div>
+    </div>
+    <div id="regent-session-ended" class="hidden" style="text-align:center; padding:3rem 1.5rem;">
+      <img src="../Images/ThetaTau.png" alt="Theta Tau" style="height:80px; width:80px; object-fit:contain; margin-bottom:1rem;">
+      <h1 style="color:#FFCC33; font-size:2rem; margin-bottom:0.5rem;">Session Complete</h1>
+      <p style="color:rgba(255,255,255,0.7); font-size:1.2rem; margin-bottom:2rem;">All polls have been completed and the session has been closed.</p>
+      <a href="index.html" class="btn btn-primary" style="padding:0.75rem 2rem; font-size:1.1rem; text-decoration:none;">Back to Portal</a>
     </div>
   </div>
 

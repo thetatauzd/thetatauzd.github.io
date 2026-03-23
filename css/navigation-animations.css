@@ -175,18 +175,37 @@ header * {
 .header-menu.menu-open {
     display: flex !important;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     animation: menuFadeIn 0.25s ease-out;
+}
+
+/* Close button injected by nav.js */
+.menu-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px 10px;
+    z-index: 1001;
+    transition: color 0.2s ease;
+}
+
+.menu-close-btn:hover {
+    color: #FFCC33;
 }
 
 .header-menu.menu-open .header-menu-nav {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     width: 100%;
-    padding: 0 20px;
+    padding: 70px 20px 40px;
 }
 
 .header-menu.menu-open .header-menu-nav-item {

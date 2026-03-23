@@ -1,5 +1,6 @@
 /**
- * Standards session control – real-time queue, active poll, connected list with kick, end session.
+ * Standards session control – two session types (ranked / regular),
+ * real-time queue, active poll, connected list with kick, end session.
  */
 (function() {
   'use strict';
@@ -7,6 +8,8 @@
   var db = firebase.database();
   var sessionId = null;
   var accessCode = null;
+  var sessionType = null;   // 'ranked' or 'regular'
+  var voteOptions = [];     // for regular sessions
   var pollOrder = [];
   var pollsMeta = {};
   var currentIndex = 0;
@@ -19,9 +22,13 @@
 
   function $(id) { return document.getElementById(id); }
 
+  // ── Session persistence ──
+
   function saveSession() {
     if (sessionId && accessCode) {
-      sessionStorage.setItem('standards_session', JSON.stringify({ sid: sessionId, code: accessCode }));
+      sessionStorage.setItem('standards_session', JSON.stringify({
+        sid: sessionId, code: accessCode, type: sessionType, opts: voteOptions
+      }));
     }
   }
 
@@ -47,6 +54,8 @@
   function typeLabel(t) {
     if (!t) return '';
     return {
+      ranked: 'Ranked Scorecard',
+      regular: 'Regular Vote',
       rush_prelim: 'Rush Prelim',
       rush_bid: 'Rush Bid',
       motion: 'Motion',
@@ -59,15 +68,32 @@
     $('reconnect-banner').classList.toggle('hidden', !show);
   }
 
+  // ── Panel visibility ──
+
   function showSessionPanels() {
     ['panel-active-poll', 'panel-queue', 'panel-results', 'panel-connected'].forEach(function(id) {
       $(id).classList.remove('hidden');
     });
     $('session-active-info').classList.remove('hidden');
     $('active-code').textContent = accessCode;
+    $('active-session-type').textContent = '(' + typeLabel(sessionType) + ')';
     $('link-open-regent').href = 'regent.html#' + sessionId;
     $('btn-create-session').disabled = true;
     $('session-code').disabled = true;
+
+    // Hide session type picker and options when active
+    $('session-type-picker').classList.add('hidden');
+    var regOpts = $('regular-options-setup');
+    if (regOpts) regOpts.classList.add('hidden');
+
+    // Show correct add-poll form
+    if (sessionType === 'ranked') {
+      $('add-ranked-form').classList.remove('hidden');
+      $('add-regular-form').classList.add('hidden');
+    } else {
+      $('add-ranked-form').classList.add('hidden');
+      $('add-regular-form').classList.remove('hidden');
+    }
   }
 
   function hideSessionPanels() {
@@ -78,13 +104,56 @@
     $('btn-create-session').disabled = false;
     $('session-code').disabled = false;
     $('session-code').value = '';
+
+    $('session-type-picker').classList.remove('hidden');
+    $('add-ranked-form').classList.add('hidden');
+    $('add-regular-form').classList.add('hidden');
+  }
+
+  // ── Session type & options picker ──
+
+  var selectedSessionType = null;
+  var selectedPreset = null;
+
+  function initTypePicker() {
+    var btns = $('session-type-picker').querySelectorAll('.session-type-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selectedSessionType = btn.getAttribute('data-type');
+        $('regular-options-setup').classList.toggle('hidden', selectedSessionType !== 'regular');
+      });
+    });
+
+    var presetBtns = $('option-presets').querySelectorAll('.option-preset-btn');
+    presetBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        presetBtns.forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selectedPreset = btn.getAttribute('data-preset');
+        $('custom-options-group').classList.toggle('hidden', selectedPreset !== 'custom');
+      });
+    });
+  }
+
+  function getVoteOptionsFromUI() {
+    if (selectedPreset === 'yes_no_idk') return ['Yes', 'No', "I Don't Know"];
+    if (selectedPreset === 'yes_no') return ['Yes', 'No'];
+    if (selectedPreset === 'custom') {
+      var raw = ($('custom-options-text').value || '').trim();
+      return raw.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
+    }
+    return [];
   }
 
   // ── Session ──
 
-  function rejoinSession(sid, code) {
+  function rejoinSession(sid, code, type, opts) {
     sessionId = sid;
     accessCode = code;
+    sessionType = type || 'regular';
+    voteOptions = opts || [];
     pollOrder = [];
     pollsMeta = {};
     currentIndex = 0;
@@ -96,6 +165,13 @@
   function createSession() {
     var code = ($('session-code').value || '').toUpperCase().replace(/\s/g, '');
     if (!code) { alert('Enter an access code.'); return; }
+    if (!selectedSessionType) { alert('Select a session type.'); return; }
+
+    if (selectedSessionType === 'regular') {
+      var opts = getVoteOptionsFromUI();
+      if (opts.length < 2) { alert('Regular vote needs at least 2 options.'); return; }
+    }
+
     var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
     if (!uid) return;
 
@@ -108,7 +184,11 @@
           if (statusSnap.val() === 'ended') {
             return createNewSession(code, uid);
           }
-          rejoinSession(existingSid, code);
+          // Rejoin existing session — read its type and options
+          return db.ref('sessions/' + existingSid + '/meta').once('value').then(function(metaSnap) {
+            var meta = metaSnap.val() || {};
+            rejoinSession(existingSid, code, meta.sessionType, meta.voteOptions);
+          });
         });
       }
       return createNewSession(code, uid);
@@ -119,15 +199,26 @@
   }
 
   function createNewSession(code, uid) {
+    var type = selectedSessionType;
+    var opts = type === 'regular' ? getVoteOptionsFromUI() : null;
     var sid = db.ref('sessions').push().key;
+    var meta = {
+      accessCode: code,
+      createdBy: uid,
+      createdAt: firebase.database.ServerValue.TIMESTAMP,
+      status: 'active',
+      sessionType: type
+    };
+    if (opts) meta.voteOptions = opts;
+
     var updates = {};
     updates['sessionByCode/' + code] = sid;
-    updates['sessions/' + sid + '/meta'] = { accessCode: code, createdBy: uid, createdAt: firebase.database.ServerValue.TIMESTAMP, status: 'active' };
+    updates['sessions/' + sid + '/meta'] = meta;
     updates['sessions/' + sid + '/currentPollIndex'] = 0;
     updates['sessions/' + sid + '/pollOrder'] = [];
 
     return db.ref().update(updates).then(function() {
-      rejoinSession(sid, code);
+      rejoinSession(sid, code, type, opts);
     }).catch(function(err) {
       alert('Failed: ' + err.message);
       $('btn-create-session').disabled = false;
@@ -138,6 +229,8 @@
     var snapshot = {
       accessCode: code,
       endedAt: new Date().toISOString(),
+      sessionType: sessionType || null,
+      voteOptions: voteOptions || null,
       polls: {}
     };
 
@@ -145,6 +238,8 @@
       var meta = metaSnap.val() || {};
       snapshot.createdAt = meta.createdAt || null;
       snapshot.createdBy = meta.createdBy || null;
+      snapshot.sessionType = meta.sessionType || snapshot.sessionType;
+      snapshot.voteOptions = meta.voteOptions || snapshot.voteOptions;
 
       return db.ref('sessions/' + sid + '/pollOrder').once('value');
     }).then(function(orderSnap) {
@@ -164,7 +259,6 @@
               minimumScore: p.minimumScore != null ? p.minimumScore : null,
               candidates: p.candidates || null,
               inviteSpots: p.inviteSpots != null ? p.inviteSpots : null,
-              pledgeSpots: p.pledgeSpots != null ? p.pledgeSpots : null,
               aggregation: agg, result: computeResult(p, agg), voters: {}
             };
 
@@ -197,6 +291,18 @@
 
   function computeResult(poll, agg) {
     var type = poll.type;
+
+    if (type === 'ranked' || type === 'rush_prelim') {
+      return 'See leaderboard';
+    }
+
+    if (type === 'regular') {
+      var oc = agg.optionCounts || {};
+      var parts = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; });
+      return parts.join(' | ') || 'No votes';
+    }
+
+    // Legacy types
     if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
       var total = (agg.yes || 0) + (agg.no || 0);
       var pct = total ? Math.round(100 * agg.yes / total) : 0;
@@ -206,11 +312,11 @@
       var dtotal = (agg.yes || 0) + (agg.no || 0);
       var dpct = dtotal ? Math.round(100 * agg.yes / dtotal) : 0;
       return dpct > 50 ? 'DE-PLEDGE (' + dpct + '% voted yes)' : 'REMAIN (' + dpct + '% voted yes)';
-    } else if (type === 'rush_prelim') {
-      return 'See leaderboard';
     }
     return '';
   }
+
+  // ── End session ──
 
   function endSession() {
     if (!sessionId) return;
@@ -218,6 +324,13 @@
 
     $('btn-end-session').disabled = true;
     $('btn-end-session').textContent = 'Ending...';
+
+    // Show ending overlay
+    var overlay = document.createElement('div');
+    overlay.className = 'ending-overlay';
+    overlay.id = 'ending-overlay';
+    overlay.innerHTML = '<div class="ending-box"><div class="spinner"></div><h3>Ending session...</h3><p>Saving history and disconnecting brothers.</p></div>';
+    document.body.appendChild(overlay);
 
     var savingSid = sessionId;
     var savingCode = accessCode;
@@ -235,6 +348,8 @@
     db.ref().update(immediateUpdates).then(function() {
       sessionId = null;
       accessCode = null;
+      sessionType = null;
+      voteOptions = [];
       pollOrder = [];
       pollsMeta = {};
       currentIndex = 0;
@@ -248,13 +363,18 @@
       buildSessionSnapshot(savingSid, savingCode, function(snapshot) {
         var clean = JSON.parse(JSON.stringify(snapshot));
         db.ref('sessionHistory/' + savingSid).set(clean).then(function() {
-          console.log('Session history saved.');
+          var ov = $('ending-overlay');
+          if (ov) ov.remove();
+          window.location.href = 'history.html';
         }).catch(function(err) {
-          console.error('Failed to save session history:', err.message);
+          var ov = $('ending-overlay');
+          if (ov) ov.remove();
           alert('Warning: session ended but history failed to save — ' + err.message);
         });
       });
     }).catch(function(err) {
+      var ov = $('ending-overlay');
+      if (ov) ov.remove();
       alert('Failed to end session: ' + err.message);
       $('btn-end-session').disabled = false;
       $('btn-end-session').textContent = 'End session';
@@ -263,59 +383,21 @@
 
   // ── Add poll ──
 
-  function addPoll() {
+  function addRankedPoll() {
     if (!sessionId) { alert('Create a session first.'); return; }
-    var type = $('new-poll-type').value;
-
-    if (type === 'rush_prelim') {
-      return addRushPrelimPoll();
-    }
-
-    var name = ($('new-poll-name').value || '').trim();
-    if (!name) { alert('Enter a name.'); return; }
-
-    var threshold = parseInt($('new-poll-threshold').value, 10);
-    var data = {
-      name: name,
-      type: type,
-      status: 'upcoming'
-    };
-
-    if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
-      data.threshold = isNaN(threshold) ? 75 : threshold;
-    }
-    if (type === 'pnm_depledge') {
-      data.threshold = 50;
-    }
-    var pollId = db.ref('sessions/' + sessionId + '/polls').push().key;
-    var newOrder = pollOrder.slice();
-    newOrder.push(pollId);
-
-    var updates = {};
-    updates['sessions/' + sessionId + '/polls/' + pollId] = data;
-    updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
-
-    db.ref().update(updates).then(function() {
-      $('new-poll-name').value = '';
-    }).catch(function(err) {
-      alert('Failed to add poll: ' + err.message);
-    });
-  }
-
-  function addRushPrelimPoll() {
-    var name = ($('new-poll-name').value || '').trim() || 'Rush Prelim';
-    var raw = ($('new-poll-candidates').value || '').trim();
+    var name = ($('ranked-poll-name').value || '').trim() || 'Ranked Scorecard';
+    var raw = ($('ranked-candidates').value || '').trim();
     if (!raw) { alert('Enter candidate names.'); return; }
 
     var candidates = raw.split(/[\n,]+/).map(function(s) { return s.trim(); }).filter(Boolean);
     if (candidates.length < 1) { alert('Enter at least one candidate name.'); return; }
 
-    var minScore = parseInt($('new-poll-min-score').value, 10) || 0;
+    var minScore = parseInt($('ranked-min-score').value, 10) || 0;
 
     var pollId = db.ref('sessions/' + sessionId + '/polls').push().key;
     var data = {
       name: name,
-      type: 'rush_prelim',
+      type: 'ranked',
       candidates: candidates,
       minimumScore: minScore,
       status: 'upcoming'
@@ -329,10 +411,67 @@
     updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
 
     db.ref().update(updates).then(function() {
-      $('new-poll-name').value = '';
-      $('new-poll-candidates').value = '';
+      $('ranked-poll-name').value = '';
+      $('ranked-candidates').value = '';
     }).catch(function(err) {
       alert('Failed to add poll: ' + err.message);
+    });
+  }
+
+  function addRegularPoll() {
+    if (!sessionId) { alert('Create a session first.'); return; }
+    var name = ($('regular-poll-name').value || '').trim();
+    if (!name) { alert('Enter a poll name.'); return; }
+
+    var pollId = db.ref('sessions/' + sessionId + '/polls').push().key;
+    var data = {
+      name: name,
+      type: 'regular',
+      status: 'upcoming'
+    };
+
+    var newOrder = pollOrder.slice();
+    newOrder.push(pollId);
+
+    var updates = {};
+    updates['sessions/' + sessionId + '/polls/' + pollId] = data;
+    updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
+
+    db.ref().update(updates).then(function() {
+      $('regular-poll-name').value = '';
+    }).catch(function(err) {
+      alert('Failed to add poll: ' + err.message);
+    });
+  }
+
+  function batchAddRegularPolls() {
+    if (!sessionId) { alert('Create a session first.'); return; }
+    var raw = ($('batch-names').value || '').trim();
+    if (!raw) { alert('Enter at least one name.'); return; }
+
+    var names = raw.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
+    if (names.length === 0) { alert('No valid names found.'); return; }
+
+    var newOrder = pollOrder.slice();
+    var updates = {};
+
+    names.forEach(function(name) {
+      var pollId = db.ref('sessions/' + sessionId + '/polls').push().key;
+      updates['sessions/' + sessionId + '/polls/' + pollId] = {
+        name: name,
+        type: 'regular',
+        status: 'upcoming'
+      };
+      newOrder.push(pollId);
+    });
+
+    updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
+
+    db.ref().update(updates).then(function() {
+      $('batch-names').value = '';
+      alert(names.length + ' polls added to queue.');
+    }).catch(function(err) {
+      alert('Failed to batch add: ' + err.message);
     });
   }
 
@@ -354,9 +493,7 @@
 
     container.innerHTML = pollOrder.map(function(pid, i) {
       var meta = pollsMeta[pid];
-      if (!meta && hasAnyMeta) {
-        return '';
-      }
+      if (!meta && hasAnyMeta) return '';
       var name = (meta && meta.name) ? meta.name : 'Loading...';
       var type = (meta && meta.type) ? typeLabel(meta.type) : '';
       var status = (meta && meta.status) ? meta.status : 'upcoming';
@@ -435,18 +572,11 @@
     $('btn-close-poll').disabled = (status !== 'open');
 
     var type = meta.type;
-    if (type === 'rush_prelim') {
+    if (type === 'ranked' || type === 'rush_prelim') {
       $('ap-threshold').value = meta.minimumScore != null ? meta.minimumScore : 0;
-      $('ap-threshold-unit').textContent = 'min score';
       $('ap-threshold-row').classList.remove('hidden');
-    } else if (type === 'pnm_depledge') {
-      $('ap-threshold').value = 50;
-      $('ap-threshold-unit').textContent = '%';
-      $('ap-threshold-row').classList.add('hidden');
     } else {
-      $('ap-threshold').value = meta.threshold != null ? meta.threshold : 75;
-      $('ap-threshold-unit').textContent = '%';
-      $('ap-threshold-row').classList.remove('hidden');
+      $('ap-threshold-row').classList.add('hidden');
     }
 
     attachActivePollListeners();
@@ -558,10 +688,8 @@
     var meta = getCurrentPollData();
     if (!pollId || !meta) return;
     var val = parseInt($('ap-threshold').value, 10);
-    if (meta.type === 'rush_prelim') {
+    if (meta.type === 'ranked' || meta.type === 'rush_prelim') {
       db.ref('sessions/' + sessionId + '/polls/' + pollId + '/minimumScore').set(val);
-    } else {
-      db.ref('sessions/' + sessionId + '/polls/' + pollId + '/threshold').set(val);
     }
   }
 
@@ -578,21 +706,25 @@
       var agg = p.aggregation || PortalDb.computeAggregation(p.type, votes, p.candidates);
       var summary = $('results-summary');
       var leaderboard = $('results-leaderboard');
-      var flags = $('results-flags');
       var voterTable = $('results-voters');
       leaderboard.classList.add('hidden');
       leaderboard.innerHTML = '';
-      flags.classList.add('hidden');
-      flags.innerHTML = '';
 
-      if (p.type === 'rush_prelim') {
-        renderRushPrelimResults(p, agg, summary, leaderboard);
+      if (p.type === 'ranked' || p.type === 'rush_prelim') {
+        renderRankedResults(p, agg, summary, leaderboard);
         voterTable.classList.add('hidden');
         return;
       }
       voterTable.classList.remove('hidden');
 
-      if (p.type === 'rush_bid' || p.type === 'motion' || p.type === 'pnm_vote') {
+      if (p.type === 'regular') {
+        var oc = agg.optionCounts || {};
+        var totalVoters = agg.totalVoters || 0;
+        var parts = Object.keys(oc).map(function(k) {
+          return '<span style="margin-right:1rem;">' + k + ': <strong>' + oc[k] + '</strong></span>';
+        });
+        summary.innerHTML = parts.join('') + '<span style="color:#888; margin-left:0.5rem;">(' + totalVoters + ' voters)</span>';
+      } else if (p.type === 'rush_bid' || p.type === 'motion' || p.type === 'pnm_vote') {
         var total = (agg.yes || 0) + (agg.no || 0);
         var pct = total ? Math.round(100 * agg.yes / total) : 0;
         var thresh = p.threshold != null ? p.threshold : 75;
@@ -609,10 +741,6 @@
           ' &mdash; ' + dp + '% &mdash; <strong>' + (depledge ? 'DE-PLEDGE' : 'REMAIN') + '</strong></span>';
       } else {
         summary.innerHTML = '';
-      }
-
-      if (p.type === 'pnm_vote' && p.status === 'closed') {
-        renderPnmFlags(flags);
       }
 
       var tbody = voterTable.querySelector('tbody');
@@ -633,78 +761,25 @@
     });
   }
 
-  function renderRushPrelimResults(poll, agg, summaryEl, leaderboardEl) {
+  function renderRankedResults(poll, agg, summaryEl, leaderboardEl) {
     var cs = agg.candidateScores || {};
     var sorted = Object.keys(cs).map(function(name) {
       return { name: name, score: cs[name].total, voters: cs[name].count };
     }).sort(function(a, b) { return b.score - a.score; });
 
-    var inviteSpots = poll.inviteSpots || 50;
     var minScore = poll.minimumScore != null ? poll.minimumScore : 0;
 
-    summaryEl.innerHTML = sorted.length + ' candidates &middot; ' + (agg.totalVoters || 0) + ' voters &middot; Top ' + inviteSpots + ' invited (min score: ' + minScore + ')';
+    summaryEl.innerHTML = sorted.length + ' candidates &middot; ' + (agg.totalVoters || 0) + ' voters &middot; min score: ' + minScore;
 
     var html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Status</th></tr></thead><tbody>';
     sorted.forEach(function(c, i) {
-      var invited = i < inviteSpots && c.score >= minScore;
-      var cutoff = (i === inviteSpots - 1) ? ' leaderboard-cutoff' : '';
-      html += '<tr class="' + cutoff + '"><td>' + (i + 1) + '</td><td>' + c.name + '</td><td>' + c.score + '</td>' +
-        '<td style="color:' + (invited ? '#2e7d32' : '#c62828') + '; font-weight:600;">' + (invited ? 'INVITED' : 'Below cutoff') + '</td></tr>';
+      var passes = c.score >= minScore;
+      html += '<tr><td>' + (i + 1) + '</td><td>' + c.name + '</td><td>' + c.score + '</td>' +
+        '<td style="color:' + (passes ? '#2e7d32' : '#c62828') + '; font-weight:600;">' + (passes ? 'PASS' : 'Below cutoff') + '</td></tr>';
     });
     html += '</tbody></table>';
     leaderboardEl.innerHTML = html;
     leaderboardEl.classList.remove('hidden');
-  }
-
-  function renderPnmFlags(flagsEl) {
-    var pnmPolls = [];
-    pollOrder.forEach(function(pid) {
-      var m = pollsMeta[pid];
-      if (m && m.type === 'pnm_vote' && m.status === 'closed' && m.aggregation) {
-        var a = m.aggregation;
-        var total = (a.yes || 0) + (a.no || 0);
-        var pct = total ? (a.yes / total * 100) : 0;
-        pnmPolls.push({ pid: pid, name: m.name, pct: pct });
-      }
-    });
-    if (pnmPolls.length < 2) return;
-
-    var mean = pnmPolls.reduce(function(s, p) { return s + p.pct; }, 0) / pnmPolls.length;
-    var variance = pnmPolls.reduce(function(s, p) { return s + Math.pow(p.pct - mean, 2); }, 0) / pnmPolls.length;
-    var stddev = Math.sqrt(variance);
-    var threshold = mean - 2 * stddev;
-
-    var flagged = pnmPolls.filter(function(p) { return p.pct < threshold; });
-    if (flagged.length === 0) return;
-
-    var html = '<strong style="color:#e65100;">Flagged PNMs</strong> (2+ std devs below mean of ' +
-      Math.round(mean) + '%, cutoff: ' + Math.round(threshold) + '%)<br>';
-    flagged.forEach(function(f) {
-      html += '<div class="flag-item"><span>' + f.name + ' (' + Math.round(f.pct) + '%)</span>' +
-        '<button type="button" class="btn-create-depledge" data-name="' + f.name + '">Create de-pledge vote</button></div>';
-    });
-    flagsEl.innerHTML = html;
-    flagsEl.classList.remove('hidden');
-
-    flagsEl.querySelectorAll('.btn-create-depledge').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var name = this.getAttribute('data-name');
-        createDepledgePoll(name);
-      });
-    });
-  }
-
-  function createDepledgePoll(name) {
-    if (!sessionId) return;
-    if (!confirm('Create a de-pledge vote for "' + name + '"?')) return;
-    var pollId = db.ref('sessions/' + sessionId + '/polls').push().key;
-    var data = { name: 'De-pledge: ' + name, type: 'pnm_depledge', threshold: 50, status: 'upcoming' };
-    var newOrder = pollOrder.slice();
-    newOrder.push(pollId);
-    var updates = {};
-    updates['sessions/' + sessionId + '/polls/' + pollId] = data;
-    updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
-    db.ref().update(updates).catch(function(err) { alert('Failed: ' + err.message); });
   }
 
   // ── Export ──
@@ -715,7 +790,7 @@
 
     buildSessionSnapshot(sessionId, accessCode, function(snapshot) {
       var wb = XLSX.utils.book_new();
-      var summaryRows = [['Poll', 'Type', 'Result', 'Yes', 'No', 'Abstain', 'Voters']];
+      var summaryRows = [['Poll', 'Type', 'Result', 'Voters']];
 
       pollOrder.forEach(function(pid, i) {
         var p = snapshot.polls[pid];
@@ -725,23 +800,36 @@
         var voterKeys = Object.keys(voters);
 
         summaryRows.push([
-          p.name || '', typeLabel(p.type), p.result || '',
-          agg.yes || 0, agg.no || 0, agg.abstain || 0, voterKeys.length
+          p.name || '', typeLabel(p.type), p.result || '', voterKeys.length
         ]);
 
         var pollRows;
-        if (p.type === 'rush_prelim') {
+        if (p.type === 'ranked' || p.type === 'rush_prelim') {
           var cs = agg.candidateScores || {};
           var sorted = Object.keys(cs).map(function(n) { return { name: n, score: cs[n].total }; })
             .sort(function(a, b) { return b.score - a.score; });
           pollRows = [
-            ['Poll: ' + (p.name || '')], ['Type: Rush Prelim'],
-            ['Invite spots: ' + (p.inviteSpots || 50)], [],
+            ['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Rank', 'Candidate', 'Score', 'Status']
           ];
           sorted.forEach(function(c, idx) {
-            var invited = idx < (p.inviteSpots || 50) && c.score >= (p.minimumScore || 0);
-            pollRows.push([idx + 1, c.name, c.score, invited ? 'INVITED' : 'Below cutoff']);
+            var passes = c.score >= (p.minimumScore || 0);
+            pollRows.push([idx + 1, c.name, c.score, passes ? 'PASS' : 'Below cutoff']);
+          });
+        } else if (p.type === 'regular') {
+          var oc = agg.optionCounts || {};
+          pollRows = [
+            ['Poll: ' + (p.name || '')], ['Type: Regular Vote'], [],
+            ['Option', 'Count']
+          ];
+          Object.keys(oc).forEach(function(opt) {
+            pollRows.push([opt, oc[opt]]);
+          });
+          pollRows.push([]);
+          pollRows.push(['Brother', 'Vote']);
+          voterKeys.forEach(function(uid) {
+            var v = voters[uid].vote;
+            pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
           });
         } else {
           pollRows = [
@@ -767,7 +855,6 @@
   function onErr(label) {
     return function(err) {
       console.error('Firebase listener error [' + label + ']:', err.message);
-      alert('Firebase error (' + label + '): ' + err.message + '\nMake sure you deployed the latest firebase rules.');
     };
   }
 
@@ -817,31 +904,6 @@
     sessionListeners.push(function() { infoRef.off('value', infoCb); });
   }
 
-  // ── Type toggle for add-poll form ──
-
-  function updateTypeFields() {
-    var type = $('new-poll-type').value;
-    var isRushPrelim = type === 'rush_prelim';
-    var hasThreshold = type === 'rush_bid' || type === 'motion' || type === 'pnm_vote';
-
-    $('name-group').classList.toggle('hidden', false);
-    $('threshold-group').classList.toggle('hidden', !hasThreshold);
-    $('min-score-group').classList.toggle('hidden', !isRushPrelim);
-    $('candidates-group').classList.toggle('hidden', !isRushPrelim);
-
-    if (type === 'pnm_depledge') {
-      $('new-poll-name').placeholder = 'e.g. De-pledge: John Smith';
-    } else if (isRushPrelim) {
-      $('new-poll-name').placeholder = 'e.g. Rush Round 1 Prelim';
-    } else if (isRushBid) {
-      $('new-poll-name').placeholder = 'e.g. John Smith';
-    } else if (type === 'pnm_vote') {
-      $('new-poll-name').placeholder = 'e.g. Jane Doe';
-    } else {
-      $('new-poll-name').placeholder = 'e.g. Budget Motion';
-    }
-  }
-
   // ── Init ──
 
   function init() {
@@ -849,26 +911,43 @@
       if (!profile) return;
       PortalAuth.initNav(profile);
 
+      initTypePicker();
+
       $('btn-create-session').addEventListener('click', createSession);
       $('btn-end-session').addEventListener('click', endSession);
-      $('btn-add-poll').addEventListener('click', addPoll);
-      $('new-poll-name').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); addPoll(); }
+
+      // Ranked form
+      $('btn-add-ranked').addEventListener('click', addRankedPoll);
+      $('ranked-poll-name').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); addRankedPoll(); }
       });
+
+      // Regular form
+      $('btn-add-regular').addEventListener('click', addRegularPoll);
+      $('regular-poll-name').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); addRegularPoll(); }
+      });
+      $('btn-toggle-batch').addEventListener('click', function() {
+        var g = $('batch-group');
+        var visible = !g.classList.contains('hidden');
+        g.classList.toggle('hidden');
+        this.textContent = visible ? '+ Batch add multiple' : '- Hide batch add';
+      });
+      $('btn-batch-add').addEventListener('click', batchAddRegularPolls);
+
       $('btn-open-poll').addEventListener('click', openPoll);
       $('btn-close-poll').addEventListener('click', function() { closePoll(true); });
       $('btn-next-poll').addEventListener('click', nextPoll);
       $('btn-prev-poll').addEventListener('click', prevPoll);
       $('btn-save-threshold').addEventListener('click', saveThreshold);
       $('btn-export-excel').addEventListener('click', exportExcel);
-      $('new-poll-type').addEventListener('change', updateTypeFields);
-      updateTypeFields();
 
+      // Rejoin saved session
       var saved = getSavedSession();
       if (saved && saved.sid) {
         db.ref('sessions/' + saved.sid + '/meta/status').once('value').then(function(snap) {
           if (snap.val() && snap.val() !== 'ended') {
-            rejoinSession(saved.sid, saved.code);
+            rejoinSession(saved.sid, saved.code, saved.type, saved.opts);
           } else {
             clearSavedSession();
           }

@@ -1,5 +1,7 @@
 /**
  * Brother voting: enter access code, see current poll, submit vote.
+ * Supports ranked (scorecard) and regular (pick one option) session types.
+ * Persists session in sessionStorage so page refresh auto-rejoins.
  * Detects kick (connectedBrothers/{uid} removed) and session end (meta/status = 'ended').
  */
 (function() {
@@ -15,6 +17,10 @@
   var trackedPollId = null;
   var cachedPollOrder = [];
   var cachedPollIndex = 0;
+  var sessionMeta = null;       // holds sessionType, voteOptions
+  var unloadHandlerAdded = false;
+
+  var STORAGE_KEY = 'voting_session';
 
   function showStep(step) {
     ['step-enter-code', 'step-waiting', 'step-vote', 'step-kicked', 'step-ended'].forEach(function(id) {
@@ -47,8 +53,37 @@
     if (el2) el2.textContent = text;
   }
 
+  // ── Session persistence ──
+
+  function saveVotingSession() {
+    if (sessionId) {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ sid: sessionId }));
+    }
+  }
+
+  function clearVotingSession() {
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function getSavedVotingSession() {
+    try {
+      var raw = sessionStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  // ── Next up display ──
+
   function showNextUp(targetEl) {
     if (!targetEl || !sessionId) return;
+
+    // If current poll is not yet open, show its name as "up next"
+    if (currentPoll && currentPoll.status && currentPoll.status !== 'open') {
+      targetEl.textContent = 'Up next: ' + (currentPoll.name || 'Poll');
+      targetEl.classList.remove('hidden');
+      return;
+    }
+
     var nextIdx = cachedPollIndex + 1;
     if (nextIdx >= cachedPollOrder.length) {
       targetEl.textContent = '';
@@ -86,19 +121,43 @@
 
     var type = poll.type;
 
-    if (type === 'rush_prelim') {
+    // New ranked type and legacy rush_prelim
+    if (type === 'ranked' || type === 'rush_prelim') {
       renderScorecard(poll, container);
       return;
     }
 
-    var choices = [];
-    if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
-      choices = ['yes', 'no', 'abstain'];
-    } else if (type === 'pnm_depledge') {
-      choices = ['yes', 'no'];
+    // New regular type: options come from session meta
+    if (type === 'regular') {
+      var choices = (sessionMeta && sessionMeta.voteOptions) || [];
+      if (choices.length === 0) {
+        container.innerHTML = '<p style="color:#c62828;">No vote options configured for this session.</p>';
+        return;
+      }
+      choices.forEach(function(v) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'vote-btn';
+        if (myVote === v) btn.classList.add('voted');
+        btn.textContent = v;
+        btn.addEventListener('click', function() {
+          if (hasVoted) return;
+          submitVote(v);
+        });
+        container.appendChild(btn);
+      });
+      return;
     }
 
-    choices.forEach(function(v) {
+    // Legacy types
+    var legacyChoices = [];
+    if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
+      legacyChoices = ['yes', 'no', 'abstain'];
+    } else if (type === 'pnm_depledge') {
+      legacyChoices = ['yes', 'no'];
+    }
+
+    legacyChoices.forEach(function(v) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'vote-btn';
@@ -188,19 +247,37 @@
   }
 
   function submitScorecard() {
-    var unrated = Object.keys(scorecardState).filter(function(k) { return scorecardState[k] === null; });
+    var keys = Object.keys(scorecardState);
+    var unrated = keys.filter(function(k) { return scorecardState[k] === null; });
     if (unrated.length > 0) {
-      alert('You must rate all ' + Object.keys(scorecardState).length + ' candidates. ' + unrated.length + ' remaining.');
+      var errorEl = document.getElementById('vote-error');
+      if (errorEl) {
+        errorEl.textContent = 'You must rate all ' + keys.length + ' candidates. ' + unrated.length + ' remaining.';
+        errorEl.classList.remove('hidden');
+      }
       return;
     }
     var ballot = {};
-    Object.keys(scorecardState).forEach(function(name) {
+    keys.forEach(function(name) {
       ballot[name] = parseInt(scorecardState[name], 10);
     });
-    submitVote(ballot);
+
+    var errorEl = document.getElementById('vote-error');
+    var submitBtn = document.getElementById('btn-submit-scorecard');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+    }
+
+    submitVote(ballot, function onDone(success) {
+      if (!success && submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit All Ratings';
+      }
+    });
   }
 
-  function submitVote(vote) {
+  function submitVote(vote, doneCb) {
     var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
     if (!sessionId || !currentPoll || !uid) return;
     var errorEl = document.getElementById('vote-error');
@@ -214,12 +291,14 @@
 
     db.ref().update(updates).then(function() {
       if (errorEl) errorEl.classList.add('hidden');
-      renderVoteOptions(currentPoll, true, typeof vote === 'object' ? vote : vote);
+      renderVoteOptions(currentPoll, true, vote);
+      if (doneCb) doneCb(true);
     }).catch(function(err) {
       if (errorEl) {
         errorEl.textContent = err.message || 'Failed to submit vote.';
         errorEl.classList.remove('hidden');
       }
+      if (doneCb) doneCb(false);
     });
   }
 
@@ -245,6 +324,8 @@
     currentPoll = null;
     trackedPollId = null;
     disconnected = false;
+    sessionMeta = null;
+    clearVotingSession();
     showStep('step-enter-code');
     document.getElementById('access-code').value = '';
     debugMsg('');
@@ -259,20 +340,16 @@
     var cb = ref.on('value', function(snap) {
       if (!hasReceivedFirst) {
         hasReceivedFirst = true;
-        if (!snap.exists()) {
-          // Entry was already gone before we started listening — could be a race
-          return;
-        }
+        if (!snap.exists()) return;
         return;
       }
       if (!snap.exists() && !disconnected) {
         disconnected = true;
         detachAllListeners();
+        clearVotingSession();
         showStep('step-kicked');
       }
-    }, function() {
-      // Permission error on read — fallback, don't break
-    });
+    }, function() {});
     presenceListener = function() { ref.off('value', cb); };
   }
 
@@ -286,11 +363,10 @@
       if (status === 'ended' && !disconnected) {
         disconnected = true;
         detachAllListeners();
+        clearVotingSession();
         showStep('step-ended');
       }
-    }, function() {
-      // Permission error — ignore
-    });
+    }, function() {});
     metaListener = function() { ref.off('value', cb); };
   }
 
@@ -322,7 +398,7 @@
       };
 
       if (p.status !== 'open') {
-        debugMsg('Poll "' + p.name + '" is ' + p.status + '. Waiting for it to open...');
+        debugMsg('');
         updatePollCounter();
         showNextUp(document.getElementById('waiting-next'));
         showStep('step-waiting');
@@ -335,13 +411,15 @@
       var typeLabel = document.getElementById('poll-type-label');
       if (typeLabel) {
         var labels = {
-          rush_prelim: 'Rush Prelim — rate each candidate +2 to -2',
-          rush_bid: 'Rush Bid (Yes / No / Abstain)',
-          motion: 'Motion (Yes / No / Abstain)',
-          pnm_vote: 'PNM Vote (Yes / No / Abstain)',
-          pnm_depledge: 'PNM De-pledge (Yes / No)'
+          ranked: 'Rate each candidate +2 to -2',
+          regular: '',
+          rush_prelim: 'Rate each candidate +2 to -2',
+          rush_bid: 'Yes / No / Abstain',
+          motion: 'Yes / No / Abstain',
+          pnm_vote: 'Yes / No / Abstain',
+          pnm_depledge: 'Yes / No'
         };
-        typeLabel.textContent = labels[p.type] || p.type;
+        typeLabel.textContent = labels[p.type] != null ? labels[p.type] : p.type;
       }
 
       var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
@@ -411,7 +489,44 @@
     db.ref('sessions/' + sessionId + '/pollOrder').on('value', onIndexOrOrderChange);
   }
 
-  // ── Join session ──
+  // ── Join / rejoin session ──
+
+  function connectToSession(sid, uid) {
+    sessionId = sid;
+    disconnected = false;
+    saveVotingSession();
+    showStep('step-waiting');
+    debugMsg('Joined session. Connecting...');
+
+    // Load session meta for vote options
+    db.ref('sessions/' + sid + '/meta').once('value').then(function(snap) {
+      sessionMeta = snap.val() || {};
+    }).catch(function() {
+      sessionMeta = {};
+    });
+
+    if (uid) {
+      db.ref('sessions/' + sid + '/connectedBrothers/' + uid).set(firebase.database.ServerValue.TIMESTAMP).then(function() {
+        listenForKick(sid, uid);
+      }).catch(function(err) {
+        debugMsg('Presence write failed: ' + err.message);
+      });
+
+      if (!unloadHandlerAdded) {
+        unloadHandlerAdded = true;
+        window.addEventListener('beforeunload', function() {
+          var curSid = sessionId;
+          var curUid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+          if (curSid && curUid) {
+            db.ref('sessions/' + curSid + '/connectedBrothers/' + curUid).remove();
+          }
+        });
+      }
+    }
+
+    listenForSessionEnd(sid);
+    startListening();
+  }
 
   function joinSession(code) {
     code = (code || '').toUpperCase().replace(/\s/g, '');
@@ -425,38 +540,35 @@
         return;
       }
 
-      // Check if session is already ended before connecting
       db.ref('sessions/' + sid + '/meta/status').once('value').then(function(metaSnap) {
         if (metaSnap.val() === 'ended') {
           showJoinError('This session has already ended.');
           return;
         }
 
-        sessionId = sid;
-        disconnected = false;
-        showStep('step-waiting');
-        debugMsg('Joined session. Connecting...');
-
         var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-        if (uid) {
-          db.ref('sessions/' + sid + '/connectedBrothers/' + uid).set(firebase.database.ServerValue.TIMESTAMP).then(function() {
-            listenForKick(sid, uid);
-          }).catch(function(err) {
-            debugMsg('Presence write failed: ' + err.message);
-          });
-          window.addEventListener('beforeunload', function() {
-            if (sessionId === sid) {
-              db.ref('sessions/' + sid + '/connectedBrothers/' + uid).remove();
-            }
-          });
-        }
-
-        listenForSessionEnd(sid);
-        startListening();
+        connectToSession(sid, uid);
       });
     }).catch(function(err) {
       showJoinError('Could not join: ' + (err.message || 'unknown error'));
     });
+  }
+
+  function tryAutoRejoin(uid) {
+    var saved = getSavedVotingSession();
+    if (!saved || !saved.sid) return false;
+
+    db.ref('sessions/' + saved.sid + '/meta/status').once('value').then(function(snap) {
+      if (snap.val() && snap.val() !== 'ended') {
+        connectToSession(saved.sid, uid);
+      } else {
+        clearVotingSession();
+      }
+    }).catch(function() {
+      clearVotingSession();
+    });
+
+    return true;
   }
 
   // ── Init ──
@@ -474,6 +586,9 @@
       });
       document.getElementById('btn-rejoin').addEventListener('click', resetToCodeEntry);
       document.getElementById('btn-rejoin-ended').addEventListener('click', resetToCodeEntry);
+
+      var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+      tryAutoRejoin(uid);
     });
   }
 
