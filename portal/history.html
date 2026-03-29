@@ -12,19 +12,15 @@
     .session-card:hover { border-color: #FFCC33; }
     .session-card.expanded { border-color: #FFCC33; }
     .session-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; color: #888; font-size: 0.9rem; margin-bottom: 0.5rem; }
-    .poll-result-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; position: relative; }
+    .poll-result-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
     .poll-result-card h4 { margin: 0 0 0.25rem 0; }
-    .poll-result-card .result-line { font-weight: 600; margin: 0.25rem 0 0.5rem 0; }
+    .poll-result-card .result-line { font-weight: 600; margin: 0.25rem 0 0.5rem 0; color: #444; }
     .whatif-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #ddd; font-size: 0.85rem; }
     .whatif-row label { font-weight: 500; }
     .whatif-row input { width: 65px; padding: 0.2rem 0.4rem; border: 1px solid #ccc; border-radius: 4px; }
-    .whatif-row .whatif-result { font-weight: 600; margin-left: 0.5rem; }
     .leaderboard-mini { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
     .leaderboard-mini th, .leaderboard-mini td { padding: 0.25rem 0.5rem; text-align: left; border-bottom: 1px solid #eee; }
     .leaderboard-mini th { background: #eee; font-weight: 600; }
-    .cutoff-row td { border-bottom: 3px solid #FFCC33; }
-    .result-pass { color: #2e7d32; }
-    .result-fail { color: #c62828; }
     .voter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.25rem 1rem; font-size: 0.9rem; }
     .voter-grid span { padding: 0.15rem 0; }
     .session-polls { display: none; margin-top: 1rem; }
@@ -38,17 +34,11 @@
     .summary-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     .summary-table th, .summary-table td { padding: 0.35rem 0.6rem; text-align: left; border-bottom: 1px solid #ddd; }
     .summary-table th { background: #e8eaf6; font-weight: 600; }
-    .summary-table .row-pass td { }
-    .summary-table .row-fail td { opacity: 0.5; }
-    .did-not-pass { margin-top: 1rem; padding: 1rem; background: #fff3e0; border-radius: 8px; border: 1px solid #ffe0b2; }
-    .did-not-pass h4 { margin: 0 0 0.5rem; color: #c62828; }
-    .option-counts { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.95rem; margin: 0.25rem 0 0.5rem; }
-    .option-counts span { font-weight: 600; }
   </style>
 </head>
 <body>
   <header class="portal-header">
-    <div class="header-brand"><img src="../Images/ThetaTau.png" alt="ΘΤ"><h1>Session History</h1></div>
+    <div class="header-brand"><a href="index.html" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Session History</h1></div>
     <div class="user-info">
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
@@ -83,61 +73,63 @@
   (function() {
     'use strict';
     var db = firebase.database();
-    var isStandards = false;
 
-    function typeLabel(t) {
-      return {
-        ranked: 'Ranked Scorecard', regular: 'Regular Vote',
-        rush_prelim: 'Rush Prelim', rush_bid: 'Rush Bid', motion: 'Motion',
-        pnm_vote: 'PNM Vote', pnm_depledge: 'PNM De-pledge'
-      }[t] || t || '';
-    }
+    var TYPE_LABELS = {
+      rush_prelim:  'Rush Prelim',
+      rush_bid:     'Rush Bid',
+      motion:       'Motion',
+      pnm_vote:     'PNM Vote',
+      pnm_depledge: 'PNM De-pledge',
+      ranked:       'Ranked Scorecard',
+      regular:      'Regular Vote'
+    };
 
-    function formatDate(d) {
-      if (!d) return '—';
-      var dt = new Date(typeof d === 'number' ? d : d);
-      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-    }
+    function typeLabel(t) { return TYPE_LABELS[t] || t || ''; }
 
-    function isYesNoPoll(poll) {
-      var agg = poll.aggregation || {};
+    // Returns true if a 'regular' poll aggregation has yes/no data
+    function regularIsYesNo(agg) {
       var oc = agg.optionCounts || {};
       var keys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
       return keys.indexOf('yes') !== -1 && keys.indexOf('no') !== -1;
     }
 
-    function getYesNoFromRegular(agg) {
+    // Extracts yes/no/abstain counts from a 'regular' poll's optionCounts
+    function yesNoFromRegular(agg) {
       var oc = agg.optionCounts || {};
       var yes = 0, no = 0, abstain = 0;
       Object.keys(oc).forEach(function(k) {
-        var lk = k.toLowerCase();
-        if (lk === 'yes') yes = oc[k];
-        else if (lk === 'no') no = oc[k];
+        var l = k.toLowerCase();
+        if (l === 'yes') yes = oc[k];
+        else if (l === 'no') no = oc[k];
         else abstain += oc[k];
       });
       return { yes: yes, no: no, abstain: abstain };
     }
 
-    function recalcBidResult(agg, threshold, poll) {
+    function formatDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+      });
+    }
+
+    // Returns yes% as integer, excluding abstains. Handles yes/no/abstain types
+    // and 'regular' polls that have yes/no option counts.
+    function yesPct(agg, pollType) {
       var yes, no;
-      if (poll && poll.type === 'regular') {
-        var parsed = getYesNoFromRegular(agg);
-        yes = parsed.yes; no = parsed.no;
+      if (pollType === 'regular') {
+        var yn = yesNoFromRegular(agg);
+        yes = yn.yes; no = yn.no;
       } else {
         yes = agg.yes || 0; no = agg.no || 0;
       }
       var total = yes + no;
-      var pct = total ? Math.round(100 * yes / total) : 0;
-      return { pass: pct >= threshold, label: pct + '% (need ' + threshold + '%)' };
+      return total ? Math.round(100 * yes / total) : 0;
     }
 
-    function recalcDepledgeResult(agg) {
-      var total = (agg.yes || 0) + (agg.no || 0);
-      var pct = total ? Math.round(100 * agg.yes / total) : 0;
-      return { pass: pct > 50, label: pct + '% voted yes' };
-    }
-
-    function buildRankedLeaderboard(agg, minScore) {
+    // Builds ranked leaderboard sorted by score descending
+    function buildLeaderboard(agg, minScore) {
       var cs = agg.candidateScores || {};
       return Object.keys(cs).map(function(name) {
         return { name: name, score: cs[name].total || 0 };
@@ -146,14 +138,13 @@
       });
     }
 
-    // Legacy compat
-    function buildPrelimLeaderboard(agg, inviteSpots, minScore) {
-      var cs = agg.candidateScores || {};
-      return Object.keys(cs).map(function(name) {
-        return { name: name, score: cs[name].total || 0 };
-      }).sort(function(a, b) { return b.score - a.score; }).map(function(c, i) {
-        return { rank: i + 1, name: c.name, score: c.score, invited: i < inviteSpots && c.score >= minScore };
+    function renderLeaderboardTable(board) {
+      var html = '<table class="leaderboard-mini"><thead><tr><th>#</th><th>Name</th><th>Score</th></tr></thead><tbody>';
+      board.forEach(function(c) {
+        html += '<tr><td>' + c.rank + '</td><td>' + c.name + '</td><td>' + c.score + '</td></tr>';
       });
+      html += '</tbody></table>';
+      return html;
     }
 
     function renderPollCard(pid, p, uniqueId) {
@@ -161,176 +152,108 @@
       var voters = p.voters || {};
       var voterKeys = Object.keys(voters);
       var type = p.type || '';
+
       var html = '<div class="poll-result-card" id="poll-' + uniqueId + '">';
-      html += '<h4>' + (p.name || '(unnamed)') + ' <span style="color:#888; font-weight:400; font-size:0.85rem;">(' + typeLabel(type) + ')</span></h4>';
+      html += '<h4>' + (p.name || '(unnamed)') +
+        ' <span style="color:#888; font-weight:400; font-size:0.85rem;">(' + typeLabel(type) + ')</span></h4>';
 
-      if (type === 'ranked' || type === 'rush_prelim') {
+      if (type === 'rush_prelim' || type === 'ranked') {
         var minScore = p.minimumScore || 0;
-        var board = (type === 'ranked') ? buildRankedLeaderboard(agg, minScore) : buildPrelimLeaderboard(agg, p.inviteSpots || 50, minScore);
-        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' + board.length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
-
-        // Passing candidates
-        var passing = board.filter(function(c) { return type === 'ranked' ? c.passes : c.invited; });
-        var failing = board.filter(function(c) { return type === 'ranked' ? !c.passes : !c.invited; });
-
-        html += renderRankedLeaderboardTable(board, type);
-
-        if (isStandards && failing.length > 0) {
-          html += '<div class="did-not-pass"><h4>Did Not Pass (' + failing.length + ')</h4><ul>';
-          failing.forEach(function(c) {
-            html += '<li>' + c.name + ' (score: ' + c.score + ')</li>';
-          });
-          html += '</ul></div>';
-        }
-
+        var board = buildLeaderboard(agg, minScore);
+        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' +
+          board.length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
+        html += renderLeaderboardTable(board);
         html += '<div class="whatif-row">';
-        html += '<label>What-if min score:</label><input type="number" value="' + minScore + '" class="whatif-prelim-min" data-uid="' + uniqueId + '">';
-        if (type === 'rush_prelim') {
-          var invSpots = p.inviteSpots || 50;
-          html += '<label>Invite spots:</label><input type="number" value="' + invSpots + '" min="1" class="whatif-prelim-spots" data-uid="' + uniqueId + '">';
-        }
-        html += '<button type="button" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.8rem;" data-uid="' + uniqueId + '" data-pid="' + pid + '" data-ptype="' + type + '">Recalculate</button>';
+        html += '<label>What-if min score:</label>' +
+          '<input type="number" value="' + minScore + '" class="whatif-prelim-min" data-uid="' + uniqueId + '">';
+        html += '<button type="button" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.8rem;"' +
+          ' data-uid="' + uniqueId + '" data-pid="' + pid + '">Recalculate</button>';
         html += '</div>';
 
-      } else if (type === 'regular') {
-        var oc = agg.optionCounts || {};
-        var totalVoters = agg.totalVoters || 0;
+      } else if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
+        var pct = yesPct(agg, type);
+        html += '<p class="result-line">' + pct + '% yes</p>';
+        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) +
+          ' · No: ' + (agg.no || 0) + ' · Abstain: ' + (agg.abstain || 0) + '</p>';
 
-        if (isYesNoPoll(p)) {
-          var parsed = getYesNoFromRegular(agg);
-          var r = recalcBidResult(agg, p.threshold || 75, p);
-          html += '<p class="result-line ' + (r.pass ? 'result-pass' : 'result-fail') + '">' + (r.pass ? 'PASS' : 'FAIL') + ' — ' + r.label + '</p>';
-          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + parsed.yes + ' · No: ' + parsed.no;
-          if (parsed.abstain > 0) html += ' · Other: ' + parsed.abstain;
-          html += '</p>';
+      } else if (type === 'pnm_depledge') {
+        var dpct = yesPct(agg, type);
+        html += '<p class="result-line">' + dpct + '% voted yes to de-pledge</p>';
+        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) +
+          ' · No: ' + (agg.no || 0) + '</p>';
+
+      } else if (type === 'regular') {
+        if (regularIsYesNo(agg)) {
+          var yn = yesNoFromRegular(agg);
+          var rpct = yesPct(agg, 'regular');
+          html += '<p class="result-line">' + rpct + '% yes</p>';
+          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + yn.yes +
+            ' · No: ' + yn.no + (yn.abstain ? ' · Other: ' + yn.abstain : '') + '</p>';
         } else {
-          html += '<div class="option-counts">';
-          Object.keys(oc).forEach(function(opt) {
-            html += '<span>' + opt + ': ' + oc[opt] + '</span>';
-          });
-          html += '</div>';
-          html += '<p style="font-size:0.85rem; color:#888; margin:0 0 0.5rem;">' + totalVoters + ' voters</p>';
+          var oc = agg.optionCounts || {};
+          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">';
+          html += Object.keys(oc).map(function(k) { return k + ': <strong>' + oc[k] + '</strong>'; }).join(' · ');
+          html += '</p>';
         }
 
+      } else {
+        if (p.result) html += '<p class="result-line">' + p.result + '</p>';
+      }
+
+      // Voter breakdown for all non-prelim types
+      if (type !== 'rush_prelim') {
         if (voterKeys.length > 0) {
           html += '<div class="voter-grid">';
           voterKeys.forEach(function(uid) {
             var v = voters[uid].vote;
-            html += '<span><strong>' + voters[uid].name + '</strong>: ' + v + '</span>';
+            html += '<span><strong>' + voters[uid].name + '</strong>: ' +
+              (typeof v === 'object' ? JSON.stringify(v) : v) + '</span>';
           });
           html += '</div>';
-        }
-
-      } else if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
-        var r = recalcBidResult(agg, p.threshold || 75, p);
-        html += '<p class="result-line ' + (r.pass ? 'result-pass' : 'result-fail') + '">' + (r.pass ? 'PASS' : 'FAIL') + ' — ' + r.label + '</p>';
-        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) + ' · No: ' + (agg.no || 0) + ' · Abstain: ' + (agg.abstain || 0) + '</p>';
-      } else if (type === 'pnm_depledge') {
-        var dr = recalcDepledgeResult(agg);
-        html += '<p class="result-line ' + (dr.pass ? 'result-fail' : 'result-pass') + '">' + (dr.pass ? 'DE-PLEDGE' : 'REMAIN') + ' — ' + dr.label + '</p>';
-        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) + ' · No: ' + (agg.no || 0) + '</p>';
-      } else {
-        if (p.result) {
-          html += '<p class="result-line">' + p.result + '</p>';
+        } else {
+          html += '<p style="color:#999; font-size:0.9rem;">No votes recorded.</p>';
         }
       }
 
-      // Voter list for legacy and non-ranked types (not regular, handled above)
-      if (type !== 'ranked' && type !== 'rush_prelim' && type !== 'regular' && voterKeys.length > 0) {
-        html += '<div class="voter-grid">';
-        voterKeys.forEach(function(uid) {
-          var v = voters[uid].vote;
-          var display = typeof v === 'object' ? JSON.stringify(v) : v;
-          html += '<span><strong>' + voters[uid].name + '</strong>: ' + display + '</span>';
-        });
-        html += '</div>';
-      } else if (type !== 'ranked' && type !== 'rush_prelim' && type !== 'regular' && voterKeys.length === 0) {
-        html += '<p style="color:#999; font-size:0.9rem;">No votes recorded.</p>';
-      }
       html += '</div>';
       return html;
     }
 
-    function renderRankedLeaderboardTable(board, type) {
-      var statusLabel = type === 'rush_prelim' ? 'INVITED' : 'PASS';
-      var failLabel = type === 'rush_prelim' ? 'Below cutoff' : 'Below cutoff';
-      var html = '<table class="leaderboard-mini"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Status</th></tr></thead><tbody>';
-      board.forEach(function(c) {
-        var passes = type === 'ranked' ? c.passes : c.invited;
-        html += '<tr><td>' + c.rank + '</td><td>' + c.name + '</td><td>' + c.score + '</td>' +
-          '<td style="color:' + (passes ? '#2e7d32' : '#c62828') + '; font-weight:600;">' + (passes ? statusLabel : failLabel) + '</td></tr>';
-      });
-      html += '</tbody></table>';
-      return html;
-    }
-
-    function computeBidSummary(polls, threshold) {
+    // Builds summary rows sorted by yes% descending. Handles all yes/no variants.
+    function computeYesNoSummary(polls) {
       return polls.map(function(item) {
         var agg = item.poll.aggregation || {};
+        var t = item.poll.type;
+        var pct = yesPct(agg, t);
         var yes, no, abstain;
-        if (item.poll.type === 'regular') {
-          var parsed = getYesNoFromRegular(agg);
-          yes = parsed.yes; no = parsed.no; abstain = parsed.abstain;
+        if (t === 'regular') {
+          var yn = yesNoFromRegular(agg);
+          yes = yn.yes; no = yn.no; abstain = yn.abstain;
         } else {
           yes = agg.yes || 0; no = agg.no || 0; abstain = agg.abstain || 0;
         }
-        var total = yes + no;
-        var pct = total ? Math.round(100 * yes / total) : 0;
-        return { name: item.poll.name, pct: pct, pass: pct >= threshold, yes: yes, no: no, abstain: abstain };
+        return { name: item.poll.name, type: typeLabel(t), pct: pct, yes: yes, no: no, abstain: abstain };
       }).sort(function(a, b) { return b.pct - a.pct; });
     }
 
-    function computeRegularSummary(polls) {
-      return polls.map(function(item) {
-        var agg = item.poll.aggregation || {};
-        var oc = agg.optionCounts || {};
-        var totalVoters = agg.totalVoters || 0;
-        var parts = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; }).join(' | ');
-        return { name: item.poll.name, result: parts, totalVoters: totalVoters };
-      });
-    }
-
-    function renderRegularSummaryCard(polls, sid) {
-      var rows = computeRegularSummary(polls);
-      var uid = sid + '-summary-regular';
-      var html = '<div class="summary-card" id="summary-' + uid + '">';
-      html += '<h3>Regular Vote Summary (' + rows.length + ' polls)</h3>';
-      html += '<table class="summary-table"><thead><tr><th>Name</th><th>Results</th><th>Voters</th></tr></thead><tbody>';
-      rows.forEach(function(r) {
-        html += '<tr><td>' + r.name + '</td><td>' + r.result + '</td><td>' + r.totalVoters + '</td></tr>';
-      });
-      html += '</tbody></table>';
-      html += '</div>';
-      return html;
-    }
-
-    function renderBidSummaryCard(polls, sid, type, title) {
-      var defaultThresh = (polls[0] && polls[0].poll.threshold) || 75;
-      var rows = computeBidSummary(polls, defaultThresh);
-      var uid = sid + '-summary-' + type;
-      var html = '<div class="summary-card" id="summary-' + uid + '">';
-      html += '<h3>' + title + ' (' + rows.length + ' polls)</h3>';
-      html += '<div class="whatif-row" style="margin-top:0; padding-top:0; border-top:none;">';
-      html += '<label>Threshold for all:</label><input type="number" value="' + defaultThresh + '" min="0" max="100" class="whatif-summary-thresh" data-uid="' + uid + '" data-type="' + type + '"> %';
-      html += '<button type="button" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.8rem;" data-uid="' + uid + '" data-type="' + type + '">Recalculate</button>';
-      html += '</div>';
-      html += '<div id="summary-table-' + uid + '">' + renderSummaryTable(rows) + '</div>';
-      html += '</div>';
-      return html;
-    }
-
     function renderSummaryTable(rows) {
-      var passed = rows.filter(function(r) { return r.pass; }).length;
-      var html = '<p style="font-size:0.9rem; margin:0.5rem 0;"><strong>' + passed + '</strong> of ' + rows.length + ' passed</p>';
-      html += '<table class="summary-table"><thead><tr><th>Name</th><th>Yes %</th><th>Yes</th><th>No</th><th>Abstain</th><th>Result</th></tr></thead><tbody>';
+      var html = '<table class="summary-table">';
+      html += '<thead><tr><th>Name</th><th>Type</th><th>Yes %</th><th>Yes</th><th>No</th><th>Abstain</th></tr></thead><tbody>';
       rows.forEach(function(r) {
-        html += '<tr class="' + (r.pass ? 'row-pass' : 'row-fail') + '">';
-        html += '<td>' + r.name + '</td><td>' + r.pct + '%</td>';
-        html += '<td>' + r.yes + '</td><td>' + r.no + '</td><td>' + r.abstain + '</td>';
-        html += '<td style="font-weight:600; color:' + (r.pass ? '#2e7d32' : '#c62828') + ';">' + (r.pass ? 'PASS' : 'FAIL') + '</td>';
-        html += '</tr>';
+        html += '<tr><td>' + r.name + '</td><td>' + r.type + '</td><td>' + r.pct + '%</td>' +
+          '<td>' + r.yes + '</td><td>' + r.no + '</td><td>' + r.abstain + '</td></tr>';
       });
       html += '</tbody></table>';
+      return html;
+    }
+
+    function renderYesNoSummaryCard(polls, sid) {
+      var rows = computeYesNoSummary(polls);
+      var uid = sid + '-summary-yesno';
+      var html = '<div class="summary-card" id="summary-' + uid + '">';
+      html += '<h3>Yes/No Vote Summary (' + rows.length + ' polls)</h3>';
+      html += renderSummaryTable(rows);
+      html += '</div>';
       return html;
     }
 
@@ -343,45 +266,32 @@
       var card = document.createElement('div');
       card.className = 'portal-card session-card';
 
-      var sessionTypeLabel = s.sessionType ? ' (' + typeLabel(s.sessionType) + ')' : '';
       var header = '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">';
-      header += '<h3 style="margin:0;">Session: ' + (s.accessCode || sid.substring(0, 8)) + sessionTypeLabel + '</h3>';
-      header += '<div><button type="button" class="btn btn-primary chapter-view-btn" data-sid="' + sid + '" style="font-size:0.85rem; padding:0.3rem 0.75rem; margin-right:0.35rem;">Show Chapter</button>';
+      header += '<h3 style="margin:0;">Session: ' + (s.accessCode || sid.substring(0, 8)) + '</h3>';
+      header += '<div>';
+      header += '<button type="button" class="btn btn-primary chapter-view-btn" data-sid="' + sid + '"' +
+        ' style="font-size:0.85rem; padding:0.3rem 0.75rem; margin-right:0.35rem;">Show Chapter</button>';
       header += '<button class="btn btn-primary export-btn" data-sid="' + sid + '">Export Excel</button>';
-      header += '<button class="delete-btn" data-sid="' + sid + '">Delete</button></div>';
-      header += '</div>';
+      header += '<button class="delete-btn" data-sid="' + sid + '">Delete</button>';
+      header += '</div></div>';
       header += '<div class="session-meta">';
       header += '<span>Ended: ' + formatDate(s.endedAt) + '</span>';
       header += '<span>Polls: ' + pollIds.length + '</span>';
-      if (s.voteOptions && s.voteOptions.length) {
-        header += '<span>Options: ' + s.voteOptions.join(', ') + '</span>';
-      }
       header += '</div>';
       header += '<p style="font-size:0.85rem; color:#aaa; margin:0;">Click to expand</p>';
 
+      // Collect all yes/no type polls for the summary card
+      var yesNoPolls = pollIds
+        .map(function(pid) { return { pid: pid, poll: polls[pid] }; })
+        .filter(function(item) {
+          var t = item.poll.type;
+          if (t === 'rush_bid' || t === 'pnm_vote' || t === 'motion' || t === 'pnm_depledge') return true;
+          if (t === 'regular') return regularIsYesNo(item.poll.aggregation || {});
+          return false;
+        });
+
       var pollsHtml = '<div class="session-polls">';
-
-      // Group polls by type for summaries
-      var regularPolls = [], yesNoPolls = [];
-      pollIds.forEach(function(pid) {
-        var p = polls[pid];
-        if (p.type === 'regular') {
-          if (isYesNoPoll(p)) {
-            yesNoPolls.push({ pid: pid, poll: p });
-          } else {
-            regularPolls.push({ pid: pid, poll: p });
-          }
-        }
-        if (p.type === 'rush_bid' || p.type === 'pnm_vote' || p.type === 'motion') yesNoPolls.push({ pid: pid, poll: p });
-      });
-
-      if (regularPolls.length > 1) {
-        pollsHtml += renderRegularSummaryCard(regularPolls, sid);
-      }
-      if (yesNoPolls.length > 0) {
-        pollsHtml += renderBidSummaryCard(yesNoPolls, sid, 'yesno', 'Yes/No Vote Summary');
-      }
-
+      if (yesNoPolls.length > 0) pollsHtml += renderYesNoSummaryCard(yesNoPolls, sid);
       pollIds.forEach(function(pid, i) {
         pollsHtml += renderPollCard(pid, polls[pid], sid + '-' + i);
       });
@@ -390,26 +300,24 @@
       card.innerHTML = header + pollsHtml;
 
       card.addEventListener('click', function(e) {
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.closest('a')) return;
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' ||
+            e.target.tagName === 'A' || e.target.closest('a')) return;
         card.classList.toggle('expanded');
       });
 
       card.querySelector('.chapter-view-btn').addEventListener('click', function() {
         var params = 'sid=' + encodeURIComponent(sid);
-        var threshInput = card.querySelector('.whatif-summary-thresh');
-        if (threshInput) params += '&thresh=' + (parseInt(threshInput.value, 10) || 75);
         var minInputs = card.querySelectorAll('.whatif-prelim-min');
         minInputs.forEach(function(inp) {
           var uid = inp.getAttribute('data-uid');
           var parts = uid.split('-');
           var idx = parseInt(parts[parts.length - 1], 10);
-          var sesData = sessionDataCache[sid];
-          if (!sesData) return;
-          var pids = Object.keys(sesData.polls || {});
+          var pids = Object.keys((sessionDataCache[sid] || {}).polls || {});
           if (pids[idx]) params += '&rmin_' + pids[idx] + '=' + (parseInt(inp.value, 10) || 0);
         });
         window.open('chapter-results.html?' + params, '_blank');
       });
+
       card.querySelector('.export-btn').addEventListener('click', function() {
         exportSessionExcel(s, sid);
       });
@@ -417,38 +325,10 @@
         deleteSession(sid, s.accessCode, card);
       });
 
-      card.querySelectorAll('.whatif-row button[data-type]').forEach(function(btn) {
-        if (btn.hasAttribute('data-pid')) return;
-        btn.addEventListener('click', function() {
-          var uid = this.getAttribute('data-uid');
-          var type = this.getAttribute('data-type');
-          var input = card.querySelector('.whatif-summary-thresh[data-uid="' + uid + '"]');
-          if (!input) return;
-          var thresh = parseInt(input.value, 10) || 75;
-          var sesData = sessionDataCache[sid];
-          if (!sesData) return;
-          var typePolls = [];
-          Object.keys(sesData.polls || {}).forEach(function(pid) {
-            var p = sesData.polls[pid];
-            if (type === 'yesno') {
-              if (p.type === 'rush_bid' || p.type === 'pnm_vote' || p.type === 'motion') typePolls.push({ pid: pid, poll: p });
-              else if (p.type === 'regular' && isYesNoPoll(p)) typePolls.push({ pid: pid, poll: p });
-            } else if (p.type === type) {
-              typePolls.push({ pid: pid, poll: p });
-            }
-          });
-          var rows = computeBidSummary(typePolls, thresh);
-          var tableDiv = document.getElementById('summary-table-' + uid);
-          if (tableDiv) tableDiv.innerHTML = renderSummaryTable(rows);
-        });
-      });
-
-      // What-if: ranked/prelim recalculate
+      // What-if: rush_prelim / ranked min-score recalculate
       card.querySelectorAll('.whatif-row button[data-pid]').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var uid = this.getAttribute('data-uid');
-          var pid = this.getAttribute('data-pid');
-          var ptype = this.getAttribute('data-ptype') || 'ranked';
           var minInput = card.querySelector('.whatif-prelim-min[data-uid="' + uid + '"]');
           if (!minInput) return;
           var min = parseInt(minInput.value, 10) || 0;
@@ -460,35 +340,10 @@
           var pids = Object.keys(sesData.polls || {});
           var p = (sesData.polls || {})[pids[idx]];
           if (!p || !p.aggregation) return;
-
-          var board;
-          if (ptype === 'rush_prelim') {
-            var spotsInput = card.querySelector('.whatif-prelim-spots[data-uid="' + uid + '"]');
-            var spots = spotsInput ? parseInt(spotsInput.value, 10) || 50 : 50;
-            board = buildPrelimLeaderboard(p.aggregation, spots, min);
-          } else {
-            board = buildRankedLeaderboard(p.aggregation, min);
-          }
+          var board = buildLeaderboard(p.aggregation, min);
           var container = document.getElementById('poll-' + uid);
           var existing = container.querySelector('.leaderboard-mini');
-          if (existing) existing.outerHTML = renderRankedLeaderboardTable(board, ptype);
-
-          // Update "Did not pass" section
-          var dnp = container.querySelector('.did-not-pass');
-          if (isStandards) {
-            var failing = board.filter(function(c) { return ptype === 'ranked' ? !c.passes : !c.invited; });
-            if (failing.length > 0) {
-              var dnpHtml = '<div class="did-not-pass"><h4>Did Not Pass (' + failing.length + ')</h4><ul>';
-              failing.forEach(function(c) { dnpHtml += '<li>' + c.name + ' (score: ' + c.score + ')</li>'; });
-              dnpHtml += '</ul></div>';
-              if (dnp) { dnp.outerHTML = dnpHtml; } else {
-                var tableEl = container.querySelector('.leaderboard-mini');
-                if (tableEl) tableEl.insertAdjacentHTML('afterend', dnpHtml);
-              }
-            } else if (dnp) {
-              dnp.remove();
-            }
-          }
+          if (existing) existing.outerHTML = renderLeaderboardTable(board);
         });
       });
 
@@ -501,60 +356,69 @@
       var pollIds = Object.keys(polls);
       var wb = XLSX.utils.book_new();
 
-      var summaryRows = [['Poll', 'Type', 'Result', 'Voters']];
+      var overviewRows = [['Poll', 'Type', 'Yes', 'No', 'Abstain', 'Yes %']];
+      var pollSheets = [];
+
       pollIds.forEach(function(pid, i) {
         var p = polls[pid];
         var agg = p.aggregation || {};
         var voters = p.voters || {};
         var voterKeys = Object.keys(voters);
+        var isRanked = p.type === 'rush_prelim' || p.type === 'ranked';
 
-        summaryRows.push([
-          p.name || '', typeLabel(p.type), p.result || '', voterKeys.length
-        ]);
-
-        var pollRows;
-        if (p.type === 'ranked' || p.type === 'rush_prelim') {
-          var minS = p.minimumScore || 0;
-          var board = (p.type === 'ranked') ? buildRankedLeaderboard(agg, minS) : buildPrelimLeaderboard(agg, p.inviteSpots || 50, minS);
-          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
-            ['Rank', 'Candidate', 'Score', 'Status']];
-          board.forEach(function(c) {
-            var st = (p.type === 'ranked') ? (c.passes ? 'PASS' : 'Below cutoff') : (c.invited ? 'INVITED' : 'Below cutoff');
-            pollRows.push([c.rank, c.name, c.score, st]);
-          });
-        } else if (p.type === 'regular') {
+        // ── Overview row ──
+        if (isRanked) {
+          overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Ranked (see tab)']);
+        } else if (p.type === 'regular' && !regularIsYesNo(agg)) {
           var oc = agg.optionCounts || {};
-          pollRows = [['Poll: ' + (p.name || '')], ['Type: Regular Vote'], [],
-            ['Option', 'Count']];
-          Object.keys(oc).forEach(function(opt) { pollRows.push([opt, oc[opt]]); });
-          pollRows.push([]);
-          pollRows.push(['Brother', 'Vote']);
-          voterKeys.forEach(function(uid) {
-            pollRows.push([voters[uid].name, voters[uid].vote]);
-          });
+          var breakdown = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; }).join(', ');
+          overviewRows.push([p.name || '', typeLabel(p.type), breakdown, '', '', '—']);
         } else {
-          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)],
-            ['Result: ' + (p.result || '')], [], ['Brother', 'Vote']];
+          var yn = (p.type === 'regular') ? yesNoFromRegular(agg)
+            : { yes: agg.yes || 0, no: agg.no || 0, abstain: agg.abstain || 0 };
+          var abstainCell = (p.type === 'pnm_depledge') ? '—' : yn.abstain;
+          overviewRows.push([
+            p.name || '', typeLabel(p.type),
+            yn.yes, yn.no, abstainCell,
+            yesPct(agg, p.type) + '%'
+          ]);
+        }
+
+        // ── Individual poll sheet ──
+        var pollRows;
+        if (isRanked) {
+          var board = buildLeaderboard(agg, p.minimumScore || 0);
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
+            ['Rank', 'Name', 'Score']];
+          board.forEach(function(c) { pollRows.push([c.rank, c.name, c.score]); });
+        } else {
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
+            ['Brother', 'Vote']];
           voterKeys.forEach(function(uid) {
             var v = voters[uid].vote;
             pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
           });
         }
-        var sheetName = (i + 1) + '. ' + (p.name || 'Poll').substring(0, 25);
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pollRows), sheetName);
+        pollSheets.push({
+          name: (i + 1) + '. ' + (p.name || 'Poll').substring(0, 25),
+          rows: pollRows
+        });
       });
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), 'Summary');
+      // Overview goes first, individual tabs follow
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(overviewRows), 'Overview');
+      pollSheets.forEach(function(sheet) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheet.rows), sheet.name);
+      });
+
       XLSX.writeFile(wb, 'session_' + (s.accessCode || sid.substring(0, 8)) + '.xlsx');
     }
 
     function deleteSession(sid, code, cardEl) {
       if (!confirm('Delete this session and all its data? This cannot be undone.')) return;
-
       var updates = {};
       updates['sessionHistory/' + sid] = null;
       updates['sessions/' + sid] = null;
-
       db.ref().update(updates).then(function() {
         cardEl.remove();
         delete sessionDataCache[sid];
@@ -562,37 +426,26 @@
         if (!container.children.length) {
           container.innerHTML = '<div class="no-history portal-card">No session history yet. Sessions are saved here when Standards ends them.</div>';
         }
-      }).catch(function(err) {
-        alert('Failed to delete: ' + err.message);
-      });
+      }).catch(function(err) { alert('Failed to delete: ' + err.message); });
     }
 
     function init() {
       PortalAuth.requireAdmin().then(function(profile) {
         if (!profile) return;
         PortalAuth.initNav(profile);
-
-        isStandards = profile.role === 'standards' || profile.role === 'admin';
-
         db.ref('sessionHistory').orderByChild('endedAt').once('value', function(snap) {
           document.getElementById('loading').classList.add('hidden');
           var data = snap.val();
           if (!data) {
-            document.getElementById('history-list').innerHTML = '<div class="no-history portal-card">No session history yet. Sessions are saved here when Standards ends them.</div>';
+            document.getElementById('history-list').innerHTML =
+              '<div class="no-history portal-card">No session history yet. Sessions are saved here when Standards ends them.</div>';
             return;
           }
-
-          var sids = Object.keys(data);
-          sids.sort(function(a, b) {
-            var da = data[a].endedAt || '';
-            var db2 = data[b].endedAt || '';
-            return da > db2 ? -1 : da < db2 ? 1 : 0;
+          var sids = Object.keys(data).sort(function(a, b) {
+            return (data[a].endedAt || 0) > (data[b].endedAt || 0) ? -1 : 1;
           });
-
           var container = document.getElementById('history-list');
-          sids.forEach(function(sid) {
-            container.appendChild(renderSession(sid, data[sid]));
-          });
+          sids.forEach(function(sid) { container.appendChild(renderSession(sid, data[sid])); });
         });
       });
     }

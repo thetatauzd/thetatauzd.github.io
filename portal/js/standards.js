@@ -1,6 +1,8 @@
 /**
- * Standards session control – two session types (ranked / regular),
- * real-time queue, active poll, connected list with kick, end session.
+ * Standards session control.
+ * Session types: ranked (scorecard +2/-2) or regular (custom options).
+ * Poll types within a session: ranked, regular, rush_bid, motion, pnm_vote, pnm_depledge, rush_prelim.
+ * Features: real-time queue, active poll display, connected brothers list with kick, end session + history snapshot.
  */
 (function() {
   'use strict';
@@ -8,8 +10,8 @@
   var db = firebase.database();
   var sessionId = null;
   var accessCode = null;
-  var sessionType = null;   // 'ranked' or 'regular'
-  var voteOptions = [];     // for regular sessions
+  var sessionType = null;   // 'ranked' | 'regular'
+  var voteOptions = [];     // vote option strings for regular sessions
   var pollOrder = [];
   var pollsMeta = {};
   var currentIndex = 0;
@@ -258,7 +260,6 @@
               threshold: p.threshold != null ? p.threshold : null,
               minimumScore: p.minimumScore != null ? p.minimumScore : null,
               candidates: p.candidates || null,
-              inviteSpots: p.inviteSpots != null ? p.inviteSpots : null,
               aggregation: agg, result: computeResult(p, agg), voters: {}
             };
 
@@ -302,17 +303,18 @@
       return parts.join(' | ') || 'No votes';
     }
 
-    // Legacy types
     if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
       var total = (agg.yes || 0) + (agg.no || 0);
       var pct = total ? Math.round(100 * agg.yes / total) : 0;
-      var thresh = poll.threshold != null ? poll.threshold : 75;
-      return pct >= thresh ? 'PASS (' + pct + '%)' : 'FAIL (' + pct + '%)';
-    } else if (type === 'pnm_depledge') {
+      return pct + '% yes (' + (agg.yes || 0) + '/' + (agg.no || 0) + '/' + (agg.abstain || 0) + ')';
+    }
+
+    if (type === 'pnm_depledge') {
       var dtotal = (agg.yes || 0) + (agg.no || 0);
       var dpct = dtotal ? Math.round(100 * agg.yes / dtotal) : 0;
-      return dpct > 50 ? 'DE-PLEDGE (' + dpct + '% voted yes)' : 'REMAIN (' + dpct + '% voted yes)';
+      return dpct + '% voted yes to de-pledge';
     }
+
     return '';
   }
 
@@ -790,7 +792,8 @@
 
     buildSessionSnapshot(sessionId, accessCode, function(snapshot) {
       var wb = XLSX.utils.book_new();
-      var summaryRows = [['Poll', 'Type', 'Result', 'Voters']];
+      var overviewRows = [['Poll', 'Type', 'Yes', 'No', 'Abstain', 'Yes %']];
+      var pollSheets = [];
 
       pollOrder.forEach(function(pid, i) {
         var p = snapshot.polls[pid];
@@ -798,54 +801,68 @@
         var agg = p.aggregation || {};
         var voters = p.voters || {};
         var voterKeys = Object.keys(voters);
+        var isRanked = p.type === 'ranked' || p.type === 'rush_prelim';
 
-        summaryRows.push([
-          p.name || '', typeLabel(p.type), p.result || '', voterKeys.length
-        ]);
-
-        var pollRows;
-        if (p.type === 'ranked' || p.type === 'rush_prelim') {
-          var cs = agg.candidateScores || {};
-          var sorted = Object.keys(cs).map(function(n) { return { name: n, score: cs[n].total }; })
-            .sort(function(a, b) { return b.score - a.score; });
-          pollRows = [
-            ['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
-            ['Rank', 'Candidate', 'Score', 'Status']
-          ];
-          sorted.forEach(function(c, idx) {
-            var passes = c.score >= (p.minimumScore || 0);
-            pollRows.push([idx + 1, c.name, c.score, passes ? 'PASS' : 'Below cutoff']);
-          });
+        // ── Overview row ──
+        if (isRanked) {
+          overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Ranked (see tab)']);
         } else if (p.type === 'regular') {
           var oc = agg.optionCounts || {};
-          pollRows = [
-            ['Poll: ' + (p.name || '')], ['Type: Regular Vote'], [],
-            ['Option', 'Count']
-          ];
-          Object.keys(oc).forEach(function(opt) {
-            pollRows.push([opt, oc[opt]]);
-          });
-          pollRows.push([]);
-          pollRows.push(['Brother', 'Vote']);
-          voterKeys.forEach(function(uid) {
-            var v = voters[uid].vote;
-            pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
-          });
+          var ocKeys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
+          var isYN = ocKeys.indexOf('yes') !== -1 && ocKeys.indexOf('no') !== -1;
+          if (isYN) {
+            var yes = 0, no = 0, abstain = 0;
+            Object.keys(oc).forEach(function(k) {
+              var l = k.toLowerCase();
+              if (l === 'yes') yes = oc[k];
+              else if (l === 'no') no = oc[k];
+              else abstain += oc[k];
+            });
+            var total = yes + no;
+            var pct = total ? Math.round(100 * yes / total) : 0;
+            overviewRows.push([p.name || '', typeLabel(p.type), yes, no, abstain, pct + '%']);
+          } else {
+            var breakdown = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; }).join(', ');
+            overviewRows.push([p.name || '', typeLabel(p.type), breakdown, '', '', '—']);
+          }
         } else {
-          pollRows = [
-            ['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)],
-            ['Result: ' + (p.result || '')], [], ['Brother', 'Vote']
-          ];
+          var yes = agg.yes || 0, no = agg.no || 0, abstain = agg.abstain || 0;
+          var total = yes + no;
+          var pct = total ? Math.round(100 * yes / total) : 0;
+          var abstainCell = p.type === 'pnm_depledge' ? '—' : abstain;
+          overviewRows.push([p.name || '', typeLabel(p.type), yes, no, abstainCell, pct + '%']);
+        }
+
+        // ── Individual poll sheet ──
+        var pollRows;
+        if (isRanked) {
+          var cs = agg.candidateScores || {};
+          var sorted = Object.keys(cs)
+            .map(function(n) { return { name: n, score: cs[n].total || 0 }; })
+            .sort(function(a, b) { return b.score - a.score; });
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
+            ['Rank', 'Candidate', 'Score']];
+          sorted.forEach(function(c, idx) { pollRows.push([idx + 1, c.name, c.score]); });
+        } else {
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
+            ['Brother', 'Vote']];
           voterKeys.forEach(function(uid) {
             var v = voters[uid].vote;
             pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
           });
         }
-        var sheetName = (i + 1) + '. ' + (p.name || 'Poll').substring(0, 25);
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pollRows), sheetName);
+        pollSheets.push({
+          name: (i + 1) + '. ' + (p.name || 'Poll').substring(0, 25),
+          rows: pollRows
+        });
       });
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), 'Summary');
+      // Overview goes first, individual tabs follow
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(overviewRows), 'Overview');
+      pollSheets.forEach(function(sheet) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheet.rows), sheet.name);
+      });
+
       XLSX.writeFile(wb, 'session_' + (accessCode || 'results') + '.xlsx');
     });
   }

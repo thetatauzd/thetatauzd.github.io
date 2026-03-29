@@ -177,9 +177,9 @@
 
   // ── Controls ──
   function getInputDuration() {
-    var m = parseInt(durMinInput.value, 10) || 0;
+    var m = parseFloat(durMinInput.value) || 0;
     var s = parseInt(durSecInput.value, 10) || 0;
-    return Math.max(1, m * 60 + s);
+    return Math.max(1, Math.round(m * 60) + s);
   }
 
   function onStart() {

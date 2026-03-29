@@ -1,21 +1,29 @@
 /**
  * Realtime Database helpers for sessions, polls, votes, aggregation.
- * Poll types: ranked, regular.
+ *
+ * Poll types:
+ *   rush_prelim  — ranked scorecard (+2/+1/0/-1/-2) over a list of candidates
+ *   rush_bid     — Yes/No/Abstain, 75% threshold
+ *   motion       — Yes/No/Abstain, adjustable threshold
+ *   pnm_vote     — Yes/No/Abstain, 75% threshold, flags outliers
+ *   pnm_depledge — Yes/No only, 50% threshold
+ *
  * Structure:
  *   sessionByCode/{code} = sessionId
- *   sessions/{sessionId}/meta = { accessCode, createdBy, createdAt, status, sessionType, voteOptions? }
+ *   sessions/{sessionId}/meta = { accessCode, createdBy, createdAt, status }
  *   sessions/{sessionId}/currentPollIndex = number
  *   sessions/{sessionId}/pollOrder = [ pollId0, pollId1, ... ]
- *   sessions/{sessionId}/polls/{pollId} = { name, type, status, candidates?, minimumScore? }
- *     - ranked polls have: candidates[], minimumScore
- *     - regular polls inherit voteOptions from session meta
+ *   sessions/{sessionId}/polls/{pollId} = { name, type, status, threshold?, minimumScore?, candidates? }
  *   sessions/{sessionId}/polls/{pollId}/votes/{uid} = { vote, votedAt }
- *     - For ranked, vote is an object { candidateName: score }
- *     - For regular, vote is a string (one of the session's voteOptions)
+ *     - rush_prelim vote is object { candidateName: score }
+ *     - all others vote is a string ('yes'/'no'/'abstain')
  *   sessions/{sessionId}/polls/{pollId}/hasVoted/{uid} = true
- *   sessions/{sessionId}/polls/{pollId}/aggregation = { optionCounts, totalVoters } or { candidateScores, totalVoters }
+ *   sessions/{sessionId}/polls/{pollId}/aggregation
+ *     - rush_prelim: { candidateScores: { name: { total, count } }, totalVoters }
+ *     - yes/no types: { yes, no, abstain, totalVoters }
  *   sessions/{sessionId}/connectedBrothers/{uid} = timestamp (presence)
- *   sessionHistory/{sessionId} = snapshot of session data
+ *   sessionHistory/{sessionId} = snapshot saved when session ends
+ *   timers/active = { startedAt, duration, status, ... }
  */
 (function(global) {
   'use strict';
@@ -127,11 +135,8 @@
               name: p.name,
               type: p.type,
               candidates: p.candidates || [],
-              options: p.options || [],
               threshold: p.threshold != null ? p.threshold : 75,
               minimumScore: p.minimumScore != null ? p.minimumScore : 0,
-              inviteSpots: p.inviteSpots || null,
-              pledgeSpots: p.pledgeSpots || null,
               status: p.status || 'open'
             });
           });
@@ -160,7 +165,13 @@
       var pollId = order[idx];
       pollRef(sessionId, pollId).once('value').then(function(snap) {
         var p = snap.val();
-        callback(p ? { pollId: pollId, name: p.name, type: p.type, candidates: p.candidates || [], options: p.options || [], threshold: p.threshold != null ? p.threshold : 75, minimumScore: p.minimumScore != null ? p.minimumScore : 0, inviteSpots: p.inviteSpots || null, pledgeSpots: p.pledgeSpots || null, status: p.status || 'open' } : null);
+        callback(p ? {
+          pollId: pollId, name: p.name, type: p.type,
+          candidates: p.candidates || [],
+          threshold: p.threshold != null ? p.threshold : 75,
+          minimumScore: p.minimumScore != null ? p.minimumScore : 0,
+          status: p.status || 'open'
+        } : null);
       });
     }
     var offOrder = orderRef.on('value', function(s) {
@@ -233,9 +244,9 @@
 
   /**
    * Compute aggregation from votes snapshot.
-   * For ranked (and legacy rush_prelim): each vote is { candidateName: score }, sums scores.
-   * For regular: counts votes per option string.
-   * For legacy yes/no/abstain types: counts yes/no/abstain.
+   * ranked / rush_prelim: vote is { candidateName: score }, sums scores per candidate.
+   * regular: counts votes per option string.
+   * rush_bid / motion / pnm_vote / pnm_depledge: counts yes/no/abstain.
    */
   function computeAggregation(pollType, votesObj, candidates) {
     var votes = votesObj || {};
@@ -268,7 +279,7 @@
       return { optionCounts: optionCounts, totalVoters: uids.length };
     }
 
-    // Legacy types: yes/no/abstain counting
+    // yes/no/abstain vote types
     var yes = 0, no = 0, abstain = 0;
     uids.forEach(function(uid) {
       var v = votes[uid].vote;

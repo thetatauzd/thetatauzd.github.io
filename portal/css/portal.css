@@ -40,6 +40,18 @@ body {
   border-radius: 4px;
 }
 
+.portal-header .header-brand .logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.15s;
+}
+
+.portal-header .header-brand .logo-link:hover {
+  opacity: 1;
+}
+
 .portal-header h1 {
   font-size: 1.25rem;
   font-weight: 700;
@@ -508,10 +520,13 @@ body {
 
 /* ── Event Timer ── */
 .timer-screen {
-  padding: 2rem;
   min-height: 100vh;
   background: linear-gradient(180deg, #1a1a1a 0%, #2d1010 100%);
   color: #fff;
+}
+
+.timer-screen .portal-container {
+  padding: 2rem 1.5rem;
 }
 
 .timer-idle-msg {

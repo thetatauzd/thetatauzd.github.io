@@ -1,6 +1,7 @@
 /**
  * Brother voting: enter access code, see current poll, submit vote.
- * Supports ranked (scorecard) and regular (pick one option) session types.
+ * Poll types: rush_prelim/ranked (scorecard), rush_bid/motion/pnm_vote (yes/no/abstain),
+ *   pnm_depledge (yes/no), regular (session-defined options).
  * Persists session in sessionStorage so page refresh auto-rejoins.
  * Detects kick (connectedBrothers/{uid} removed) and session end (meta/status = 'ended').
  */
@@ -121,13 +122,13 @@
 
     var type = poll.type;
 
-    // New ranked type and legacy rush_prelim
-    if (type === 'ranked' || type === 'rush_prelim') {
+    // Scorecard voting: rush_prelim (new name) and ranked (existing sessions)
+    if (type === 'rush_prelim' || type === 'ranked') {
       renderScorecard(poll, container);
       return;
     }
 
-    // New regular type: options come from session meta
+    // Session-defined options (regular votes: Yes/No, Yes/No/IDK, custom)
     if (type === 'regular') {
       var choices = (sessionMeta && sessionMeta.voteOptions) || [];
       if (choices.length === 0) {
@@ -149,15 +150,15 @@
       return;
     }
 
-    // Legacy types
-    var legacyChoices = [];
+    // Yes/No/Abstain types
+    var ynaChoices = [];
     if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
-      legacyChoices = ['yes', 'no', 'abstain'];
+      ynaChoices = ['yes', 'no', 'abstain'];
     } else if (type === 'pnm_depledge') {
-      legacyChoices = ['yes', 'no'];
+      ynaChoices = ['yes', 'no'];
     }
 
-    legacyChoices.forEach(function(v) {
+    ynaChoices.forEach(function(v) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'vote-btn';
@@ -411,13 +412,13 @@
       var typeLabel = document.getElementById('poll-type-label');
       if (typeLabel) {
         var labels = {
-          ranked: 'Rate each candidate +2 to -2',
-          regular: '',
-          rush_prelim: 'Rate each candidate +2 to -2',
-          rush_bid: 'Yes / No / Abstain',
-          motion: 'Yes / No / Abstain',
-          pnm_vote: 'Yes / No / Abstain',
-          pnm_depledge: 'Yes / No'
+          rush_prelim:  'Rate each candidate +2 to -2',
+          ranked:       'Rate each candidate +2 to -2',
+          rush_bid:     'Yes / No / Abstain',
+          motion:       'Yes / No / Abstain',
+          pnm_vote:     'Yes / No / Abstain',
+          pnm_depledge: 'Yes / No',
+          regular:      ''
         };
         typeLabel.textContent = labels[p.type] != null ? labels[p.type] : p.type;
       }
