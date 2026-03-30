@@ -14,11 +14,17 @@
     .poll-status.open { background: #2e7d32; color: #fff; }
     .poll-status.closed { background: #666; color: #fff; }
     .poll-status.upcoming { background: #1565c0; color: #fff; }
-    .queue-item { padding: 0.6rem 0.75rem; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+    .queue-item { padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
     .queue-item.past { opacity: 0.45; text-decoration: line-through; }
     .queue-item.current { background: #fffde7; border-left: 4px solid #FFCC33; }
     .queue-item .qi-name { font-weight: 600; }
     .queue-item .qi-type { color: #888; font-size: 0.85rem; margin-left: 0.5rem; }
+    .qi-actions { display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
+    .qi-btn { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 0.15rem 0.4rem; cursor: pointer; font-size: 0.8rem; color: #555; line-height: 1.4; }
+    .qi-btn:hover:not(:disabled) { border-color: #FFCC33; background: #fffde7; color: #333; }
+    .qi-btn:disabled { opacity: 0.25; cursor: default; }
+    .qi-remove { color: #c62828; border-color: #f5c6c6; }
+    .qi-remove:hover:not(:disabled) { background: #fff5f5; border-color: #c62828; }
     .queue-empty { color: #999; padding: 1rem 0; }
     .vote-count-bar { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }
     .vote-count-bar .bar { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }

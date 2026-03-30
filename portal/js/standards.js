@@ -19,6 +19,7 @@
   var nameCache = {};
   var connectedCount = 0;
   var connectedBrothersData = {};
+  var cachedVotedCount = 0;
   var activePollListeners = [];
   var sessionListeners = [];
 
@@ -499,16 +500,66 @@
       var name = (meta && meta.name) ? meta.name : 'Loading...';
       var type = (meta && meta.type) ? typeLabel(meta.type) : '';
       var status = (meta && meta.status) ? meta.status : 'upcoming';
-      var isPast = (status === 'closed' && i < currentIndex);
+      var isPast = i < currentIndex;
       var isCurrent = (i === currentIndex);
       var cls = 'queue-item' + (isPast ? ' past' : '') + (isCurrent ? ' current' : '');
+
+      // Only allow management of upcoming polls that haven't started
+      var canManage = !isCurrent && !isPast && status === 'upcoming';
+      var canUp   = canManage && i > currentIndex + 1;
+      var canDown = canManage && i < pollOrder.length - 1;
+
+      var actions = '<div class="qi-actions">';
+      actions += '<button class="qi-btn" data-action="up"   data-idx="' + i + '"' + (canUp   ? '' : ' disabled') + '>↑</button>';
+      actions += '<button class="qi-btn" data-action="down" data-idx="' + i + '"' + (canDown ? '' : ' disabled') + '>↓</button>';
+      actions += '<button class="qi-btn qi-remove" data-action="remove" data-idx="' + i + '" data-pid="' + pid + '"' + (canManage ? '' : ' disabled') + '>✕</button>';
+      actions += '<span class="poll-status ' + status + '">' + status + '</span>';
+      actions += '</div>';
 
       return '<div class="' + cls + '">' +
         '<span><span class="qi-name">' + (i + 1) + '. ' + name + '</span>' +
         (type ? '<span class="qi-type">' + type + '</span>' : '') + '</span>' +
-        '<span class="poll-status ' + status + '">' + status + '</span>' +
+        actions +
         '</div>';
     }).filter(Boolean).join('');
+
+    // Event delegation for all queue buttons
+    container.onclick = function(e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn || btn.disabled) return;
+      var action = btn.getAttribute('data-action');
+      var idx = parseInt(btn.getAttribute('data-idx'), 10);
+      if (action === 'remove') {
+        removePollFromQueue(btn.getAttribute('data-pid'), idx);
+      } else if (action === 'up') {
+        movePollInQueue(idx, idx - 1);
+      } else if (action === 'down') {
+        movePollInQueue(idx, idx + 1);
+      }
+    };
+  }
+
+  function removePollFromQueue(pid, idx) {
+    if (!sessionId || !pid) return;
+    if (!confirm('Remove "' + ((pollsMeta[pid] && pollsMeta[pid].name) || 'this poll') + '" from the queue?')) return;
+    var newOrder = pollOrder.filter(function(p) { return p !== pid; });
+    var updates = {};
+    updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
+    updates['sessions/' + sessionId + '/polls/' + pid] = null;
+    db.ref().update(updates).catch(function(err) { alert('Failed to remove: ' + err.message); });
+  }
+
+  function movePollInQueue(fromIdx, toIdx) {
+    if (!sessionId || toIdx < 0 || toIdx >= pollOrder.length) return;
+    // Don't allow moving into or before the current poll position
+    if (toIdx <= currentIndex) return;
+    var newOrder = pollOrder.slice();
+    var tmp = newOrder[fromIdx];
+    newOrder[fromIdx] = newOrder[toIdx];
+    newOrder[toIdx] = tmp;
+    db.ref('sessions/' + sessionId + '/pollOrder').set(newOrder).catch(function(err) {
+      alert('Failed to reorder: ' + err.message);
+    });
   }
 
   // ── Active poll display ──
@@ -525,6 +576,7 @@
   function detachActivePollListeners() {
     activePollListeners.forEach(function(off) { off(); });
     activePollListeners = [];
+    cachedVotedCount = 0;
   }
 
   function detachSessionListeners() {
@@ -538,7 +590,10 @@
     if (!pollId || !sessionId) return;
 
     var hasVotedRef = db.ref('sessions/' + sessionId + '/polls/' + pollId + '/hasVoted');
-    var hasVotedCb = hasVotedRef.on('value', function() { updateVoteCount(); });
+    var hasVotedCb = hasVotedRef.on('value', function(snap) {
+      cachedVotedCount = Object.keys(snap.val() || {}).length;
+      updateVoteCount();
+    });
     activePollListeners.push(function() { hasVotedRef.off('value', hasVotedCb); });
 
     var votesRef = db.ref('sessions/' + sessionId + '/polls/' + pollId + '/votes');
@@ -585,14 +640,10 @@
   }
 
   function updateVoteCount() {
-    var pollId = getCurrentPollId();
-    if (!pollId || !sessionId) return;
-    db.ref('sessions/' + sessionId + '/polls/' + pollId + '/hasVoted').once('value', function(snap) {
-      var voted = Object.keys(snap.val() || {}).length;
-      var total = Math.max(voted, connectedCount);
-      $('ap-vote-text').textContent = voted + ' / ' + total + ' voted';
-      $('ap-bar-fill').style.width = total ? (voted / total * 100) + '%' : '0%';
-    });
+    var voted = cachedVotedCount;
+    var total = connectedCount;
+    $('ap-vote-text').textContent = voted + ' / ' + total + ' voted';
+    $('ap-bar-fill').style.width = (total > 0) ? Math.min(100, Math.round(voted / total * 100)) + '%' : '0%';
   }
 
   // ── Connected brothers list + kick ──

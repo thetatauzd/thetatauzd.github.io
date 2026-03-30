@@ -103,6 +103,8 @@
   }
 
   var scorecardState = {};
+  // Prevents re-rendering vote buttons every time someone else votes (aggregation updates)
+  var voteUIRendered = false;
 
   function renderVoteOptions(poll, hasVoted, myVote) {
     var container = document.getElementById('vote-options');
@@ -376,6 +378,7 @@
   function listenToCurrentPoll(pollId) {
     detachPollListener();
     if (!pollId || !sessionId) return;
+    voteUIRendered = false;
 
     var ref = db.ref('sessions/' + sessionId + '/polls/' + pollId);
     var cb = ref.on('value', function(snap) {
@@ -392,7 +395,6 @@
         name: p.name,
         type: p.type,
         candidates: p.candidates || [],
-        options: p.options || [],
         threshold: p.threshold != null ? p.threshold : 75,
         minimumScore: p.minimumScore != null ? p.minimumScore : 0,
         status: p.status || 'closed'
@@ -403,14 +405,23 @@
         updatePollCounter();
         showNextUp(document.getElementById('waiting-next'));
         showStep('step-waiting');
+        // Reset so buttons render fresh if poll re-opens
+        voteUIRendered = false;
         return;
       }
 
+      // ── Poll is open ──
       showStep('step-vote');
       updatePollCounter();
+
+      // Only set up the vote UI once per poll opening.
+      // Subsequent listener fires (other people voting, aggregation changes) are ignored here.
+      if (voteUIRendered) return;
+      voteUIRendered = true;
+
       document.getElementById('poll-title').textContent = p.name || 'Poll';
-      var typeLabel = document.getElementById('poll-type-label');
-      if (typeLabel) {
+      var typeLabelEl = document.getElementById('poll-type-label');
+      if (typeLabelEl) {
         var labels = {
           rush_prelim:  'Rate each candidate +2 to -2',
           ranked:       'Rate each candidate +2 to -2',
@@ -420,7 +431,7 @@
           pnm_depledge: 'Yes / No',
           regular:      ''
         };
-        typeLabel.textContent = labels[p.type] != null ? labels[p.type] : p.type;
+        typeLabelEl.textContent = labels[p.type] != null ? labels[p.type] : p.type;
       }
 
       var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
