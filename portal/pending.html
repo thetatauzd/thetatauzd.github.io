@@ -7,10 +7,15 @@
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/portal.css">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
 </head>
-<body>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
   <header class="portal-header">
-    <div class="header-brand"><a href="login.html" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>ΘΤ ΖΔ Brother Portal</h1></div>
+    <div class="header-brand"><a href="login" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>ΘΤ ΖΔ Brother Portal</h1></div>
     <div class="user-info">
       <span id="user-email"></span>
       <button type="button" class="btn btn-ghost" id="btn-signout">Sign out</button>
@@ -34,6 +39,7 @@
     (function() {
       PortalAuth.requireAuth({ page: 'pending', redirect: true }).then(function(profile) {
         if (!profile) return;
+        PortalAuth.revealPage();
         document.getElementById('user-email').textContent = profile.email || '';
 
         // Watch for role change in real time — redirect as soon as admin approves
@@ -43,14 +49,14 @@
           var role = snap.val();
           if (role && role !== 'pending') {
             roleRef.off();
-            window.location.href = 'index.html';
+            window.location.href = '/portal';
           }
         });
       });
 
       document.getElementById('btn-signout').addEventListener('click', function() {
         PortalAuth.signOut().then(function() {
-          window.location.href = 'login.html';
+          window.location.href = 'login';
         });
       });
     })();

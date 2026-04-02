@@ -84,7 +84,7 @@
     const page = opts.page || '';
     if (role === 'pending') {
       if (page !== 'pending' && page !== 'login') {
-        window.location.href = 'pending.html';
+        window.location.href = 'pending';
       }
       return;
     }
@@ -99,12 +99,13 @@
    */
   function requireAuth(opts) {
     opts = opts || {};
+    installBfcacheGuard();
     return new Promise(function(resolve, reject) {
       const unsub = auth.onAuthStateChanged(function(user) {
         unsub();
         if (!user) {
           if (opts.redirect !== false) {
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+            window.location.href = 'login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
           } else {
             resolve(null);
           }
@@ -113,7 +114,7 @@
         setPersistence();
         getCurrentUserProfile().then(function(profile) {
           if (!profile) {
-            if (opts.redirect !== false) window.location.href = 'login.html';
+            if (opts.redirect !== false) window.location.href = 'login';
             resolve(null);
             return;
           }
@@ -135,7 +136,7 @@
   function requireAdmin() {
     return requireAuth({ page: 'admin' }).then(function(profile) {
       if (profile && profile.role !== 'admin') {
-        window.location.href = 'index.html';
+        window.location.href = '/portal';
         return null;
       }
       return profile;
@@ -145,7 +146,7 @@
   function requireRegent() {
     return requireAuth({ page: 'regent' }).then(function(profile) {
       if (profile && profile.role !== 'admin') {
-        window.location.href = 'index.html';
+        window.location.href = '/portal';
         return null;
       }
       return profile;
@@ -155,7 +156,7 @@
   function requireStandards() {
     return requireAuth({ page: 'standards' }).then(function(profile) {
       if (profile && profile.role !== 'admin') {
-        window.location.href = 'index.html';
+        window.location.href = '/portal';
         return null;
       }
       return profile;
@@ -165,7 +166,7 @@
   function requireRushChair() {
     return requireAuth({ page: 'timer' }).then(function(profile) {
       if (profile && profile.role !== 'rush_chair' && profile.role !== 'admin') {
-        window.location.href = 'index.html';
+        window.location.href = '/portal';
         return null;
       }
       return profile;
@@ -211,10 +212,58 @@
   }
 
   /**
+   * Remove the auth wall and show page content. Called automatically by initNav;
+   * pages that skip initNav (e.g. pending.html) should call this explicitly.
+   */
+  function revealPage() {
+    document.body.classList.remove('auth-pending');
+    var sp = document.getElementById('auth-spinner');
+    if (sp) sp.remove();
+  }
+
+  /**
+   * Re-lock the page behind the auth wall (used by bfcache guard).
+   */
+  function lockPage() {
+    document.body.classList.add('auth-pending');
+    if (!document.getElementById('auth-spinner')) {
+      var sp = document.createElement('div');
+      sp.className = 'auth-spinner';
+      sp.id = 'auth-spinner';
+      sp.innerHTML = '<div class="sp"></div>';
+      document.body.insertBefore(sp, document.body.firstChild);
+    }
+  }
+
+  var bfcacheGuardInstalled = false;
+
+  /**
+   * Guard against the browser back-button restoring a cached authenticated page.
+   * On bfcache restore, re-lock the page and verify the user is still signed in.
+   */
+  function installBfcacheGuard() {
+    if (bfcacheGuardInstalled) return;
+    bfcacheGuardInstalled = true;
+    window.addEventListener('pageshow', function(e) {
+      if (!e.persisted) return;
+      lockPage();
+      var unsub = auth.onAuthStateChanged(function(user) {
+        unsub();
+        if (user) {
+          revealPage();
+        } else {
+          window.location.replace('login');
+        }
+      });
+    });
+  }
+
+  /**
    * Initialize the standard portal nav dropdown: role-based link visibility,
    * dropdown toggle, and sign-out. Call after auth resolves with a profile.
    */
   function initNav(profile) {
+    revealPage();
     if (!profile) return;
     var role = profile.role || '';
 
@@ -248,7 +297,7 @@
     var signoutBtn = document.getElementById('btn-signout');
     if (signoutBtn) {
       signoutBtn.addEventListener('click', function() {
-        signOut().then(function() { window.location.href = 'login.html'; });
+        signOut().then(function() { window.location.href = 'login'; });
       });
     }
   }
@@ -267,6 +316,7 @@
     signInWithGoogle: signInWithGoogle,
     signOut: signOut,
     registerBrother: registerBrother,
-    initNav: initNav
+    initNav: initNav,
+    revealPage: revealPage
   };
 })(typeof window !== 'undefined' ? window : this);

@@ -80,7 +80,7 @@
     $('session-active-info').classList.remove('hidden');
     $('active-code').textContent = accessCode;
     $('active-session-type').textContent = '(' + typeLabel(sessionType) + ')';
-    $('link-open-regent').href = 'regent.html#' + sessionId;
+    $('link-open-regent').href = 'regent#' + sessionId;
     $('btn-create-session').disabled = true;
     $('session-code').disabled = true;
 
@@ -368,7 +368,7 @@
         db.ref('sessionHistory/' + savingSid).set(clean).then(function() {
           var ov = $('ending-overlay');
           if (ov) ov.remove();
-          window.location.href = 'history.html';
+          window.location.href = 'history';
         }).catch(function(err) {
           var ov = $('ending-overlay');
           if (ov) ov.remove();

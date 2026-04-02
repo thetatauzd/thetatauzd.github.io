@@ -7,21 +7,26 @@
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/portal.css">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
 </head>
-<body class="regent-screen">
+<body class="auth-pending regent-screen">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
   <header class="portal-header">
-    <div class="header-brand"><a href="index.html" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Regent Display</h1></div>
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Regent Display</h1></div>
     <div class="user-info">
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
         <div class="nav-dropdown-menu" id="dd-menu">
-          <a href="index.html">Portal home</a>
-          <a href="voting.html">Voting</a>
-          <a href="regent.html" id="link-regent" class="hidden">Regent view</a>
-          <a href="standards.html" id="link-standards" class="hidden">Standards</a>
-          <a href="history.html" id="link-history" class="hidden">Session History</a>
-          <a href="admin.html" id="link-admin" class="hidden">Admin</a>
-          <a href="timer.html" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/portal">Portal home</a>
+          <a href="voting">Voting</a>
+          <a href="regent" id="link-regent" class="hidden">Regent view</a>
+          <a href="standards" id="link-standards" class="hidden">Standards</a>
+          <a href="history" id="link-history" class="hidden">Session History</a>
+          <a href="admin" id="link-admin" class="hidden">Admin</a>
+          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
           <div class="dd-divider"></div>
           <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
         </div>
@@ -58,7 +63,7 @@
       <img src="../Images/ThetaTau.png" alt="Theta Tau" style="height:80px; width:80px; object-fit:contain; margin-bottom:1rem;">
       <h1 style="color:#FFCC33; font-size:2rem; margin-bottom:0.5rem;">Session Complete</h1>
       <p style="color:rgba(255,255,255,0.7); font-size:1.2rem; margin-bottom:2rem;">All polls have been completed and the session has been closed.</p>
-      <a href="index.html" class="btn btn-primary" style="padding:0.75rem 2rem; font-size:1.1rem; text-decoration:none;">Back to Portal</a>
+      <a href="/portal" class="btn btn-primary" style="padding:0.75rem 2rem; font-size:1.1rem; text-decoration:none;">Back to Portal</a>
     </div>
   </div>
 

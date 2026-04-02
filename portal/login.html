@@ -10,8 +10,8 @@
 </head>
 <body>
   <header class="portal-header">
-    <div class="header-brand"><a href="login.html" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>ΘΤ ΖΔ Brother Portal</h1></div>
-    <a href="../index.html">Back to site</a>
+    <div class="header-brand"><a href="login" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>ΘΤ ΖΔ Brother Portal</h1></div>
+    <a href="/">Back to site</a>
   </header>
 
   <main class="portal-container">
@@ -58,11 +58,11 @@
 
       function redirectAfterLogin(profile) {
         if (profile.role === 'pending') {
-          window.location.href = 'pending.html';
+          window.location.href = 'pending';
           return;
         }
         if (profile.role === 'admin') {
-          window.location.href = 'admin.html';
+          window.location.href = 'admin';
           return;
         }
         var redirect = (window.location.search.match(/redirect=([^&]+)/) || [])[1];
@@ -73,7 +73,7 @@
             return;
           }
         }
-        window.location.href = 'index.html';
+        window.location.href = '/portal';
       }
 
       btnGoogle.addEventListener('click', function() {
@@ -109,7 +109,7 @@
         }
         showError('');
         PortalAuth.registerBrother(user.uid, user.email, name, roll).then(function() {
-          window.location.href = 'pending.html';
+          window.location.href = 'pending';
         }).catch(function(err) {
           showError(err.message || 'Registration failed.');
         });
@@ -131,7 +131,7 @@
           if (dbProfile.role !== 'pending') {
             redirectAfterLogin(dbProfile);
           } else {
-            window.location.href = 'pending.html';
+            window.location.href = 'pending';
           }
         });
       });
