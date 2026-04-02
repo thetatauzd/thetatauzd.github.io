@@ -100,9 +100,11 @@
   function requireAuth(opts) {
     opts = opts || {};
     installBfcacheGuard();
+    var authTimeout = setTimeout(function() { revealPage(); }, 8000);
     return new Promise(function(resolve, reject) {
       const unsub = auth.onAuthStateChanged(function(user) {
         unsub();
+        clearTimeout(authTimeout);
         if (!user) {
           if (opts.redirect !== false) {
             window.location.href = 'login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
