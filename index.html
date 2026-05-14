@@ -96,12 +96,24 @@
         animation: fadeInUp 1s ease-out;
     }
     
-    .hero-subtitle {
-        font-size: clamp(1.2rem, 3vw, 1.5rem);
-        font-weight: 300;
-        margin-bottom: 2rem;
-        opacity: 0.9;
+    .hero-tagline {
+        font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+        font-weight: 500;
+        margin: 0 auto 0.35rem;
+        max-width: 36rem;
+        line-height: 1.35;
+        opacity: 0.95;
         animation: fadeInUp 1s ease-out 0.3s both;
+    }
+
+    .hero-supporting {
+        font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+        font-weight: 400;
+        margin: 0 auto 1.75rem;
+        max-width: 36rem;
+        line-height: 1.45;
+        opacity: 0.92;
+        animation: fadeInUp 1s ease-out 0.42s both;
     }
     
     .hero-buttons {
@@ -109,7 +121,7 @@
         gap: 1rem;
         justify-content: center;
         flex-wrap: wrap;
-        animation: fadeInUp 1s ease-out 0.6s both;
+        animation: fadeInUp 1s ease-out 0.54s both;
         margin-bottom: 60px;
     }
     
@@ -549,7 +561,8 @@
                 <div class="hero-content">
                     <h1 class="hero-title" style="font-family: 'Times New Roman', serif; font-size: 12rem; margin-bottom: -3rem;">ΘΤ</h1>
                     <h1 class="hero-title" style="font-family: 'Times New Roman', serif; font-size: 12rem; margin-bottom: 1rem;">ΖΔ</h1>
-                    <p class="hero-subtitle">Fostering leadership in profession, brotherhood, and service at the University of South Carolina</p>
+                    <p class="hero-tagline"><em>The Foremost Fraternity for Engineers</em></p>
+                    <p class="hero-supporting">Engineering leaders for Service, Profession, and Brotherhood.</p>
                     <div class="hero-buttons">
                         <a href="/rush" class="btn-primary">Rush Theta Tau</a>
                         <a href="#about" class="btn-secondary">Learn More</a>
@@ -565,9 +578,11 @@
             <!-- About Section -->
             <section id="about" class="content-section">
                 <div class="section-content">
-                    <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+                    <div style="max-width: 720px; margin: 0 auto; text-align: center;">
                         <h2>Welcome to Theta Tau Zeta Delta</h2>
                         <p>We are the University of South Carolina's premier professional engineering fraternity, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
+                        <p>We are a chapter of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau</a>, the national fraternity for engineers. The purpose of Theta Tau is to develop and maintain a high standard of professional interest among its members, and to unite them in a strong bond of fraternal fellowship.</p>
+                        <p><em>The Foremost Fraternity for Engineers</em> — engineering leaders for Service, Profession, and Brotherhood. <a href="https://thetatau.org/" target="_blank" rel="noopener">Visit thetatau.org</a> for national news, resources, and more.</p>
                     </div>
                 </div>
             </section>
@@ -688,6 +703,7 @@
                 
                 <div class="footer-section">
                     <h3>Connect</h3>
+                    <p><a href="https://thetatau.org/" target="_blank" rel="noopener">National Theta Tau</a></p>
                     <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
                     <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank">LinkedIn</a></p>
                     <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank">Facebook</a></p>
