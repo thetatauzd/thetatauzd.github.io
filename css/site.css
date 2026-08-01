@@ -1,7 +1,7 @@
 /* Brand colors — single source of truth, referenced via var() across every stylesheet and page */
 :root {
-	--color-gold: var(--color-gold);
-	--color-gold-dark: var(--color-gold-dark);
+	--color-gold: #FFCC33;
+	--color-gold-dark: #E6B800;
 	--color-maroon: #8B0000;
 	--color-maroon-dark: #6B0000;
 }
