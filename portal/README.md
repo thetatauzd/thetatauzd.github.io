@@ -16,7 +16,8 @@ The Brother Portal is a Firebase-backed private member portal for active brother
 8. [Database Schema](#database-schema)
 9. [Session History & Export](#session-history--export)
 10. [Event Timer](#event-timer)
-11. [What to Update](#what-to-update)
+11. [Newsletters](#newsletters)
+12. [What to Update](#what-to-update)
 
 ---
 
@@ -32,6 +33,8 @@ The Brother Portal is a Firebase-backed private member portal for active brother
 
 4. **Apply security rules**
    - Realtime Database → Rules tab. Paste the full contents of `firebase-database.rules.json` (repo root) and click **Publish**.
+
+   Note: newsletters intentionally do **not** use Firebase Storage — Cloud Storage for Firebase now requires the paid Blaze plan even within the free-tier quota, and this project stays on the free Spark plan. Newsletter PDFs live in Google Drive; only a share link is stored in the database. See [Newsletters](#newsletters).
 
 5. **Get your web config**
    - Project Settings (gear icon) → Your apps → Add app → Web. Register the app, then copy the `firebaseConfig` object.
@@ -71,6 +74,7 @@ Rules are in `firebase-database.rules.json` at the repo root. Key principles:
 - Only `admin` and `rush_chair` roles can control the event timer.
 - `sessionHistory` is readable and writable only by `admin`.
 - Connected brothers presence node (`connectedBrothers/$uid`) is writable only by that UID, readable only by that UID — used for kick detection.
+- `newsletters` is publicly readable (powers the public `/newsletter` page) but writable only by `admin`.
 
 **Every time you modify the rules file, re-publish them in the Firebase console.**
 
@@ -90,6 +94,7 @@ portal/
 ├── history.html          # Session history & export (admin only)
 ├── chapter-results.html  # Chapter-friendly results view (pass/fail, no percentages)
 ├── timer.html            # Synchronized event timer
+├── newsletters-admin.html # Upload & manage chapter newsletters (admin only)
 │
 ├── css/
 │   └── portal.css        # All portal styles (colors, layout, components)
@@ -102,6 +107,7 @@ portal/
     ├── standards.js        # Standards session and poll control logic
     ├── regent.js           # Regent display board logic
     ├── admin.js            # Admin user management logic
+    ├── newsletters.js      # Newsletter upload/list/delete logic
     └── timer.js            # Synchronized timer logic
 ```
 
@@ -249,6 +255,26 @@ The synchronized event timer at `/portal/timer.html` is controlled by admins and
 - Audio beeps on phase transitions.
 
 Timer state is stored in `timers/active` in the Realtime Database.
+
+---
+
+## Newsletters
+
+Chapter newsletters are published by admins from `/portal/newsletters-admin.html` and shown publicly (no login required) at `/newsletter` — the main site's newsletter archive.
+
+**Deliberately does not use Firebase Storage.** As of late 2024, Cloud Storage for Firebase requires the paid Blaze plan even to stay within the free-tier quota. To keep this project on the free Spark plan (no billing, no card on file), newsletter PDFs live in **Google Drive** instead — only a share link is stored in Firebase.
+
+**Admin publish flow** (`portal/newsletters-admin.html` + `portal/js/newsletters.js`):
+1. Admin uploads the PDF to Drive and sets sharing to "Anyone with the link" (Viewer).
+2. Admin pastes the Drive link into the form, along with a title, issue date, and optional description.
+3. A metadata record is written to Realtime Database under `newsletters/{pushId}`: `title`, `date`, `description`, `fileURL` (the Drive link), `uploadedBy`, `uploadedAt`.
+4. **Delete** removes the database record (the file itself stays in Drive — delete it there separately if you want it fully gone).
+
+**Public page** (`/newsletter.html`, repo root): reads the `newsletters` node directly (public read, no auth) and lists newsletters newest-first with a link to each PDF.
+
+**Security model:** the Realtime Database `newsletters` node is publicly readable but only `admin`-writable (see [Security Rules](#security-rules)). Since there's no file upload, there's no separate Storage rules concern — the RTDB rule alone gates who can publish.
+
+If you'd rather have one-click file uploads instead of a Drive-link paste step, that's possible by switching back to Firebase Storage — it just requires upgrading the Firebase project to the Blaze plan (billing stays $0/month at this scale, but a card must be on file).
 
 ---
 

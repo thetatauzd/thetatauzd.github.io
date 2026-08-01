@@ -121,7 +121,7 @@
     .hero-stat-number {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #FFCC33;
+        color: var(--color-gold);
         display: block;
     }
 
@@ -203,7 +203,7 @@
     }
 
     .feature-tag {
-        background: #FFCC33;
+        background: var(--color-gold);
         color: white;
         padding: 5px 15px;
         border-radius: 20px;
@@ -389,7 +389,7 @@
     }
 
     .cta-primary {
-        background: linear-gradient(135deg, #FFCC33, #E6B800);
+        background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
         color: white;
         box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
     }
@@ -518,8 +518,11 @@
                       <div class="header-nav-item header-nav-item--collection header-nav-item--active">
                         <a href="/service" aria-current="page">Service</a>
                       </div>
+                      <div class="header-nav-item header-nav-item--collection">
+                          <a href="/newsletter">Newsletters</a>
+                      </div>
                       <div class="header-nav-item header-nav-item--push-right">
-                        <a href="/portal" style="color:#FFCC33; font-weight:600;">Brother Portal</a>
+                        <a href="/portal" style="color:var(--color-gold); font-weight:600;">Brother Portal</a>
                       </div>
                     </nav>
                   </div>
@@ -577,8 +580,11 @@
                       <div class="header-nav-item header-nav-item--collection header-nav-item--active">
                         <a href="/service" aria-current="page">Service</a>
                       </div>
+                      <div class="header-nav-item header-nav-item--collection">
+                          <a href="/newsletter">Newsletters</a>
+                      </div>
                       <div class="header-nav-item header-nav-item--push-right">
-                        <a href="/portal" style="color:#FFCC33; font-weight:600;">Brother Portal</a>
+                        <a href="/portal" style="color:var(--color-gold); font-weight:600;">Brother Portal</a>
                       </div>
                     </nav>
                   </div>
@@ -630,8 +636,11 @@
                     <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
                       <a href="/service" aria-current="page"><div class="header-menu-nav-item-content">Service</div></a>
                     </div>
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                        <a href="/newsletter"><div class="header-menu-nav-item-content">Newsletters</div></a>
+                    </div>
                     <div class="container header-menu-nav-item">
-                      <a href="/portal" style="color:#FFCC33;"><div class="header-menu-nav-item-content" style="color:#FFCC33;">Brother Portal</div></a>
+                      <a href="/portal" style="color:var(--color-gold);"><div class="header-menu-nav-item-content" style="color:var(--color-gold);">Brother Portal</div></a>
                     </div>
                   </div>
                 </div>
@@ -653,7 +662,7 @@
                 <div class="section-background">
                   <picture>
                     <source srcset="./Images/Service.webp" type="image/webp">
-                    <picture><source srcset="./Images/Service.webp" type="image/webp"><img src="./Images/Service.png" alt="Service Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high"></picture>
+                    <img src="./Images/Service.webp" alt="Service Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high" width="1000" height="750">
                   </picture>
                   <div class="section-background-overlay" style="opacity: 0.35;"></div>
                 </div>
@@ -712,8 +721,8 @@
                   <div class="hero-image">
                     <picture>
                       <source srcset="./Images/Columbia.webp" type="image/webp">
-                      <picture><source srcset="./Images/Columbia.webp" type="image/webp"><img src="./Images/Columbia.png" alt="Columbia Service Trips"></picture>
-                  </picture>
+                      <img src="./Images/Columbia.jpg" alt="Columbia Service Trips" loading="lazy" width="612" height="453">
+                    </picture>
                   </div>
                 </div>
 
@@ -724,7 +733,7 @@
                     <div class="feature-image">
                       <picture>
                         <source srcset="./Images/LivingScience.webp" type="image/webp">
-                        <picture><source srcset="./Images/LivingScience.webp" type="image/webp"><img src="./Images/LivingScience.png" alt="Living Science Museum Partnership"></picture>  
+                        <img src="./Images/LivingScience.png" alt="Living Science Museum Partnership" loading="lazy" width="900" height="608">
                       </picture>
                       <div class="feature-overlay">
                         <h2 class="feature-title">STEM Outreach Events</h2>
@@ -743,7 +752,7 @@
                       <div class="sidebar-image">
                         <picture>
                           <source srcset="./Images/ServiceHouse.webp" type="image/webp">
-                          <picture><source srcset="./Images/ServiceHouse.webp" type="image/webp"><img src="./Images/ServiceHouse.png" alt="Service House" style="object-position: top center;"></picture>
+                          <img src="./Images/ServiceHouse.jpg" alt="Service House" style="object-position: top center;" loading="lazy" width="1400" height="1374">
                         </picture>
                       </div>
                       <div class="sidebar-content">
@@ -757,8 +766,8 @@
                     <article class="sidebar-article">
                       <div class="sidebar-image">
                         <picture>
-                          <source srcset="./Images/SodaCity.webp" type="image/webp">
-                          <picture><source srcset="./Images/SodaCity.webp" type="image/webp"><img src="./Images/SodaCity.png" alt="Community Technology Solutions"></picture>
+                          <source srcset="./Images/optimized/SodaCity.webp" type="image/webp">
+                          <img src="./Images/optimized/SodaCity.webp" alt="Community Technology Solutions" loading="lazy" width="1920" height="1440">
                         </picture>
                       </div>
                       <div class="sidebar-content">
@@ -776,7 +785,7 @@
                   <div class="full-width-image">
                     <picture>
                       <source srcset="./Images/Service.webp" type="image/webp">
-                      <picture><source srcset="./Images/Service.webp" type="image/webp"><img src="./Images/Service.png" alt="Service Impact"></picture>
+                      <img src="./Images/Service.webp" alt="Service Impact" loading="lazy" width="1000" height="750">
                     </picture>
                     <div class="full-width-overlay">
                       <div class="full-width-content">
@@ -819,11 +828,12 @@
             
             <div class="footer-section">
               <h3>Connect</h3>
+              <p><a href="/newsletter">Newsletters</a></p>
               <p><a href="https://thetatau.org/" target="_blank" rel="noopener">National Theta Tau</a></p>
               <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
               <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank">LinkedIn</a></p>
               <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank">Facebook</a></p>
-              <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" style="color:#FFCC33;">Donate</a></p>
+              <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" style="color:var(--color-gold);">Donate</a></p>
             </div>
           </div>
         </footer>

@@ -152,7 +152,7 @@
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background-color: #FFCC33; /* Theta Tau gold */
+    background-color: var(--color-gold); /* Theta Tau gold */
   }
   
   /* Class year sections spacing */
@@ -172,7 +172,7 @@
     }
   }
   
-  @media (max-width: 767px) {
+  @media (max-width: 768px) {
     .user-items-list-item-container {
       grid-template-columns: repeat(1, 1fr) !important;
       grid-gap: 20px !important;

@@ -279,6 +279,8 @@
       if (s) s.classList.remove('hidden');
       var a = document.getElementById('link-admin');
       if (a) a.classList.remove('hidden');
+      var n = document.getElementById('link-newsletters');
+      if (n) n.classList.remove('hidden');
       var h = document.getElementById('link-history');
       if (h) h.classList.remove('hidden');
     }

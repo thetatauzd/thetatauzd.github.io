@@ -1,3 +1,11 @@
+/* Brand colors — single source of truth, referenced via var() across every stylesheet and page */
+:root {
+	--color-gold: var(--color-gold);
+	--color-gold-dark: var(--color-gold-dark);
+	--color-maroon: #8B0000;
+	--color-maroon-dark: #6B0000;
+}
+
 /* Base styles */
 * {
 	box-sizing: border-box;
@@ -615,7 +623,7 @@
 }
 
 .footer-section h3 {
-	color: #FFCC33;
+	color: var(--color-gold);
 	margin-bottom: 1rem;
 }
 
@@ -628,12 +636,12 @@
 
 .footer-section a:hover {
 	opacity: 1;
-	color: #FFCC33;
+	color: var(--color-gold);
 }
 
 /* Footer refinements: enforce gold headers and spacing */
 .footer .footer-section h3 {
-	color: #FFCC33 !important;
+	color: var(--color-gold) !important;
 	margin-bottom: 1rem !important;
 }
 

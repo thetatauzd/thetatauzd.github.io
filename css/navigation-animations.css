@@ -75,7 +75,7 @@ header.scrolled {
     height: 2px;
     bottom: 0;
     left: 0;
-    background-color: #FFCC33; /* Theta Tau gold */
+    background-color: var(--color-gold); /* Theta Tau gold */
     transition: width 0.3s ease;
 }
 
@@ -106,7 +106,7 @@ header.scrolled {
     height: 2px;
     bottom: 0;
     left: 0;
-    background-color: #FFCC33;
+    background-color: var(--color-gold);
     transition: width 0.3s ease;
 }
 
@@ -197,7 +197,7 @@ header * {
 }
 
 .menu-close-btn:hover {
-    color: #FFCC33;
+    color: var(--color-gold);
 }
 
 .header-menu.menu-open .header-menu-nav {
@@ -219,7 +219,7 @@ header * {
 }
 
 .header-menu.menu-open .header-menu-nav-item a:hover .header-menu-nav-item-content {
-    color: #FFCC33;
+    color: var(--color-gold);
 }
 
 @keyframes menuFadeIn {

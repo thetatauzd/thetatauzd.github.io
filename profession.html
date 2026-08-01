@@ -211,7 +211,7 @@
   }
 
   .cta-primary {
-      background: linear-gradient(135deg, #FFCC33, #E6B800);
+      background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
       color: white;
       box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
   }
@@ -295,7 +295,7 @@
     .button {
         display: inline-block;
         padding: 12px 24px;
-        background-color: #FFCC33;
+        background-color: var(--color-gold);
         color: white;
         text-decoration: none;
         border-radius: 4px;
@@ -380,14 +380,14 @@
 
     .company-tag:hover {
         background: rgba(212, 175, 55, 0.2);
-        border-color: #FFCC33;
+        border-color: var(--color-gold);
         transform: translateY(-2px);
     }
 
     .company-tag.special {
-        background: linear-gradient(135deg, #FFCC33, #E6B800);
+        background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
         color: white;
-        border-color: #FFCC33;
+        border-color: var(--color-gold);
         font-weight: 600;
     }
 
@@ -488,8 +488,11 @@
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/service">Service</a>
                       </div>
+                      <div class="header-nav-item header-nav-item--collection">
+                          <a href="/newsletter">Newsletters</a>
+                      </div>
                       <div class="header-nav-item header-nav-item--push-right">
-                        <a href="/portal" style="color:#FFCC33; font-weight:600;">Brother Portal</a>
+                        <a href="/portal" style="color:var(--color-gold); font-weight:600;">Brother Portal</a>
                       </div>
                     </nav>
                   </div>
@@ -544,8 +547,11 @@
                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
                       <a href="/service"><div class="header-menu-nav-item-content">Service</div></a>
                     </div>
+                    <div class="container header-menu-nav-item header-menu-nav-item--collection">
+                        <a href="/newsletter"><div class="header-menu-nav-item-content">Newsletters</div></a>
+                    </div>
                     <div class="container header-menu-nav-item">
-                      <a href="/portal" style="color:#FFCC33;"><div class="header-menu-nav-item-content" style="color:#FFCC33;">Brother Portal</div></a>
+                      <a href="/portal" style="color:var(--color-gold);"><div class="header-menu-nav-item-content" style="color:var(--color-gold);">Brother Portal</div></a>
                     </div>
                   </div>
                 </div>
@@ -644,7 +650,7 @@
                             <figure class="sqs-block-image-figure intrinsic" style="max-width:1080px;">
                               <div class="image-block-wrapper">
                                 <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom:177.7777862548828%; overflow: hidden;">
-                                  <picture><source srcset="./Images/Companies/ThetaTauCompanies.webp" type="image/webp"><img src="./Images/Companies/ThetaTauCompanies.png" alt="Company logos" style="display:block;object-fit: cover; width: 100%; height: 100%; object-position: 50% 50%"></picture>
+                                  <picture><source srcset="./Images/Companies/ThetaTauCompanies.webp" type="image/webp"><img src="./Images/Companies/ThetaTauCompanies.png" alt="Company logos" style="display:block;object-fit: cover; width: 100%; height: 100%; object-position: 50% 50%" loading="lazy"></picture>
                                 </div>
                               </div>
                             </figure>
@@ -675,7 +681,7 @@
                                 <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom:75%; overflow: hidden;">
                                   <picture>
                                                                           <source srcset="./Images/Interns.webp" type="image/webp">
-                                    <img src="./Images/Interns.webp" alt="Last Summer's Interns" style="display:block;object-fit: cover; width: 100%; height: 100%; object-position: 50% 50%">
+                                    <img src="./Images/Interns.webp" alt="Last Summer's Interns" style="display:block;object-fit: cover; width: 100%; height: 100%; object-position: 50% 50%" loading="lazy">
                                   </picture>
                                 </div>
                               </div>
@@ -692,7 +698,7 @@
                               
                               <div class="interns-companies" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
                                 <div class="intern-company">
-                                  <h4 style="color: #FFCC33; margin-bottom: 0.5rem;">Technology & Consulting</h4>
+                                  <h4 style="color: var(--color-gold); margin-bottom: 0.5rem;">Technology & Consulting</h4>
                                   <ul style="list-style: none; padding: 0; margin: 0;">
                                     <li style="margin-bottom: 0.5rem;">• IBM</li>
                                     <li style="margin-bottom: 0.5rem;">• Amazon</li>
@@ -702,14 +708,14 @@
                                 </div>
                                 
                                 <div class="intern-company">
-                                  <h4 style="color: #FFCC33; margin-bottom: 0.5rem;">Finance & Investment</h4>
+                                  <h4 style="color: var(--color-gold); margin-bottom: 0.5rem;">Finance & Investment</h4>
                                   <ul style="list-style: none; padding: 0; margin: 0;">
                                     <li style="margin-bottom: 0.5rem;">• Merrill</li>
                                   </ul>
                                 </div>
                                 
                                 <div class="intern-company">
-                                  <h4 style="color: #FFCC33; margin-bottom: 0.5rem;">Construction & Engineering</h4>
+                                  <h4 style="color: var(--color-gold); margin-bottom: 0.5rem;">Construction & Engineering</h4>
                                   <ul style="list-style: none; padding: 0; margin: 0;">
                                     <li style="margin-bottom: 0.5rem;">• Pavarini McGovern</li>
                                     <li style="margin-bottom: 0.5rem;">• Ewing Cole</li>
@@ -719,7 +725,7 @@
                                 </div>
                                 
                                 <div class="intern-company">
-                                  <h4 style="color: #FFCC33; margin-bottom: 0.5rem;">Manufacturing & Defense</h4>
+                                  <h4 style="color: var(--color-gold); margin-bottom: 0.5rem;">Manufacturing & Defense</h4>
                                   <ul style="list-style: none; padding: 0; margin: 0;">
                                     <li style="margin-bottom: 0.5rem;">• Alpek</li>
                                     <li style="margin-bottom: 0.5rem;">• CMaT</li>
@@ -835,11 +841,12 @@
             
             <div class="footer-section">
               <h3>Connect</h3>
+              <p><a href="/newsletter">Newsletters</a></p>
               <p><a href="https://thetatau.org/" target="_blank" rel="noopener">National Theta Tau</a></p>
               <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
               <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank">LinkedIn</a></p>
               <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank">Facebook</a></p>
-              <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" style="color:#FFCC33;">Donate</a></p>
+              <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" style="color:var(--color-gold);">Donate</a></p>
             </div>
           </div>
         </footer>

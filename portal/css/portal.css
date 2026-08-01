@@ -1,5 +1,12 @@
+:root {
+  --color-gold: #FFCC33;
+  --color-gold-dark: #E6B800;
+  --color-maroon: #8B0000;
+  --color-maroon-dark: #6B0000;
+}
+
 /**
- * Brother Portal – Theta Tau branded (Dark Red #8B0000, Gold #FFCC33).
+ * Brother Portal – Theta Tau branded (Dark Red #8B0000, Gold #FFCC33 — see :root above).
  * Mobile-first, large tap targets for voting.
  */
 * {
@@ -17,7 +24,7 @@ body {
 }
 
 .portal-header {
-  background: linear-gradient(135deg, #8B0000 0%, #6B0000 100%);
+  background: linear-gradient(135deg, var(--color-maroon) 0%, var(--color-maroon-dark) 100%);
   color: #fff;
   padding: 1rem 1.5rem;
   display: flex;
@@ -157,8 +164,8 @@ body {
 }
 
 .portal-header .btn-primary {
-  background: #FFCC33;
-  color: #8B0000;
+  background: var(--color-gold);
+  color: var(--color-maroon);
 }
 
 .portal-header .btn-ghost {
@@ -184,7 +191,7 @@ body {
 .portal-card h2 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #8B0000;
+  color: var(--color-maroon);
 }
 
 .portal-nav-grid {
@@ -200,8 +207,8 @@ body {
   justify-content: center;
   min-height: 56px;
   padding: 1rem;
-  background: linear-gradient(135deg, #FFCC33 0%, #E6B800 100%);
-  color: #8B0000;
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  color: var(--color-maroon);
   text-decoration: none;
   border-radius: 10px;
   font-weight: 600;
@@ -216,8 +223,8 @@ body {
 }
 
 .banner-active-poll {
-  background: #FFCC33;
-  color: #8B0000;
+  background: var(--color-gold);
+  color: var(--color-maroon);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
@@ -226,7 +233,7 @@ body {
 }
 
 .banner-active-poll a {
-  color: #8B0000;
+  color: var(--color-maroon);
   text-decoration: underline;
 }
 
@@ -253,7 +260,7 @@ body {
 
 .login-card .btn-google:hover {
   background: #f8f8f8;
-  border-color: #FFCC33;
+  border-color: var(--color-gold);
 }
 
 .login-card input {
@@ -287,23 +294,23 @@ body {
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 10px;
-  border: 2px solid #8B0000;
+  border: 2px solid var(--color-maroon);
   background: #fff;
-  color: #8B0000;
+  color: var(--color-maroon);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
 .vote-btn:hover {
-  background: #8B0000;
+  background: var(--color-maroon);
   color: #fff;
 }
 
 .vote-btn.voted {
-  background: #FFCC33;
-  border-color: #FFCC33;
-  color: #8B0000;
-  box-shadow: 0 0 0 3px #FFCC33, 0 0 0 5px #8B0000;
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-maroon);
+  box-shadow: 0 0 0 3px var(--color-gold), 0 0 0 5px var(--color-maroon);
 }
 
 .vote-btn.ranked-plus { border-color: #2e7d32; color: #2e7d32; }
@@ -320,7 +327,7 @@ body {
   max-width: 280px;
   margin: 0 auto 1rem;
   display: block;
-  border: 2px solid #8B0000;
+  border: 2px solid var(--color-maroon);
   border-radius: 8px;
 }
 
@@ -328,7 +335,7 @@ body {
 .regent-screen {
   padding: 2rem;
   min-height: 100vh;
-  background: #8B0000;
+  background: var(--color-maroon);
   color: #fff;
 }
 
@@ -342,7 +349,7 @@ body {
   font-size: clamp(1.25rem, 3vw, 2rem);
   text-align: center;
   margin-bottom: 2rem;
-  color: #FFCC33;
+  color: var(--color-gold);
 }
 
 .regent-screen .counter {
@@ -392,7 +399,7 @@ body {
 .standards-section h3 {
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
-  color: #8B0000;
+  color: var(--color-maroon);
 }
 
 .standards-section input,
@@ -407,15 +414,15 @@ body {
 }
 
 .standards-section button {
-  background: #FFCC33;
-  color: #8B0000;
+  background: var(--color-gold);
+  color: var(--color-maroon);
   border: none;
   font-weight: 600;
   cursor: pointer;
 }
 
 .standards-section button:hover {
-  background: #E6B800;
+  background: var(--color-gold-dark);
 }
 
 .standards-section button.secondary {
@@ -455,7 +462,7 @@ body {
 }
 
 .admin-table th {
-  background: #8B0000;
+  background: var(--color-maroon);
   color: #fff;
 }
 
@@ -474,7 +481,7 @@ body {
 
 .pending-message h2 {
   margin-bottom: 1rem;
-  color: #8B0000;
+  color: var(--color-maroon);
 }
 
 .pending-message p {
@@ -550,7 +557,7 @@ body {
 .timer-round-badge {
   display: inline-block;
   background: rgba(255,255,255,0.12);
-  color: #FFCC33;
+  color: var(--color-gold);
   font-weight: 700;
   font-size: 1rem;
   padding: 0.25rem 1rem;
@@ -568,7 +575,7 @@ body {
 }
 
 .timer-phase-main .timer-countdown {
-  color: #FFCC33;
+  color: var(--color-gold);
 }
 
 .timer-phase-switching .timer-countdown {
@@ -587,7 +594,7 @@ body {
   margin-top: 0.5rem;
 }
 
-.timer-phase-main .timer-phase-label { color: #FFCC33; }
+.timer-phase-main .timer-phase-label { color: var(--color-gold); }
 .timer-phase-switching .timer-phase-label { color: #ff4444; }
 
 .timer-paused .timer-countdown {
@@ -607,7 +614,7 @@ body {
 }
 
 .timer-controls-panel h3 {
-  color: #FFCC33;
+  color: var(--color-gold);
   font-size: 1rem;
   margin: 0 0 1rem;
 }
@@ -635,7 +642,7 @@ body {
 
 .timer-controls-panel input:focus {
   outline: none;
-  border-color: #FFCC33;
+  border-color: var(--color-gold);
 }
 
 .timer-input-row {
@@ -660,7 +667,7 @@ body {
 .timer-repeat-toggle input {
   width: 18px;
   height: 18px;
-  accent-color: #FFCC33;
+  accent-color: var(--color-gold);
 }
 
 .timer-btn-row {
@@ -688,7 +695,7 @@ body {
   cursor: default;
 }
 
-.timer-btn-start  { background: #FFCC33; color: #8B0000; }
+.timer-btn-start  { background: var(--color-gold); color: var(--color-maroon); }
 .timer-btn-pause  { background: #ff9800; color: #fff; }
 .timer-btn-resume { background: #4caf50; color: #fff; }
 .timer-btn-reset  { background: #666; color: #fff; }
