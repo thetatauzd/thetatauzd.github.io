@@ -29,14 +29,14 @@
   // Labels we parse but never store (personal contact info).
   var SKIP_LABELS = [/Email\s*:/i, /Phone Number\s*:/i];
 
-  var EVENT_LABELS = [
-    'Info Session',
-    'PD Workshop',
-    'Speed Dating',
-    'Committee Fair',
-    'Professional Networking',
-    'Professional Dinner (Invite Only)'
-  ];
+  // Any "Something:" line is treated as a label, so a value that spills onto the
+  // next line stops at the next label whatever it happens to be called.
+  var LABEL_LINE = /^[^:]{2,60}:/;
+
+  // Attendance markers. Events are read off the slide by name rather than from a
+  // fixed list, so renamed or newly added rush events carry through on their own.
+  var ATTENDANCE_VALUE = /^(y|yes|n|no|na|n\/a|tbd|✓|✔|✗|x|-|–|—)?$/i;
+  var ATTENDED_VALUE = /^(y|yes|✓|✔)/i;
 
   // Boilerplate that shows up in the info box and should never be read as a value.
   var NOISE = /^\s*\*.*\*\s*$|^\s*BASIC INFORMATION\s*$|^\s*EVENTS ATTENDED\s*$/i;
@@ -70,17 +70,8 @@
    * until the next recognised label.
    */
   function extractFields(paragraphs) {
-    var allLabels = INFO_LABELS.map(function (l) { return l.match; })
-      .concat(SKIP_LABELS)
-      .concat(EVENT_LABELS.map(function (e) {
-        return new RegExp(e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:', 'i');
-      }));
-
     function startsWithAnyLabel(text) {
-      return allLabels.some(function (re) {
-        var m = text.match(re);
-        return m && m.index === 0;
-      });
+      return LABEL_LINE.test(text);
     }
 
     var result = {};
@@ -103,19 +94,48 @@
     return result;
   }
 
+  /**
+   * Read the "events attended" block by name rather than against a fixed list,
+   * so renaming an event or adding a new one on next semester's deck just works.
+   *
+   * A line counts as an event when it reads "Label: <attendance marker>", where
+   * the marker is blank or something like Y/N. That value check is what keeps
+   * real fields out — "Major: Computer Science" has too rich a value to qualify,
+   * and the known info labels are excluded outright.
+   */
   function extractEvents(paragraphs) {
     var events = [];
+    var seen = {};
+
     paragraphs.forEach(function (line) {
-      EVENT_LABELS.forEach(function (label) {
-        var re = new RegExp('^' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*(.*)$', 'i');
-        var m = line.match(re);
-        if (m) {
-          var v = (m[1] || '').trim();
-          events.push({ label: label, attended: /^y/i.test(v) });
-        }
-      });
+      if (NOISE.test(line)) return;
+
+      var m = line.match(/^([^:]{2,60}):\s*(.*)$/);
+      if (!m) return;
+
+      var label = m[1].replace(/\s+/g, ' ').trim();
+      var value = (m[2] || '').trim();
+      if (!label) return;
+      if (isReservedLabel(label)) return;
+      if (!ATTENDANCE_VALUE.test(value)) return;
+
+      var key = label.toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+
+      events.push({ label: label, attended: ATTENDED_VALUE.test(value) });
     });
+
     return events;
+  }
+
+  /** Info/contact fields that live in the same text blocks but are not events. */
+  function isReservedLabel(label) {
+    return INFO_LABELS.concat(SKIP_LABELS.map(function (re) { return { match: re }; }))
+      .some(function (l) {
+        var m = label.match(l.match);
+        return m && m.index === 0;
+      });
   }
 
   /**
@@ -376,7 +396,6 @@
   global.PortalSlides = {
     parseDeck: parseDeck,
     estimateSize: estimateSize,
-    shrinkImage: shrinkImage,
-    EVENT_LABELS: EVENT_LABELS
+    shrinkImage: shrinkImage
   };
 })(typeof window !== 'undefined' ? window : this);
