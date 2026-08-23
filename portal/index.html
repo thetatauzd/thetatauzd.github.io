@@ -153,8 +153,8 @@
         if (!profile) return;
         PortalAuth.initNav(profile);
 
-        var first = (profile.name || '').trim().split(/\s+/)[0] || 'Brother';
-        document.getElementById('greeting').textContent = 'Hi ' + first;
+        var fullName = (profile.name || '').replace(/\s+/g, ' ').trim();
+        document.getElementById('greeting').textContent = 'Hi ' + (fullName || 'Brother') + '!';
 
         var bits = [];
         if (profile.rollNumber) bits.push('Roll #' + profile.rollNumber);
