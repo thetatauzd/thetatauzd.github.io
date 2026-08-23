@@ -155,6 +155,8 @@ function locateRoll() {
     ? [ss.getSheetByName(ROLL_SHEET_NAME)].filter(Boolean)
     : ss.getSheets();
 
+  var best = null;
+
   for (var s = 0; s < sheets.length; s++) {
     var sheet = sheets[s];
     var values;
@@ -179,10 +181,17 @@ function locateRoll() {
         var nm = String(values[i][nameCol] || '').trim();
         if (roll || nm) out.push({ roll: roll, name: nm });
       }
-      return { rows: out, tabName: sheet.getName(), headerRow: r + 1 };
+
+      // Keep the richest match rather than the first. A lookup/search tab can
+      // carry the same headers as the roll while holding no data underneath, and
+      // taking the first hit would return an empty roster.
+      if (!best || out.length > best.rows.length) {
+        best = { rows: out, tabName: sheet.getName(), headerRow: r + 1 };
+      }
+      break;   // one header row per tab is enough
     }
   }
-  return null;
+  return best;
 }
 
 function indexOfAny(headers, candidates) {
