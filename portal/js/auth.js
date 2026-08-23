@@ -261,8 +261,10 @@
   }
 
   /**
-   * Initialize the standard portal nav dropdown: role-based link visibility,
-   * dropdown toggle, and sign-out. Call after auth resolves with a profile.
+   * Initialize the portal nav: role-based visibility, dropdown toggles, sign-out.
+   * Admins get a separate "Admin" dropdown holding every admin-only tool; the
+   * rush_chair role only needs the timer, which stays in the main menu.
+   * Call after auth resolves with a profile.
    */
   function initNav(profile) {
     revealPage();
@@ -273,30 +275,30 @@
     if (nameEl) nameEl.textContent = profile.name || profile.email || 'Brother';
 
     if (role === 'admin') {
-      var r = document.getElementById('link-regent');
-      if (r) r.classList.remove('hidden');
-      var s = document.getElementById('link-standards');
-      if (s) s.classList.remove('hidden');
-      var a = document.getElementById('link-admin');
-      if (a) a.classList.remove('hidden');
-      var n = document.getElementById('link-newsletters');
-      if (n) n.classList.remove('hidden');
-      var h = document.getElementById('link-history');
-      if (h) h.classList.remove('hidden');
-    }
-    if (role === 'rush_chair' || role === 'admin') {
+      var adminDd = document.getElementById('admin-dropdown');
+      if (adminDd) adminDd.classList.remove('hidden');
+    } else if (role === 'rush_chair') {
       var t = document.getElementById('link-timer');
       if (t) t.classList.remove('hidden');
     }
 
-    var ddToggle = document.getElementById('dd-toggle');
-    var ddNav = document.getElementById('nav-dropdown');
-    if (ddToggle && ddNav) {
-      ddToggle.addEventListener('click', function() { ddNav.classList.toggle('open'); });
-      document.addEventListener('click', function(e) {
-        if (!ddNav.contains(e.target)) ddNav.classList.remove('open');
+    var dropdowns = [].slice.call(document.querySelectorAll('.nav-dropdown'));
+    dropdowns.forEach(function(dd) {
+      var toggle = dd.querySelector('.nav-dropdown-toggle');
+      if (!toggle) return;
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdowns.forEach(function(other) {
+          if (other !== dd) other.classList.remove('open');
+        });
+        dd.classList.toggle('open');
       });
-    }
+    });
+    document.addEventListener('click', function(e) {
+      dropdowns.forEach(function(dd) {
+        if (!dd.contains(e.target)) dd.classList.remove('open');
+      });
+    });
 
     var signoutBtn = document.getElementById('btn-signout');
     if (signoutBtn) {

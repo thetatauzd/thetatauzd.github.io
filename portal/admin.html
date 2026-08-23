@@ -17,17 +17,24 @@
   <header class="portal-header">
     <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Admin – User Management</h1></div>
     <div class="user-info">
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu">
+          <a href="admin">User Management</a>
+          <a href="newsletters-admin">Newsletters</a>
+          <div class="dd-section-label">Voting</div>
+          <a href="standards">Standards</a>
+          <a href="regent">Regent View</a>
+          <a href="history">Session History</a>
+        </div>
+      </div>
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
         <div class="nav-dropdown-menu" id="dd-menu">
           <a href="/portal">Portal home</a>
           <a href="voting">Voting</a>
-          <a href="regent" id="link-regent" class="hidden">Regent view</a>
-          <a href="standards" id="link-standards" class="hidden">Standards</a>
-          <a href="history" id="link-history" class="hidden">Session History</a>
-          <a href="newsletters-admin" id="link-newsletters" class="hidden">Newsletters</a>
-          <a href="admin" id="link-admin" class="hidden">Admin</a>
           <a href="timer" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/">Back to Site</a>
           <div class="dd-divider"></div>
           <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
         </div>
@@ -58,7 +65,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js"></script>
-  <script src="js/auth.js?v=2"></script>
+  <script src="js/auth.js?v=3"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

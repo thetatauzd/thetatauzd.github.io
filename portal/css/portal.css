@@ -106,6 +106,21 @@ body {
   margin-left: 2px;
 }
 
+.portal-header .nav-dropdown-toggle--admin {
+  background: var(--color-gold);
+  color: var(--color-maroon);
+  border-color: var(--color-gold-dark);
+  font-weight: 600;
+}
+
+.portal-header .nav-dropdown-toggle--admin:hover {
+  background: var(--color-gold-dark);
+}
+
+.portal-header .nav-dropdown-toggle--admin::after {
+  border-top-color: var(--color-maroon);
+}
+
 .portal-header .nav-dropdown-menu {
   display: none;
   position: absolute;
@@ -115,8 +130,16 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   min-width: 180px;
+  max-width: calc(100vw - 1.5rem);
   z-index: 100;
   overflow: hidden;
+}
+
+/* The admin dropdown sits left of the profile one, so its menu opens rightward
+   to avoid running off the left edge of narrow screens. */
+.portal-header #admin-dropdown .nav-dropdown-menu {
+  right: auto;
+  left: 0;
 }
 
 .portal-header .nav-dropdown.open .nav-dropdown-menu {
@@ -147,6 +170,17 @@ body {
   height: 1px;
   background: #eee;
   margin: 0;
+}
+
+.portal-header .nav-dropdown-menu .dd-section-label {
+  padding: 0.6rem 1rem 0.3rem;
+  margin-top: 0.3rem;
+  border-top: 1px solid #eee;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #999;
 }
 
 .portal-header .nav-dropdown-menu .dd-signout {
@@ -205,6 +239,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.6rem;
   min-height: 56px;
   padding: 1rem;
   background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
@@ -220,6 +255,14 @@ body {
 .portal-nav-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 204, 51, 0.4);
+}
+
+.portal-nav-grid a svg,
+.portal-nav-grid .portal-nav-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .banner-active-poll {
@@ -509,6 +552,24 @@ body {
 .mb-2 { margin-bottom: 1rem; }
 .hidden { display: none !important; }
 
+/* Chapter calendar embed */
+.calendar-embed {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.calendar-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 @media (min-width: 768px) {
   .portal-nav-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -518,10 +579,125 @@ body {
   }
 }
 
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .portal-header {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .portal-header h1 {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  /* Brand takes the first row, controls sit right-aligned on the second —
+     the full title plus both dropdowns will not fit on one phone-width row. */
+  .portal-header .header-brand {
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .portal-header .header-brand img {
+    height: 28px;
+    width: 28px;
+    flex-shrink: 0;
+  }
+
+  .portal-header .user-info {
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .portal-header .nav-dropdown-toggle {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  /* Keep the menu button compact — the name can be long */
+  .portal-header #user-name {
+    max-width: 8ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .portal-header .nav-dropdown-menu {
+    min-width: 200px;
+  }
+
+  .portal-header .nav-dropdown-menu a,
+  .portal-header .nav-dropdown-menu button {
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .portal-container {
+    padding: 1rem;
+  }
+
+  .portal-card {
+    padding: 1.15rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+  }
+
+  .portal-card h2 {
+    font-size: 1.25rem;
+  }
+
+  .portal-nav-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .portal-nav-grid a,
+  .portal-nav-grid .portal-nav-item {
+    min-height: 64px;
+    padding: 0.85rem 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  /* A month grid is unusable at this width — agenda mode (set in portal/index.html)
+     needs vertical room instead of a fixed aspect ratio. */
+  .calendar-embed {
+    padding-bottom: 0;
+    height: 70vh;
+    min-height: 420px;
+  }
+
+  /* Wide data tables scroll rather than squeezing off-screen */
+  .admin-table,
+  .results-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 600px) {
   .regent-screen .not-voted-list {
     grid-template-columns: repeat(2, 1fr);
     font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .portal-header h1 {
+    font-size: 0.9rem;
+  }
+
+  .portal-nav-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-nav-grid a,
+  .portal-nav-grid .portal-nav-item {
+    min-height: 56px;
   }
 }
 
