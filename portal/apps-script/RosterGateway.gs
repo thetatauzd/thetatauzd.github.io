@@ -142,10 +142,15 @@ function normalizeRoll(v) {
 /**
  * The digits inside a roll entry, used for matching.
  *
- * About 6% of the roll carries status letters after the number — "415X!",
- * "1XX", "133YY". The portal stores the plain number, so an exact comparison
- * would never match those brothers. Comparing digit cores makes both forms
- * line up while the sheet keeps its own notation.
+ * About 6% of the roll carries office letters after the number, marking who has
+ * held a chapter office:
+ *
+ *   X  current regent      XX  past regent
+ *   YY past vice regent    TT  standards
+ *   WW marshal             !   just marks the end of the roll number
+ *
+ * None of it changes who the brother is, so matching ignores it entirely and
+ * compares digits only — "415X!" is roll 415. The sheet keeps its own notation.
  */
 function rollCore(v) {
   return String(v === null || v === undefined ? '' : v).replace(/\D/g, '').replace(/^0+(?=\d)/, '');

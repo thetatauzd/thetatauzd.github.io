@@ -15,7 +15,7 @@
 (function (global) {
   'use strict';
 
-  var ROSTER_GATEWAY_URL = 'https://script.google.com/macros/s/AKfycbzu9IxYQ3ZaEgoSsFUKKXEDw1UV33loxaS1sxXacDe47BzgtK_ZzwOmF0om9y5BdSI9/exec';
+  var ROSTER_GATEWAY_URL = 'https://script.google.com/macros/s/AKfycbycpuIGNkqEf5wCsRiIHdrUtVJh_WDkBF-c-Dc5SKC0FOcWzpROykVoTVIp8VSDWnLd/exec';
 
   function isConfigured() {
     return !!ROSTER_GATEWAY_URL;
