@@ -238,7 +238,7 @@ body {
 .portal-nav-grid .portal-nav-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.6rem;
   min-height: 56px;
   padding: 1rem;
@@ -263,6 +263,13 @@ body {
   height: 20px;
   flex-shrink: 0;
   opacity: 0.85;
+}
+
+/* Icon pins to the left edge; the label centers in the space that's left */
+.portal-nav-grid a > span,
+.portal-nav-grid .portal-nav-item > span {
+  flex: 1;
+  text-align: center;
 }
 
 .banner-active-poll {
