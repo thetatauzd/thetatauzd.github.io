@@ -307,6 +307,24 @@ body {
 .stat-tile.stat-owing .stat-value { color: #c62828; }
 .stat-tile.stat-clear .stat-value { color: #2e7d32; }
 
+/* ── Tracker ── */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.pay-status {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.pay-status.is-paid { background: #e8f5e9; color: #2e7d32; }
+.pay-status.is-unpaid { background: #ffebee; color: #c62828; }
+
+.admin-table tr.row-paid td { color: #777; }
+
+.section-empty { color: #999; padding: 0.75rem 0; }
+.sec-count { font-size: 0.85rem; font-weight: 500; color: #888; margin-left: 0.35rem; }
+
 .banner-active-poll {
   background: var(--color-gold);
   color: var(--color-maroon);
