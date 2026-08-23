@@ -1,5 +1,6 @@
 /**
- * Rushee/PNM slide deck parser.
+ * Candidate slide-deck parser (rush slides, PNM check-in slides, anything
+ * following the same one-person-per-slide shape).
  *
  * Reads a .pptx exported from Google Slides (File > Download > Microsoft PowerPoint)
  * entirely in the browser and turns each slide into a candidate record:
@@ -160,6 +161,21 @@
     if (!n) return '';
     if (/^first\s+last$/i.test(n) || /^name$/i.test(n)) return '';
     return n;
+  }
+
+  /**
+   * Slides record class standing every which way ("S", "Fr", "Jr.", "freshman",
+   * "2"). Normalize to a full word. A bare "S" is read as Sophomore, not Senior —
+   * seniors are not eligible to rush, so Senior is only used when spelled out.
+   */
+  function normalizeClass(raw) {
+    var v = (raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!v) return '';
+    if (v.indexOf('sr') === 0 || v.indexOf('sen') === 0) return 'Senior';
+    if (v.indexOf('fr') === 0 || v === 'f' || v === '1' || v.indexOf('firstyear') === 0) return 'Freshman';
+    if (v.indexOf('so') === 0 || v === 's' || v === '2') return 'Sophomore';
+    if (v.indexOf('j') === 0 || v === '3') return 'Junior';
+    return (raw || '').trim();
   }
 
   /** Heuristic: a loose text box holding just a person's name. */
@@ -339,7 +355,7 @@
           photo: photo,
           gpa: fields.gpa || '',
           major: fields.major || '',
-          classStanding: fields.classStanding || '',
+          classStanding: normalizeClass(fields.classStanding),
           heardVia: fields.heardVia || '',
           events: events,
           warnings: warnings

@@ -128,6 +128,7 @@
         $('regular-options-setup').classList.toggle('hidden', selectedSessionType !== 'regular');
         // Slides can back either session type.
         $('slides-setup').classList.remove('hidden');
+        $('ranked-pacing').classList.toggle('hidden', selectedSessionType !== 'ranked');
       });
     });
 
@@ -142,9 +143,30 @@
     });
   }
 
-  // ── Rushee slide deck ──
+  // ── Candidate slide deck ──
 
   var parsedRoster = [];
+  var rankedPacing = 'self';   // 'self' = one quiz poll, 'standards' = one poll per candidate
+
+  var PACING_HINTS = {
+    self: 'One poll holding everyone. Brothers rate at their own speed, can go back, and submit all ratings at the end.',
+    standards: 'One poll per candidate. Nobody can rate ahead — you open each candidate and close them when the room has voted.'
+  };
+
+  function initPacingPicker() {
+    var wrap = $('pacing-presets');
+    if (!wrap) return;
+    var btns = wrap.querySelectorAll('.option-preset-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        rankedPacing = btn.getAttribute('data-pacing') || 'self';
+        var hint = $('pacing-hint');
+        if (hint) hint.textContent = PACING_HINTS[rankedPacing] || '';
+      });
+    });
+  }
 
   function slidesStatus(msg, kind) {
     var el = $('slides-status');
@@ -281,10 +303,25 @@
       var updates = {};
       var newOrder = [];
 
-      if (type === 'ranked') {
+      if (type === 'ranked' && rankedPacing === 'standards') {
+        // One scorecard poll per candidate, so Standards controls the pace.
+        roster.forEach(function(c, i) {
+          var pid = db.ref('sessions/' + sid + '/polls').push().key;
+          updates['sessions/' + sid + '/polls/' + pid] = {
+            name: '#' + c.number + ' ' + c.name,
+            type: 'ranked',
+            candidates: [c.name],
+            minimumScore: 0,
+            useRoster: true,
+            rosterIndex: i,
+            status: 'upcoming'
+          };
+          newOrder.push(pid);
+        });
+      } else if (type === 'ranked') {
         var pollId = db.ref('sessions/' + sid + '/polls').push().key;
         updates['sessions/' + sid + '/polls/' + pollId] = {
-          name: 'Rush Prelim',
+          name: 'Scorecard',
           type: 'ranked',
           candidates: roster.map(function(c) { return c.name; }),
           minimumScore: 0,
@@ -1156,6 +1193,7 @@
 
       initTypePicker();
       initSlideUpload();
+      initPacingPicker();
 
       $('btn-create-session').addEventListener('click', createSession);
       $('btn-end-session').addEventListener('click', endSession);

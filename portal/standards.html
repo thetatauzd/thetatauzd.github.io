@@ -142,13 +142,24 @@
       </div>
 
       <div id="slides-setup" class="hidden" style="margin-bottom:1rem;">
-        <label style="font-size:0.9rem; font-weight:600;">Rushee slides (optional)</label>
+        <label style="font-size:0.9rem; font-weight:600;">Slides (optional)</label>
         <p style="font-size:0.85rem; color:#666; margin:0.25rem 0 0.5rem;">
           In Google Slides choose <strong>File → Download → Microsoft PowerPoint (.pptx)</strong>, then upload it here.
           Each slide becomes a candidate with their photo, number and info. Photos are shrunk in your browser before upload.
         </p>
         <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
         <div id="slides-status" style="margin-top:0.5rem; font-size:0.9rem;"></div>
+
+        <div id="ranked-pacing" class="hidden" style="margin-top:0.9rem;">
+          <label style="font-size:0.9rem; font-weight:600;">How do brothers move through the candidates?</label>
+          <div class="option-presets" id="pacing-presets">
+            <button type="button" class="option-preset-btn selected" data-pacing="self">Self-paced quiz</button>
+            <button type="button" class="option-preset-btn" data-pacing="standards">Standards opens each one</button>
+          </div>
+          <p id="pacing-hint" style="font-size:0.82rem; color:#666; margin:0;">
+            One poll holding everyone. Brothers rate at their own speed, can go back, and submit all ratings at the end.
+          </p>
+        </div>
         <div id="slides-review" class="hidden" style="margin-top:0.75rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
             <strong id="slides-count"></strong>

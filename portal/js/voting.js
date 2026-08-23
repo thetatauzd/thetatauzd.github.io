@@ -20,6 +20,8 @@
   var cachedPollIndex = 0;
   var sessionMeta = null;       // holds sessionType, voteOptions
   var unloadHandlerAdded = false;
+  var roster = [];              // candidates parsed from an uploaded slide deck
+  var rosterLoaded = false;
 
   var STORAGE_KEY = 'voting_session';
 
@@ -132,10 +134,17 @@
 
     // Session-defined options (regular votes: Yes/No, Yes/No/IDK, custom)
     if (type === 'regular') {
-      var choices = (sessionMeta && sessionMeta.voteOptions) || [];
+      var choices = poll.options && poll.options.length
+        ? poll.options
+        : ((sessionMeta && sessionMeta.voteOptions) || []);
       if (choices.length === 0) {
         container.innerHTML = '<p style="color:#c62828;">No vote options configured for this session.</p>';
         return;
+      }
+
+      // Polls built from a slide deck show that candidate's card above the options.
+      if (poll.rosterIndex !== null && roster[poll.rosterIndex]) {
+        container.appendChild(buildCandidateCard(roster[poll.rosterIndex], poll.name));
       }
       choices.forEach(function(v) {
         var btn = document.createElement('button');
@@ -174,78 +183,269 @@
     });
   }
 
+  /**
+   * Quiz-style scorecard: one candidate per screen, tapping a score advances to
+   * the next, then a review screen submits the whole ballot at once. Ratings are
+   * held locally until submit so brothers can go back and change any answer.
+   */
+  var quizIndex = 0;
+  var quizNames = [];
+
+  function candidateByName(name) {
+    for (var i = 0; i < roster.length; i++) {
+      if (roster[i] && roster[i].name === name) return roster[i];
+    }
+    return null;
+  }
+
+  /** Photo + number + name + slide info, laid out like the rushee slide. */
+  function buildCandidateCard(cand, fallbackName) {
+    var card = document.createElement('div');
+    card.className = 'candidate-card';
+
+    if (cand && cand.photo) {
+      var img = document.createElement('img');
+      img.className = 'candidate-photo';
+      img.src = cand.photo;
+      img.alt = cand.name || '';
+      card.appendChild(img);
+    }
+
+    var body = document.createElement('div');
+    body.className = 'candidate-body';
+
+    var heading = document.createElement('h3');
+    heading.className = 'candidate-name';
+    heading.textContent = (cand && cand.number ? '#' + cand.number + '  ' : '') +
+      ((cand && cand.name) || fallbackName || '');
+    body.appendChild(heading);
+
+    if (cand) {
+      var facts = [
+        ['GPA', cand.gpa],
+        ['Major', cand.major],
+        ['Class', cand.classStanding],
+        ['Heard via', cand.heardVia]
+      ].filter(function(f) { return f[1]; });
+
+      if (facts.length) {
+        var dl = document.createElement('div');
+        dl.className = 'candidate-facts';
+        facts.forEach(function(f) {
+          var row = document.createElement('div');
+          row.innerHTML = '<span class="cf-label"></span><span class="cf-value"></span>';
+          row.querySelector('.cf-label').textContent = f[0];
+          row.querySelector('.cf-value').textContent = f[1];
+          dl.appendChild(row);
+        });
+        body.appendChild(dl);
+      }
+
+      if (cand.events && cand.events.length) {
+        var ev = document.createElement('div');
+        ev.className = 'candidate-events';
+        cand.events.forEach(function(e) {
+          var chip = document.createElement('span');
+          chip.className = 'ev-chip' + (e.attended ? ' ev-yes' : '');
+          chip.textContent = e.label;
+          ev.appendChild(chip);
+        });
+        body.appendChild(ev);
+      }
+    }
+
+    card.appendChild(body);
+    return card;
+  }
+
   function renderScorecard(poll, container) {
-    var candidates = poll.candidates || [];
-    if (candidates.length === 0) {
+    quizNames = poll.candidates || [];
+    if (quizNames.length === 0) {
       container.innerHTML = '<p>No candidates listed for this poll.</p>';
       return;
     }
     scorecardState = {};
-    var scores = ['+2', '+1', '0', '-1', '-2'];
+    quizNames.forEach(function(n) { scorecardState[n] = null; });
+    quizIndex = 0;
 
-    var wrapper = document.createElement('div');
-    wrapper.style.cssText = 'max-height:60vh; overflow-y:auto; border:1px solid #ddd; border-radius:8px; padding:0.5rem;';
+    // Standards-paced sessions put one candidate in each poll — there is nothing
+    // to page through, so a tap is the vote.
+    if (quizNames.length === 1) {
+      renderSingleScorecard(poll, container, quizNames[0]);
+      return;
+    }
 
-    candidates.forEach(function(name, idx) {
-      scorecardState[name] = null;
-      var row = document.createElement('div');
-      row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.25rem; border-bottom:1px solid #eee; flex-wrap:wrap; gap:0.25rem;';
-      if (idx === candidates.length - 1) row.style.borderBottom = 'none';
+    var host = document.createElement('div');
+    host.id = 'quiz-host';
+    container.appendChild(host);
+    renderQuizStep();
+  }
 
-      var label = document.createElement('span');
-      label.style.cssText = 'font-weight:600; min-width:120px; flex:1;';
-      label.textContent = name;
-      row.appendChild(label);
+  function renderSingleScorecard(poll, container, name) {
+    var cand = (poll.rosterIndex !== null && roster[poll.rosterIndex])
+      ? roster[poll.rosterIndex]
+      : candidateByName(name);
 
-      var btnGroup = document.createElement('div');
-      btnGroup.style.cssText = 'display:flex; gap:0.35rem; flex-wrap:wrap;';
+    container.appendChild(buildCandidateCard(cand, name));
 
-      scores.forEach(function(s) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'vote-btn';
-        btn.style.cssText = 'min-width:42px; min-height:38px; padding:0.3rem 0.5rem; font-size:0.9rem;';
-        if (s.indexOf('+') === 0) btn.classList.add('ranked-plus');
-        else if (s.indexOf('-') === 0) btn.classList.add('ranked-minus');
-        btn.textContent = s;
-        btn.addEventListener('click', function() {
-          scorecardState[name] = s;
-          btnGroup.querySelectorAll('.vote-btn').forEach(function(b) { b.classList.remove('voted'); });
-          btn.classList.add('voted');
-          updateScorecardProgress(candidates.length);
+    var group = document.createElement('div');
+    group.className = 'quiz-scores';
+    ['-2', '-1', '0', '+1', '+2'].forEach(function(s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'vote-btn quiz-score';
+      if (s.charAt(0) === '+') btn.classList.add('ranked-plus');
+      else if (s.charAt(0) === '-') btn.classList.add('ranked-minus');
+      btn.textContent = s;
+      btn.addEventListener('click', function() {
+        group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
+        btn.classList.add('voted');
+        var ballot = {};
+        ballot[name] = parseInt(s, 10);
+        submitVote(ballot, function(success) {
+          if (!success) {
+            group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
+            btn.classList.remove('voted');
+          }
         });
-        btnGroup.appendChild(btn);
       });
-
-      row.appendChild(btnGroup);
-      wrapper.appendChild(row);
+      group.appendChild(btn);
     });
-    container.appendChild(wrapper);
+    container.appendChild(group);
+  }
 
-    var progress = document.createElement('p');
-    progress.id = 'scorecard-progress';
-    progress.style.cssText = 'text-align:center; margin:0.75rem 0 0.5rem; font-weight:600; color:#888;';
-    progress.textContent = '0 / ' + candidates.length + ' rated';
-    container.appendChild(progress);
+  function ratedCount() {
+    return quizNames.filter(function(n) { return scorecardState[n] !== null; }).length;
+  }
+
+  function renderQuizStep() {
+    var host = document.getElementById('quiz-host');
+    if (!host) return;
+    host.innerHTML = '';
+
+    if (quizIndex >= quizNames.length) {
+      renderQuizReview(host);
+      return;
+    }
+
+    var name = quizNames[quizIndex];
+    var cand = candidateByName(name);
+
+    var bar = document.createElement('div');
+    bar.className = 'quiz-progress';
+    var fill = document.createElement('div');
+    fill.className = 'quiz-progress-fill';
+    fill.style.width = Math.round((quizIndex / quizNames.length) * 100) + '%';
+    bar.appendChild(fill);
+    host.appendChild(bar);
+
+    var counter = document.createElement('p');
+    counter.className = 'quiz-counter';
+    counter.textContent = (quizIndex + 1) + ' of ' + quizNames.length +
+      '  ·  ' + ratedCount() + ' rated';
+    host.appendChild(counter);
+
+    host.appendChild(buildCandidateCard(cand, name));
+
+    var scores = ['-2', '-1', '0', '+1', '+2'];
+    var group = document.createElement('div');
+    group.className = 'quiz-scores';
+    scores.forEach(function(s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'vote-btn quiz-score';
+      if (s.charAt(0) === '+') btn.classList.add('ranked-plus');
+      else if (s.charAt(0) === '-') btn.classList.add('ranked-minus');
+      if (scorecardState[name] === s) btn.classList.add('voted');
+      btn.textContent = s;
+      btn.addEventListener('click', function() {
+        scorecardState[name] = s;
+        quizIndex++;
+        renderQuizStep();
+      });
+      group.appendChild(btn);
+    });
+    host.appendChild(group);
+
+    var nav = document.createElement('div');
+    nav.className = 'quiz-nav';
+
+    var back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'quiz-nav-btn';
+    back.textContent = '← Back';
+    back.disabled = quizIndex === 0;
+    back.addEventListener('click', function() {
+      if (quizIndex > 0) { quizIndex--; renderQuizStep(); }
+    });
+    nav.appendChild(back);
+
+    var skip = document.createElement('button');
+    skip.type = 'button';
+    skip.className = 'quiz-nav-btn';
+    skip.textContent = 'Skip →';
+    skip.addEventListener('click', function() { quizIndex++; renderQuizStep(); });
+    nav.appendChild(skip);
+
+    var review = document.createElement('button');
+    review.type = 'button';
+    review.className = 'quiz-nav-btn';
+    review.textContent = 'Review all';
+    review.addEventListener('click', function() {
+      quizIndex = quizNames.length;
+      renderQuizStep();
+    });
+    nav.appendChild(review);
+
+    host.appendChild(nav);
+  }
+
+  function renderQuizReview(host) {
+    var rated = ratedCount();
+    var total = quizNames.length;
+
+    var h = document.createElement('p');
+    h.className = 'quiz-counter';
+    h.textContent = 'Review — ' + rated + ' of ' + total + ' rated';
+    host.appendChild(h);
+
+    var list = document.createElement('div');
+    list.className = 'quiz-review-list';
+    quizNames.forEach(function(name, i) {
+      var cand = candidateByName(name);
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'quiz-review-row' + (scorecardState[name] === null ? ' unrated' : '');
+
+      var left = document.createElement('span');
+      left.className = 'qr-name';
+      left.textContent = (cand && cand.number ? '#' + cand.number + ' ' : '') + name;
+
+      var right = document.createElement('span');
+      right.className = 'qr-score';
+      right.textContent = scorecardState[name] === null ? 'not rated' : scorecardState[name];
+
+      row.appendChild(left);
+      row.appendChild(right);
+      row.addEventListener('click', function() { quizIndex = i; renderQuizStep(); });
+      list.appendChild(row);
+    });
+    host.appendChild(list);
 
     var submitBtn = document.createElement('button');
     submitBtn.type = 'button';
     submitBtn.className = 'btn btn-primary';
     submitBtn.id = 'btn-submit-scorecard';
-    submitBtn.style.cssText = 'display:block; margin:0 auto; padding:0.75rem 2rem; font-size:1.1rem;';
+    submitBtn.style.cssText = 'display:block; margin:1rem auto 0; padding:0.75rem 2rem; font-size:1.1rem;';
     submitBtn.textContent = 'Submit All Ratings';
-    submitBtn.addEventListener('click', function() {
-      submitScorecard();
-    });
-    container.appendChild(submitBtn);
-  }
+    submitBtn.addEventListener('click', submitScorecard);
+    host.appendChild(submitBtn);
 
-  function updateScorecardProgress(total) {
-    var rated = Object.keys(scorecardState).filter(function(k) { return scorecardState[k] !== null; }).length;
-    var el = document.getElementById('scorecard-progress');
-    if (el) {
-      el.textContent = rated + ' / ' + total + ' rated';
-      el.style.color = rated === total ? '#2e7d32' : '#888';
+    if (rated < total) {
+      var note = document.createElement('p');
+      note.style.cssText = 'text-align:center; color:#b26a00; font-size:0.9rem; margin-top:0.5rem;';
+      note.textContent = 'Tap any row above to rate the ' + (total - rated) + ' still missing.';
+      host.appendChild(note);
     }
   }
 
@@ -395,6 +595,9 @@
         name: p.name,
         type: p.type,
         candidates: p.candidates || [],
+        options: p.options || null,
+        rosterIndex: (typeof p.rosterIndex === 'number') ? p.rosterIndex : null,
+        useRoster: !!p.useRoster,
         threshold: p.threshold != null ? p.threshold : 75,
         minimumScore: p.minimumScore != null ? p.minimumScore : 0,
         status: p.status || 'closed'
@@ -515,6 +718,23 @@
       sessionMeta = snap.val() || {};
     }).catch(function() {
       sessionMeta = {};
+    });
+
+    // Load the slide-deck roster once per session, if this session has one.
+    // Photos live here, so it is fetched a single time rather than per poll.
+    rosterLoaded = false;
+    roster = [];
+    PortalDb.getRoster(sid).then(function(list) {
+      roster = list || [];
+      rosterLoaded = true;
+      // A poll may have rendered before the roster arrived — redraw so photos appear.
+      if (roster.length && currentPoll && currentPoll.status === 'open') {
+        voteUIRendered = false;
+        renderVoteOptions(currentPoll, false, null);
+        voteUIRendered = true;
+      }
+    }).catch(function() {
+      rosterLoaded = true;
     });
 
     if (uid) {
