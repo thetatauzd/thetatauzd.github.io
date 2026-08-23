@@ -933,6 +933,24 @@
           .rush-graphics { padding: 3rem 5vw; }
           .rush-graphics-grid { gap: 1.1rem; }
         }
+
+        .rush-groupme-btn {
+          display: inline-block;
+          background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+          color: #fff;
+          padding: 1rem 2.25rem;
+          border-radius: 50px;
+          font-weight: 700;
+          font-size: 1.1rem;
+          text-decoration: none;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .rush-groupme-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+          color: #fff;
+        }
       </style>
 
       <section class="rush-graphics" id="rush-graphics">
@@ -1441,18 +1459,13 @@
                         </div>
                       </div>
                       
-                      <div class="sqs-block image-block sqs-block-image">
-                        <div class="sqs-block-content">
-                          <figure class="sqs-block-image-figure intrinsic" style="max-width: 400px; margin: 0 auto;">
-                            <div class="image-block-wrapper" id="rush-link-wrapper">
-                              <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom: 100%; overflow: hidden;">
-                                <picture>
-                                  <source srcset="./Images/rush/LinkTree.png" type="image/png">
-                                  <img src="./Images/rush/LinkTree.png" alt="LinkTree" style="display:block;object-fit:cover;width:100%;height:100%;" loading="lazy">
-                                </picture>
-                              </div>
-                            </div>
-                          </figure>
+                      <div class="sqs-block sqs-block-html">
+                        <div class="sqs-block-content" style="text-align:center;">
+                          <div id="rush-link-wrapper">
+                            <a class="rush-groupme-btn" id="rush-groupme-link" href="#" target="_blank" rel="noopener noreferrer">
+                              Join the Rush GroupMe
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1502,19 +1515,21 @@
         var titleEl = document.getElementById('rush-title');
         var ctaEl = document.getElementById('rush-cta-line');
         var linkWrapper = document.getElementById('rush-link-wrapper');
+        var groupMeLink = document.getElementById('rush-groupme-link');
 
         if (config.isOpen) {
           if (banner) banner.style.display = 'none';
           if (signupSection) signupSection.style.display = '';
           if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
           if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
-          if (config.rushLinkUrl && linkWrapper) {
-            var a = document.createElement('a');
-            a.href = config.rushLinkUrl;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            while (linkWrapper.firstChild) a.appendChild(linkWrapper.firstChild);
-            linkWrapper.appendChild(a);
+
+          // Hide the join button rather than shipping a dead link if no URL is set.
+          if (groupMeLink) {
+            if (config.rushLinkUrl) {
+              groupMeLink.href = config.rushLinkUrl;
+            } else if (linkWrapper) {
+              linkWrapper.style.display = 'none';
+            }
           }
         } else {
           if (banner) {

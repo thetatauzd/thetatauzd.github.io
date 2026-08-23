@@ -4,11 +4,12 @@
  * HOW TO UPDATE:
  * - When rush CLOSES: set isOpen to false, set nextSemester (e.g. "Spring 2026").
  * - When rush OPENS (start of semester, usually within first month of classes):
- *   set isOpen to true, set rushTitle (e.g. "Spring 2026 Rush"), set ctaLine and rushLinkUrl if you use them.
+ *   set isOpen to true, set rushTitle (e.g. "Spring 2026 Rush"), set ctaLine, and set
+ *   rushLinkUrl to the new GroupMe invite. Leave rushLinkUrl blank to hide the join button.
  */
 window.RUSH_CONFIG = {
   /** true = show full rush + signup; false = show "Rush closed, check back next semester" at top */
-  isOpen: false,
+  isOpen: true,
 
   /** Shown when closed: "Check back at the start of next semester" + this (e.g. "Spring 2026") */
   nextSemester: "Fall 2026",
@@ -17,8 +18,8 @@ window.RUSH_CONFIG = {
   rushTitle: "Fall 2026 Rush",
 
   /** When open: line under the title (e.g. "Join The Rush GroupMe! | Schedule a Coffee Chat!") */
-  ctaLine: "Join The Rush GroupMe! | Schedule a Coffee Chat!",
+  ctaLine: "Join the Rush GroupMe to keep up with every event.",
 
   /** When open: optional URL for the LinkTree/signup image (leave "" if image has no link) */
-  rushLinkUrl: ""
+  rushLinkUrl: "https://groupme.com/join_group/116606986/LysZqBXC"
 };
