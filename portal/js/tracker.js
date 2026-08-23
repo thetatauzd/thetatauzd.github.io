@@ -11,8 +11,10 @@
 (function (global) {
   'use strict';
 
-  // Paste the Apps Script web-app /exec URL here.
-  var GATEWAY_URL = '';
+  // Apps Script web-app /exec URL. Re-deploy the script (Deploy > Manage
+  // deployments > edit > Deploy) after changing Gateway.gs, or the old version
+  // keeps serving. Replace this if you ever create a new deployment.
+  var GATEWAY_URL = 'https://script.google.com/macros/s/AKfycbzEprjKfxyqZkDCxMvUEEXkkBKaarDWQlCd1YLeTKjdm-djAxnE5dlrlpwMRfdxRWNR/exec';
 
   var cached = null;
 
