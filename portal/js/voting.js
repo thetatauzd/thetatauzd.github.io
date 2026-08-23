@@ -634,8 +634,8 @@
       var typeLabelEl = document.getElementById('poll-type-label');
       if (typeLabelEl) {
         var labels = {
-          rush_prelim:  'Rate each candidate +2 to -2',
-          ranked:       'Rate each candidate +2 to -2',
+          rush_prelim:  'Rate each candidate -2 to +2',
+          ranked:       'Rate each candidate -2 to +2',
           rush_bid:     'Yes / No / Abstain',
           motion:       'Yes / No / Abstain',
           pnm_vote:     'Yes / No / Abstain',
