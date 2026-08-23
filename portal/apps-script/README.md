@@ -1,3 +1,29 @@
+# Apps Script gateways
+
+There are **two**, each bound to a different spreadsheet and each with its own
+deployment and `/exec` URL:
+
+| File | Lives in | Serves |
+|---|---|---|
+| [`Gateway.gs`](Gateway.gs) | **F26 Theta Tau Tracker** | A brother's own demerits and payments |
+| [`RosterGateway.gs`](RosterGateway.gs) | **Brother list** (the chapter roll) | Roll number ↔ name, for sign-up autofill |
+
+They verify callers differently, and the reason matters:
+
+- The **Tracker** gateway reads the caller's own record from the Realtime
+  Database, so the database rules do the verifying. That requires the caller to
+  already have a portal account.
+- The **Roster** gateway can't do that — someone signing up has no portal account
+  yet, which is the entire point of it. So it verifies the Firebase token
+  directly with Google instead. A valid Google sign-in is required; a portal
+  account is not.
+
+The roster gateway never returns Phone or Email, and has no "list everyone"
+action — every call is one exact match, so it can't be used to pull the roll down
+in bulk.
+
+---
+
 # Theta Tau Tracker gateway — setup
 
 The portal shows each brother their own demerits and payment balance. The data
@@ -115,3 +141,49 @@ Only confirmed rows are added to the total; everything else shows as Pending.
 Visit the `/exec` URL with `?action=ping` on the end. You should get the list of
 tab names back. If you get an error page instead, the deployment's access is
 probably not set to **Anyone**.
+
+---
+
+# Chapter roll gateway — setup
+
+Bound to the **brother list** spreadsheet, not the Tracker. This is a brand-new
+Apps Script project, so there is nothing to preserve — paste it straight into
+`Code.gs`.
+
+1. Open the **brother list** spreadsheet → **Extensions → Apps Script**.
+2. Paste in [`RosterGateway.gs`](RosterGateway.gs).
+3. **Deploy → New deployment → Web app**
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+4. Authorize when prompted.
+5. Copy the `/exec` URL — it goes into the sign-up page as `ROSTER_GATEWAY_URL`.
+
+## Expected columns
+
+Row 1 of the first tab, matched by name:
+
+| Roll Number | Name |
+|---|---|
+
+Everything else on that sheet (`PC`, `Major`, `Graduation`, `Executive Roles`,
+`Phone`, `Email`) is ignored and never loaded into memory. If the roll ever moves
+to a different tab, set `ROLL_SHEET_NAME` at the top of the script.
+
+Roll numbers are normalised, so `396`, `"396"` and `396.0` all match, and
+non-numeric entries like `1XX` are handled as-is.
+
+## What it returns
+
+One exact match at a time, either direction:
+
+- Given a roll number → that brother's name
+- Given a name → that brother's roll number
+
+If two brothers share a name it reports `ambiguous` rather than guessing, so
+nobody ends up with the wrong roll number stamped on their portal account.
+
+## Checking it works
+
+Add `?action=ping` to the `/exec` URL. You should get back the row count of the
+roll — no names, no contact details. `ping` is the only action that does not
+require a sign-in token, and it deliberately returns nothing but a number.
