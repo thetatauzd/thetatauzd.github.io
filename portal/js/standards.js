@@ -126,6 +126,8 @@
         btn.classList.add('selected');
         selectedSessionType = btn.getAttribute('data-type');
         $('regular-options-setup').classList.toggle('hidden', selectedSessionType !== 'regular');
+        // Slides can back either session type.
+        $('slides-setup').classList.remove('hidden');
       });
     });
 
@@ -137,6 +139,177 @@
         selectedPreset = btn.getAttribute('data-preset');
         $('custom-options-group').classList.toggle('hidden', selectedPreset !== 'custom');
       });
+    });
+  }
+
+  // ── Rushee slide deck ──
+
+  var parsedRoster = [];
+
+  function slidesStatus(msg, kind) {
+    var el = $('slides-status');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = kind === 'error' ? '#c62828' : (kind === 'ok' ? '#2e7d32' : '#666');
+  }
+
+  function renderRosterReview() {
+    var review = $('slides-review');
+    var list = $('slides-list');
+    if (!review || !list) return;
+
+    if (!parsedRoster.length) {
+      review.classList.add('hidden');
+      list.innerHTML = '';
+      return;
+    }
+    review.classList.remove('hidden');
+
+    var kb = Math.round(PortalSlides.estimateSize(parsedRoster) / 1024);
+    $('slides-count').textContent = parsedRoster.length + ' candidates · ' + kb + ' KB';
+
+    list.innerHTML = '';
+    parsedRoster.forEach(function(c, i) {
+      var row = document.createElement('div');
+      row.className = 'slide-row';
+
+      var img = document.createElement('img');
+      if (c.photo) img.src = c.photo;
+      img.alt = '';
+
+      var num = document.createElement('span');
+      num.className = 'num';
+      num.textContent = '#' + c.number;
+
+      var nameInput = document.createElement('input');
+      nameInput.className = 'nm';
+      nameInput.value = c.name || '';
+      nameInput.placeholder = 'Name missing — type it here';
+      nameInput.addEventListener('input', function() {
+        parsedRoster[i].name = nameInput.value.trim();
+      });
+
+      var meta = document.createElement('span');
+      meta.className = 'meta';
+      var bits = [];
+      if (c.gpa) bits.push('GPA ' + c.gpa);
+      if (c.major) bits.push(c.major);
+      meta.textContent = bits.join(' · ');
+
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.title = 'Remove this candidate';
+      del.textContent = '✕';
+      del.addEventListener('click', function() {
+        parsedRoster.splice(i, 1);
+        renderRosterReview();
+      });
+
+      row.appendChild(img);
+      row.appendChild(num);
+      row.appendChild(nameInput);
+      row.appendChild(meta);
+      row.appendChild(del);
+
+      if (c.warnings && c.warnings.length) {
+        var w = document.createElement('span');
+        w.className = 'slide-warn';
+        w.textContent = '⚠';
+        w.title = c.warnings.join(', ');
+        row.insertBefore(w, del);
+      }
+      list.appendChild(row);
+    });
+  }
+
+  function initSlideUpload() {
+    var input = $('slides-file');
+    if (!input) return;
+
+    input.addEventListener('change', function() {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      parsedRoster = [];
+      renderRosterReview();
+      slidesStatus('Reading deck…');
+
+      PortalSlides.parseDeck(file, {
+        onProgress: function(done, total) {
+          slidesStatus('Reading slide ' + done + ' of ' + total + '…');
+        }
+      }).then(function(candidates) {
+        parsedRoster = candidates;
+        renderRosterReview();
+        var missing = candidates.filter(function(c) { return !c.name; }).length;
+        if (!candidates.length) {
+          slidesStatus('No candidate slides found in that deck.', 'error');
+        } else if (missing) {
+          slidesStatus(candidates.length + ' candidates found. ' + missing +
+            ' have no name — fill them in or remove them below.', 'error');
+        } else {
+          slidesStatus(candidates.length + ' candidates ready.', 'ok');
+        }
+      }).catch(function(err) {
+        console.error('Slide parse failed', err);
+        slidesStatus(err.message || 'Could not read that file.', 'error');
+      });
+    });
+
+    var clear = $('btn-slides-clear');
+    if (clear) {
+      clear.addEventListener('click', function() {
+        parsedRoster = [];
+        input.value = '';
+        slidesStatus('');
+        renderRosterReview();
+      });
+    }
+  }
+
+  /**
+   * After a session is created with a deck attached, save the roster and build
+   * its polls: one scorecard poll covering everyone for ranked sessions, or one
+   * poll per candidate for regular sessions.
+   */
+  function attachRosterToSession(sid, type, opts) {
+    var roster = parsedRoster.slice();
+    if (!roster.length) return Promise.resolve();
+
+    return PortalDb.saveRoster(sid, roster, function(done, total) {
+      slidesStatus('Uploading candidate ' + done + ' of ' + total + '…');
+    }).then(function() {
+      var updates = {};
+      var newOrder = [];
+
+      if (type === 'ranked') {
+        var pollId = db.ref('sessions/' + sid + '/polls').push().key;
+        updates['sessions/' + sid + '/polls/' + pollId] = {
+          name: 'Rush Prelim',
+          type: 'ranked',
+          candidates: roster.map(function(c) { return c.name; }),
+          minimumScore: 0,
+          useRoster: true,
+          status: 'upcoming'
+        };
+        newOrder.push(pollId);
+      } else {
+        roster.forEach(function(c, i) {
+          var pid = db.ref('sessions/' + sid + '/polls').push().key;
+          updates['sessions/' + sid + '/polls/' + pid] = {
+            name: '#' + c.number + ' ' + c.name,
+            type: 'regular',
+            options: opts || [],
+            rosterIndex: i,
+            status: 'upcoming'
+          };
+          newOrder.push(pid);
+        });
+      }
+
+      updates['sessions/' + sid + '/pollOrder'] = newOrder;
+      return db.ref().update(updates);
+    }).then(function() {
+      slidesStatus('Deck uploaded — ' + roster.length + ' candidates queued.', 'ok');
     });
   }
 
@@ -221,6 +394,8 @@
     updates['sessions/' + sid + '/pollOrder'] = [];
 
     return db.ref().update(updates).then(function() {
+      return attachRosterToSession(sid, type, opts);
+    }).then(function() {
       rejoinSession(sid, code, type, opts);
     }).catch(function(err) {
       alert('Failed: ' + err.message);
@@ -980,6 +1155,7 @@
       PortalAuth.initNav(profile);
 
       initTypePicker();
+      initSlideUpload();
 
       $('btn-create-session').addEventListener('click', createSession);
       $('btn-end-session').addEventListener('click', endSession);

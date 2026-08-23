@@ -56,6 +56,17 @@
     .session-type-btn.selected { border-color: #FFCC33; background: #fffde7; }
     .session-type-btn h4 { margin: 0 0 0.25rem; color: #8B0000; }
     .session-type-btn p { margin: 0; font-size: 0.85rem; color: #666; }
+    .slides-list { max-height: 320px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; margin-top: 0.5rem; }
+    .slide-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid #f2f2f2; }
+    .slide-row:last-child { border-bottom: none; }
+    .slide-row img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #eee; }
+    .slide-row .num { font-family: monospace; color: #888; font-size: 0.85rem; width: 2.5rem; flex-shrink: 0; }
+    .slide-row input.nm { flex: 1; min-width: 0; border: 1px solid transparent; border-radius: 5px; padding: 0.3rem 0.4rem; font: inherit; font-size: 0.9rem; background: transparent; }
+    .slide-row input.nm:focus { border-color: #ccc; background: #fff; outline: none; }
+    .slide-row .meta { font-size: 0.78rem; color: #888; flex-shrink: 0; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .slide-row button { background: none; border: none; color: #c62828; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0.2rem 0.4rem; flex-shrink: 0; }
+    .slide-warn { color: #b26a00; font-size: 0.78rem; }
+    @media (max-width: 768px) { .slide-row .meta { display: none; } }
     .option-presets { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
     .option-preset-btn { padding: 0.5rem 1rem; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 0.9rem; transition: border-color 0.2s; }
     .option-preset-btn:hover { border-color: #FFCC33; }
@@ -127,6 +138,23 @@
         <div id="custom-options-group" class="hidden" style="margin-top:0.5rem;">
           <label style="font-size:0.85rem;">Custom options (one per line)</label>
           <textarea id="custom-options-text" rows="4" style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Option A&#10;Option B&#10;Option C"></textarea>
+        </div>
+      </div>
+
+      <div id="slides-setup" class="hidden" style="margin-bottom:1rem;">
+        <label style="font-size:0.9rem; font-weight:600;">Rushee slides (optional)</label>
+        <p style="font-size:0.85rem; color:#666; margin:0.25rem 0 0.5rem;">
+          In Google Slides choose <strong>File → Download → Microsoft PowerPoint (.pptx)</strong>, then upload it here.
+          Each slide becomes a candidate with their photo, number and info. Photos are shrunk in your browser before upload.
+        </p>
+        <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+        <div id="slides-status" style="margin-top:0.5rem; font-size:0.9rem;"></div>
+        <div id="slides-review" class="hidden" style="margin-top:0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <strong id="slides-count"></strong>
+            <button type="button" class="btn" id="btn-slides-clear" style="background:#eee; color:#333;">Clear deck</button>
+          </div>
+          <div id="slides-list" class="slides-list"></div>
         </div>
       </div>
 
@@ -237,9 +265,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/auth.js?v=3"></script>
   <script src="js/db.js"></script>
+  <script src="js/slides.js"></script>
   <script src="js/standards.js"></script>
 </body>
 </html>
