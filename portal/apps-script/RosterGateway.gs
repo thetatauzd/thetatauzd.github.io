@@ -130,13 +130,25 @@ function requireValidToken(idToken) {
 
 // ── Roll lookup ──────────────────────────────────────────────────────────────
 
-/** Roll numbers appear as 396, "396", 396.0, and occasionally as "1XX". */
+/** Roll numbers appear as 396, "396", and 396.0. Kept as written. */
 function normalizeRoll(v) {
   if (v === null || v === undefined) return '';
   var s = String(v).trim();
   if (!s) return '';
   if (/^\d+(\.0+)?$/.test(s)) return String(parseInt(s, 10));
   return s.toUpperCase();
+}
+
+/**
+ * The digits inside a roll entry, used for matching.
+ *
+ * About 6% of the roll carries status letters after the number — "415X!",
+ * "1XX", "133YY". The portal stores the plain number, so an exact comparison
+ * would never match those brothers. Comparing digit cores makes both forms
+ * line up while the sheet keeps its own notation.
+ */
+function rollCore(v) {
+  return String(v === null || v === undefined ? '' : v).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
 }
 
 function normalizeName(v) {
@@ -228,12 +240,22 @@ function rollTable() {
 function lookup(rollNumber, name) {
   var rows = rollTable();
 
-  var wantRoll = normalizeRoll(rollNumber);
+  // rollNumber is the plain number the portal stores; rollAsListed keeps the
+  // sheet's own notation, status letters and all.
+  function result(row) {
+    return {
+      ok: true,
+      found: true,
+      rollNumber: rollCore(row.roll) || row.roll,
+      rollAsListed: row.roll,
+      name: row.name
+    };
+  }
+
+  var wantRoll = rollCore(rollNumber);
   if (wantRoll) {
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].roll && rows[i].roll === wantRoll) {
-        return { ok: true, found: true, rollNumber: rows[i].roll, name: rows[i].name };
-      }
+      if (rows[i].roll && rollCore(rows[i].roll) === wantRoll) return result(rows[i]);
     }
     return { ok: true, found: false };
   }
@@ -241,9 +263,7 @@ function lookup(rollNumber, name) {
   var wantName = normalizeName(name);
   if (wantName) {
     var matches = rows.filter(function (r) { return normalizeName(r.name) === wantName; });
-    if (matches.length === 1) {
-      return { ok: true, found: true, rollNumber: matches[0].roll, name: matches[0].name };
-    }
+    if (matches.length === 1) return result(matches[0]);
     // Two brothers with the same name — make them pick by roll number instead of
     // guessing wrong and stamping the wrong roll onto their portal account.
     if (matches.length > 1) {
