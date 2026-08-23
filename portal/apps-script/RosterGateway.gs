@@ -63,7 +63,18 @@ function handle(e) {
     var action = req.action || 'lookup';
 
     if (action === 'ping') {
-      return json({ ok: true, rows: rollTable().length });
+      // Reports where the header was found so a mis-shaped sheet can be
+      // diagnosed without exposing any names.
+      var found = locateRoll();
+      return json({
+        ok: true,
+        rows: found ? found.rows.length : 0,
+        tab: found ? found.tabName : null,
+        headerRow: found ? found.headerRow : null,
+        tabsSeen: SpreadsheetApp.getActiveSpreadsheet().getSheets().map(function (s) {
+          return s.getName();
+        })
+      });
     }
     if (action === 'lookup') {
       requireValidToken(req.idToken);
@@ -132,6 +143,56 @@ function normalizeName(v) {
   return String(v || '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+/**
+ * Find the roll wherever it actually lives. The header is not reliably on row 1
+ * of the first tab — sheets pick up title rows and get reordered — so every tab
+ * is scanned for the first row carrying both a roll-number and a name column.
+ * Returns null if no tab looks like a roll.
+ */
+function locateRoll() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = ROLL_SHEET_NAME
+    ? [ss.getSheetByName(ROLL_SHEET_NAME)].filter(Boolean)
+    : ss.getSheets();
+
+  for (var s = 0; s < sheets.length; s++) {
+    var sheet = sheets[s];
+    var values;
+    try { values = sheet.getDataRange().getValues(); } catch (ignored) { continue; }
+    if (!values || !values.length) continue;
+
+    var limit = Math.min(values.length, 20);
+    for (var r = 0; r < limit; r++) {
+      var headers = values[r].map(function (h) {
+        return String(h || '').trim().toLowerCase();
+      });
+
+      // Accept a few spellings; "roll #" and "roll" show up as often as the full name.
+      var rollCol = indexOfAny(headers, ['roll number', 'roll #', 'roll no', 'roll', 'rollnumber']);
+      var nameCol = indexOfAny(headers, ['name', 'brother name', 'full name']);
+      if (rollCol === -1 || nameCol === -1) continue;
+
+      // Only these two fields are ever held in memory, so nothing else can leak.
+      var out = [];
+      for (var i = r + 1; i < values.length; i++) {
+        var roll = normalizeRoll(values[i][rollCol]);
+        var nm = String(values[i][nameCol] || '').trim();
+        if (roll || nm) out.push({ roll: roll, name: nm });
+      }
+      return { rows: out, tabName: sheet.getName(), headerRow: r + 1 };
+    }
+  }
+  return null;
+}
+
+function indexOfAny(headers, candidates) {
+  for (var c = 0; c < candidates.length; c++) {
+    var i = headers.indexOf(candidates[c]);
+    if (i !== -1) return i;
+  }
+  return -1;
+}
+
 /** Cached so repeated lookups during one sign-up don't re-read 600+ rows. */
 function rollTable() {
   var cache = CacheService.getScriptCache();
@@ -140,30 +201,14 @@ function rollTable() {
     try { return JSON.parse(hit); } catch (ignored) {}
   }
 
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ROLL_SHEET_NAME ? ss.getSheetByName(ROLL_SHEET_NAME) : ss.getSheets()[0];
-  if (!sheet) return [];
-
-  var values = sheet.getDataRange().getValues();
-  if (!values.length) return [];
-
-  var headers = values[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
-  var rollCol = headers.indexOf(COL_ROLL.toLowerCase());
-  var nameCol = headers.indexOf(COL_NAME.toLowerCase());
-  if (rollCol === -1 || nameCol === -1) {
-    throw new Error('Could not find "' + COL_ROLL + '" and "' + COL_NAME + '" columns.');
+  var found = locateRoll();
+  if (!found) {
+    throw new Error('No tab has both a roll-number column and a name column. ' +
+      'Call ?action=ping to see which tabs were checked.');
   }
 
-  // Only these two fields are ever held in memory, so nothing else can leak.
-  var out = [];
-  for (var i = 1; i < values.length; i++) {
-    var roll = normalizeRoll(values[i][rollCol]);
-    var name = String(values[i][nameCol] || '').trim();
-    if (roll || name) out.push({ roll: roll, name: name });
-  }
-
-  cache.put('rollTable', JSON.stringify(out), 900);   // 15 minutes
-  return out;
+  cache.put('rollTable', JSON.stringify(found.rows), 900);   // 15 minutes
+  return found.rows;
 }
 
 /**

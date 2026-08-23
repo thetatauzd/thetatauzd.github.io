@@ -14,7 +14,7 @@ window.RUSH_CONFIG = {
   nextSemester: "Fall 2026",
 
   /** When open: main rush heading (e.g. "Fall 2025 Rush", "Spring 2026 Rush") */
-  rushTitle: "Fall 2025 Rush",
+  rushTitle: "Fall 2026 Rush",
 
   /** When open: line under the title (e.g. "Join The Rush GroupMe! | Schedule a Coffee Chat!") */
   ctaLine: "Join The Rush GroupMe! | Schedule a Coffee Chat!",
