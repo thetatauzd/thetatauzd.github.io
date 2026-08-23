@@ -319,6 +319,7 @@ body {
 }
 .pay-status.is-paid { background: #e8f5e9; color: #2e7d32; }
 .pay-status.is-unpaid { background: #ffebee; color: #c62828; }
+.pay-status.is-waived { background: #eceff1; color: #607d8b; }
 
 .admin-table tr.row-paid td { color: #777; }
 

@@ -158,11 +158,12 @@
       return;
     }
     tbody.innerHTML = p.items.map(function (i) {
-      return '<tr class="' + (i.paid ? 'row-paid' : 'row-owing') + '">' +
+      var waived = /^waived$/i.test(i.status || '');
+      var cls = i.paid ? 'is-paid' : (waived ? 'is-waived' : 'is-unpaid');
+      return '<tr class="' + (i.paid || waived ? 'row-paid' : 'row-owing') + '">' +
         '<td>' + esc(i.item || '—') + '</td>' +
         '<td>' + money(i.amount) + '</td>' +
-        '<td><span class="pay-status ' + (i.paid ? 'is-paid' : 'is-unpaid') + '">' +
-          esc(i.status) + '</span></td>' +
+        '<td><span class="pay-status ' + cls + '">' + esc(i.status) + '</span></td>' +
         '<td>' + esc(i.dueDate || '—') + '</td>' +
         '<td>' + esc(i.datePaid || '—') + '</td>' +
       '</tr>';

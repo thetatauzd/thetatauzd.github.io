@@ -20,7 +20,9 @@
  *
  * SETUP
  *   1. Open the Tracker spreadsheet - Extensions - Apps Script.
- *   2. Paste this file in, replacing Code.gs.
+ *   2. Add a NEW file (+ - Script) named Gateway, and paste this in.
+ *      Do NOT paste over the existing Code.gs. That file is the template
+ *      builder; the two live side by side and share no function names.
  *   3. Deploy - New deployment - type "Web app".
  *        Execute as:       Me
  *        Who has access:   Anyone
@@ -41,12 +43,15 @@ var FIREBASE_DB = 'https://thetatauzd-2ab25-default-rtdb.firebaseio.com';
 var ROLL_SPREADSHEET_ID = '';
 var ROLL_SHEET_NAME = '';
 
+// Each entry lists the tab names to try, in order. The live workbook has drifted
+// from what the template builder creates (the dashboard was renamed), so both
+// spellings are accepted rather than assuming one.
 var SHEETS = {
-  roster: 'Roster',
-  payments: 'Payments_Fines',
-  demerits: 'DemeritDashboard',
-  adjustments: 'Standards_Adjustments',
-  serviceHours: 'Service_Hours'   // optional; ignored until you add it
+  roster: ['Roster'],
+  payments: ['Payments_Fines'],
+  demerits: ['DemeritDashboard', 'Dashboard'],
+  adjustments: ['Standards_Adjustments'],
+  serviceHours: ['Service_Hours']   // optional; ignored until you add it
 };
 
 // ── Entry points ─────────────────────────────────────────────────────────────
@@ -144,8 +149,15 @@ function listTabs() {
   });
 }
 
-function getSheet(name) {
-  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+/** First existing tab from a list of candidate names. */
+function getSheet(names) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var list = Array.isArray(names) ? names : [names];
+  for (var i = 0; i < list.length; i++) {
+    var s = ss.getSheetByName(list[i]);
+    if (s) return s;
+  }
+  return null;
 }
 
 /**
@@ -153,8 +165,8 @@ function getSheet(name) {
  * (DemeritDashboard has title rows above its header), so the header row is found
  * by looking for the first row containing "Brother Name".
  */
-function readTable(sheetName, headerHint) {
-  var sheet = getSheet(sheetName);
+function readTable(sheetNames, headerHint) {
+  var sheet = getSheet(sheetNames);
   if (!sheet) return { headers: [], rows: [] };
 
   var values = sheet.getDataRange().getValues();
@@ -200,6 +212,21 @@ function pick(row, names) {
     var key = names[i];
     for (var k in row) {
       if (row.hasOwnProperty(k) && k.toLowerCase() === key.toLowerCase()) return row[k];
+    }
+  }
+  return '';
+}
+
+/**
+ * Match a header by substring. The rollover column is named for the semester
+ * ("Spring 2026      Rollover Demerits"), so it changes every term and cannot be
+ * matched exactly.
+ */
+function pickLike(row, fragments) {
+  for (var i = 0; i < fragments.length; i++) {
+    var frag = fragments[i].toLowerCase();
+    for (var k in row) {
+      if (row.hasOwnProperty(k) && k.toLowerCase().indexOf(frag) !== -1) return row[k];
     }
   }
   return '';
@@ -275,9 +302,15 @@ function getPayments(roll, sheetName) {
 
     var amount = toNumber(pick(row, ['Amount Owed', 'Amount']));
     var status = String(pick(row, ['Payment Status', 'Status']) || '').trim();
-    var isPaid = /^paid$/i.test(status);
 
-    if (isPaid) paid += amount; else owed += amount;
+    // The sheet's Lists tab allows Unpaid / Paid / Late / Waived. Only Paid counts
+    // as money received, and a waived item is forgiven — it must not sit in the
+    // balance due, or brothers see a bill the treasurer already cleared.
+    var isPaid = /^paid$/i.test(status);
+    var isWaived = /^waived$/i.test(status);
+
+    if (isPaid) paid += amount;
+    else if (!isWaived) owed += amount;
 
     items.push({
       item: String(pick(row, ['Item / Fine', 'Item', 'Fine']) || '').trim(),
@@ -308,7 +341,7 @@ function getDemerits(roll, sheetName) {
     if (summary || !rowMatches(row, roll, sheetName)) return;
     summary = {
       total: toNumber(pick(row, ['Total Demerits'])),
-      rollover: toNumber(pick(row, ['Rollover Demerits', 'Spring 2026      Rollover Demerits'])),
+      rollover: toNumber(pickLike(row, ['rollover'])),
       attendance: toNumber(pick(row, ['Attendance Demerits'])),
       payment: toNumber(pick(row, ['Payment/Fine Demerits'])),
       standards: toNumber(pick(row, ['Standards Adjustments'])),

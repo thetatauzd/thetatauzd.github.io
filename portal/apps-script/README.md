@@ -21,10 +21,39 @@ Roll number is the key, and a brother cannot ask for someone else's:
 3. The roll number on that record is trusted, and everything else is looked up
    from it.
 
+## ⚠️ Before you touch the Apps Script project
+
+The Tracker's existing `Code.gs` is the **template builder** that originally created
+these tabs. Two things follow from that:
+
+**1. Do not paste the gateway over `Code.gs`.** Add it as a *separate* file
+instead — the two share no function or variable names (verified), so they sit
+side by side happily. Overwriting `Code.gs` would destroy the builder.
+
+**2. The "Build / Rebuild Template" menu item is dangerous now.** It calls
+`resetWorkbook_`, which **deletes every sheet in the workbook** and recreates
+blank ones. One stray click from an exec member wipes the chapter's payment
+records, demerits and roster.
+
+It is also now out of sync with your live sheet, so re-running it would *undo*
+work you've already done:
+
+| Live workbook | What the builder would recreate |
+|---|---|
+| `Roster` has **Roll Number** | Rebuilt as `Committee(s)` — roll numbers gone |
+| Tab named `DemeritDashboard` | Renamed back to `Dashboard` |
+| Dashboard has a **Rollover Demerits** column | Dropped |
+| `S26 Rollover Demerits` tab | Deleted |
+
+Worth deleting that menu item, or renaming the function so it can't be run by
+accident. The gateway reads the sheet and never writes to it, so it can't cause
+this — but the builder still can.
+
 ## Deploy
 
 1. Open the Tracker spreadsheet → **Extensions → Apps Script**.
-2. Replace `Code.gs` with [`Code.gs`](Code.gs) from this folder.
+2. Click **+ → Script**, name the file `Gateway`, and paste in
+   [`Gateway.gs`](Gateway.gs) from this folder. Leave `Code.gs` alone.
 3. **Deploy → New deployment → Web app**
    - Execute as: **Me**
    - Who has access: **Anyone**
@@ -35,7 +64,7 @@ Roll number is the key, and a brother cannot ask for someone else's:
 5. Copy the `/exec` URL.
 6. Paste it into `portal/js/tracker.js` as `GATEWAY_URL`, then commit and push.
 
-After **any** edit to `Code.gs`, re-deploy with
+After **any** edit to `Gateway.gs`, re-deploy with
 **Deploy → Manage deployments → ✏️ → Deploy**, or the old version keeps serving.
 
 ## Sheet expectations
