@@ -66,9 +66,15 @@
       // Always fetch fresh from DB so role changes (e.g., pending -> brother/admin) take effect immediately.
       getUserProfile(user.uid).then(function(profile) {
         if (profile) {
-          currentUserProfile = { uid: user.uid, email: user.email, name: profile.name, role: profile.role };
+          currentUserProfile = {
+            uid: user.uid, email: user.email, name: profile.name,
+            rollNumber: profile.rollNumber || '', role: profile.role
+          };
         } else {
-          currentUserProfile = { uid: user.uid, email: user.email, name: user.displayName || '', role: 'pending' };
+          currentUserProfile = {
+            uid: user.uid, email: user.email, name: user.displayName || '',
+            rollNumber: '', role: 'pending'
+          };
         }
         resolve(currentUserProfile);
       });

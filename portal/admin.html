@@ -10,6 +10,17 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <style>
+    .sec-count { font-size: 0.85rem; font-weight: 500; color: #888; margin-left: 0.35rem; }
+    .admin-table input.roll-input {
+      width: 6.5rem; border: 1px solid transparent; border-radius: 5px;
+      padding: 0.3rem 0.4rem; font: inherit; font-size: 0.9rem; background: transparent;
+    }
+    .admin-table input.roll-input:hover { border-color: #ddd; }
+    .admin-table input.roll-input:focus { border-color: #FFCC33; background: #fffde7; outline: none; }
+    .roll-saved { color: #2e7d32; font-size: 0.78rem; margin-left: 0.35rem; }
+    .section-empty { color: #999; padding: 0.75rem 0; }
+  </style>
   <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
 </head>
 <body class="auth-pending">
@@ -43,20 +54,35 @@
   </header>
 
   <main class="portal-container">
-    <div class="portal-card">
-      <h2>Users</h2>
-      <p>Approve pending registrations and set roles. First admin: set your own role to "admin" in Firebase Realtime Database → users → your UID.</p>
-      <table class="admin-table" id="admin-table">
+    <div class="portal-card" id="card-pending">
+      <h2>Pending approval <span class="sec-count" id="count-pending"></span></h2>
+      <p>New registrations waiting to be let in. Approving sets them to <strong>brother</strong>.</p>
+      <table class="admin-table">
         <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Roll #</th>
-            <th>Role</th>
-            <th>Action</th>
-          </tr>
+          <tr><th>Name</th><th>Email</th><th>Roll #</th><th>Role</th><th>Action</th></tr>
         </thead>
-        <tbody id="admin-tbody"></tbody>
+        <tbody id="tbody-pending"></tbody>
+      </table>
+    </div>
+
+    <div class="portal-card">
+      <h2>Exec <span class="sec-count" id="count-exec"></span></h2>
+      <p>Anyone holding a role beyond brother — admin, regent, standards or rush chair.</p>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Roll #</th><th>Role</th><th>Action</th></tr>
+        </thead>
+        <tbody id="tbody-exec"></tbody>
+      </table>
+    </div>
+
+    <div class="portal-card">
+      <h2>Brothers <span class="sec-count" id="count-brothers"></span></h2>
+      <table class="admin-table">
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Roll #</th><th>Role</th><th>Action</th></tr>
+        </thead>
+        <tbody id="tbody-brothers"></tbody>
       </table>
     </div>
   </main>

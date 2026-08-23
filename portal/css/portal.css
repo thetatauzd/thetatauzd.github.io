@@ -272,6 +272,41 @@ body {
   text-align: center;
 }
 
+/* ── Personal stats on the portal home ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.stat-tile .stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #999;
+}
+
+.stat-tile .stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-maroon);
+  line-height: 1.1;
+}
+
+.stat-tile.stat-owing .stat-value { color: #c62828; }
+.stat-tile.stat-clear .stat-value { color: #2e7d32; }
+
 .banner-active-poll {
   background: var(--color-gold);
   color: var(--color-maroon);

@@ -47,6 +47,26 @@
       <a href="voting">An active poll is open – vote here.</a>
     </div>
 
+    <div class="portal-card" id="greeting-card">
+      <h2 id="greeting">Hi</h2>
+      <p id="greeting-sub" style="color:#666; margin-bottom:0;">Welcome back.</p>
+      <div class="stat-grid hidden" id="stat-grid">
+        <div class="stat-tile" id="stat-balance">
+          <span class="stat-label">Balance due</span>
+          <span class="stat-value">—</span>
+        </div>
+        <div class="stat-tile" id="stat-service">
+          <span class="stat-label">Service hours</span>
+          <span class="stat-value">—</span>
+        </div>
+        <div class="stat-tile" id="stat-demerits">
+          <span class="stat-label">Demerits</span>
+          <span class="stat-value">—</span>
+        </div>
+      </div>
+      <p id="stat-status" style="color:#999; font-size:0.85rem; margin:0.75rem 0 0;"></p>
+    </div>
+
     <div class="portal-card">
       <h2>Chapter Tools</h2>
       <div class="portal-nav-grid">
@@ -130,6 +150,21 @@
       PortalAuth.requireAuth({ page: '', forcePortalHome: true }).then(function(profile) {
         if (!profile) return;
         PortalAuth.initNav(profile);
+
+        var first = (profile.name || '').trim().split(/\s+/)[0] || 'Brother';
+        document.getElementById('greeting').textContent = 'Hi ' + first;
+
+        var bits = [];
+        if (profile.rollNumber) bits.push('Roll #' + profile.rollNumber);
+        if (profile.role && profile.role !== 'brother') bits.push(profile.role.replace('_', ' '));
+        document.getElementById('greeting-sub').textContent = bits.length ? bits.join(' · ') : 'Welcome back.';
+
+        if (window.PortalTracker) {
+          PortalTracker.renderHomeStats(profile);
+        } else {
+          document.getElementById('stat-status').textContent =
+            'Theta Tau Tracker is not connected yet.';
+        }
       });
 
       // Month grid is unreadable on a phone — load the calendar in agenda mode there instead.
