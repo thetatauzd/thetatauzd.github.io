@@ -52,6 +52,10 @@
             }
           }
         },
+        "roster": {
+          ".read": "auth != null",
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        },
         "connectedBrothers": {
           ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
           ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",

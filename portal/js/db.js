@@ -92,6 +92,59 @@
     return r ? r.child('connectedBrothers') : null;
   }
 
+  /**
+   * Roster of candidates parsed from an uploaded slide deck, stored once per
+   * session (not per poll) so the photos are only written and downloaded once.
+   * sessions/{sessionId}/roster/{index} = { number, name, photo, gpa, ... }
+   */
+  function rosterRef(sessionId) {
+    var r = sessionRef(sessionId);
+    return r ? r.child('roster') : null;
+  }
+
+  /**
+   * Write a roster in small batches. Photo thumbnails make the full payload
+   * ~1-2MB, which is fine in total but should not go up as one write.
+   */
+  function saveRoster(sessionId, candidates, onProgress) {
+    var ref = rosterRef(sessionId);
+    if (!ref) return Promise.reject(new Error('Invalid session'));
+    var list = candidates || [];
+    var BATCH = 8;
+    var chain = Promise.resolve();
+    var done = 0;
+
+    for (var start = 0; start < list.length; start += BATCH) {
+      (function(from) {
+        chain = chain.then(function() {
+          var updates = {};
+          for (var i = from; i < Math.min(from + BATCH, list.length); i++) {
+            updates[String(i)] = list[i];
+          }
+          return ref.update(updates).then(function() {
+            done = Math.min(from + BATCH, list.length);
+            if (onProgress) onProgress(done, list.length);
+          });
+        });
+      })(start);
+    }
+    return chain;
+  }
+
+  function getRoster(sessionId) {
+    var ref = rosterRef(sessionId);
+    if (!ref) return Promise.resolve([]);
+    return ref.once('value').then(function(snap) {
+      var val = snap.val();
+      if (!val) return [];
+      // Firebase returns a sparse object or an array depending on the keys.
+      if (Array.isArray(val)) return val.filter(Boolean);
+      return Object.keys(val)
+        .sort(function(a, b) { return Number(a) - Number(b); })
+        .map(function(k) { return val[k]; });
+    });
+  }
+
   function getSessionIdByCode(code) {
     return new Promise(function(resolve, reject) {
       var ref = sessionByCodeRef(code);
@@ -308,6 +361,9 @@
     hasVotedRef: hasVotedRef,
     aggregationRef: aggregationRef,
     connectedBrothersRef: connectedBrothersRef,
+    rosterRef: rosterRef,
+    saveRoster: saveRoster,
+    getRoster: getRoster,
     getSessionIdByCode: getSessionIdByCode,
     getCurrentPoll: getCurrentPoll,
     onCurrentPoll: onCurrentPoll,
