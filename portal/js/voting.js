@@ -623,6 +623,14 @@
       voteUIRendered = true;
 
       document.getElementById('poll-title').textContent = p.name || 'Poll';
+
+      // Session title (what Standards typed) sits above the individual poll name.
+      var sessionTitleEl = document.getElementById('session-title');
+      if (sessionTitleEl) {
+        var st = sessionMeta && sessionMeta.sessionTitle;
+        sessionTitleEl.textContent = st || '';
+        sessionTitleEl.classList.toggle('hidden', !st || st === p.name);
+      }
       var typeLabelEl = document.getElementById('poll-type-label');
       if (typeLabelEl) {
         var labels = {

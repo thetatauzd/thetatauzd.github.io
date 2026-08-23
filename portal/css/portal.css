@@ -557,6 +557,75 @@ body {
   margin: 2rem 0;
 }
 
+/* Candidate on the projector — shown when Standards paces one per poll. */
+.regent-candidate {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  align-items: center;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto 1.5rem;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.regent-candidate img {
+  width: clamp(140px, 18vw, 260px);
+  height: clamp(186px, 24vw, 346px);
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.regent-candidate .rc-info { text-align: left; min-width: 0; }
+
+.regent-candidate .rc-row {
+  display: flex;
+  gap: 0.75rem;
+  font-size: clamp(0.95rem, 1.9vw, 1.5rem);
+  margin-bottom: 0.35rem;
+}
+
+.regent-candidate .rc-label {
+  color: rgba(255, 255, 255, 0.55);
+  min-width: 6.5rem;
+  flex-shrink: 0;
+}
+
+.regent-candidate .rc-value { font-weight: 600; }
+
+.regent-candidate .rc-events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+
+.regent-candidate .rc-chip {
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: line-through;
+}
+
+.regent-candidate .rc-chip.rc-yes {
+  background: rgba(46, 125, 50, 0.35);
+  color: #a5d6a7;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .regent-candidate { flex-direction: column; text-align: center; }
+  .regent-candidate .rc-info { text-align: center; }
+  .regent-candidate .rc-row { justify-content: center; }
+  .regent-candidate .rc-events { justify-content: center; }
+}
+
 .regent-screen .not-voted-list {
   list-style: none;
   display: grid;

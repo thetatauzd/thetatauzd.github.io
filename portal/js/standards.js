@@ -297,18 +297,27 @@
     var roster = parsedRoster.slice();
     if (!roster.length) return Promise.resolve();
 
+    // Whatever Standards typed is the heading brothers see; fall back only if blank.
+    var title = (($('slides-title') && $('slides-title').value) || '').trim();
+
     return PortalDb.saveRoster(sid, roster, function(done, total) {
       slidesStatus('Uploading candidate ' + done + ' of ' + total + '…');
     }).then(function() {
       var updates = {};
       var newOrder = [];
 
+      // Per-candidate polls are titled with the candidate; the session title
+      // rides along so the voting screen can show it above them.
+      function candidateTitle(c) {
+        return '#' + c.number + ' ' + c.name;
+      }
+
       if (type === 'ranked' && rankedPacing === 'standards') {
         // One scorecard poll per candidate, so Standards controls the pace.
         roster.forEach(function(c, i) {
           var pid = db.ref('sessions/' + sid + '/polls').push().key;
           updates['sessions/' + sid + '/polls/' + pid] = {
-            name: '#' + c.number + ' ' + c.name,
+            name: candidateTitle(c),
             type: 'ranked',
             candidates: [c.name],
             minimumScore: 0,
@@ -321,7 +330,7 @@
       } else if (type === 'ranked') {
         var pollId = db.ref('sessions/' + sid + '/polls').push().key;
         updates['sessions/' + sid + '/polls/' + pollId] = {
-          name: 'Scorecard',
+          name: title || 'Scorecard',
           type: 'ranked',
           candidates: roster.map(function(c) { return c.name; }),
           minimumScore: 0,
@@ -333,7 +342,7 @@
         roster.forEach(function(c, i) {
           var pid = db.ref('sessions/' + sid + '/polls').push().key;
           updates['sessions/' + sid + '/polls/' + pid] = {
-            name: '#' + c.number + ' ' + c.name,
+            name: candidateTitle(c),
             type: 'regular',
             options: opts || [],
             rosterIndex: i,
@@ -344,6 +353,7 @@
       }
 
       updates['sessions/' + sid + '/pollOrder'] = newOrder;
+      if (title) updates['sessions/' + sid + '/meta/sessionTitle'] = title;
       return db.ref().update(updates);
     }).then(function() {
       slidesStatus('Deck uploaded — ' + roster.length + ' candidates queued.', 'ok');

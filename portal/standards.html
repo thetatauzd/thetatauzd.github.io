@@ -150,6 +150,15 @@
         <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
         <div id="slides-status" style="margin-top:0.5rem; font-size:0.9rem;"></div>
 
+        <div style="margin-top:0.9rem;">
+          <label for="slides-title" style="font-size:0.9rem; font-weight:600; display:block;">Vote title</label>
+          <p style="font-size:0.82rem; color:#666; margin:0.2rem 0 0.4rem;">
+            What brothers see at the top of the voting screen.
+          </p>
+          <input type="text" id="slides-title" maxlength="60" placeholder="e.g. Spring 2026 Rush Prelim"
+                 style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;">
+        </div>
+
         <div id="ranked-pacing" class="hidden" style="margin-top:0.9rem;">
           <label style="font-size:0.9rem; font-weight:600;">How do brothers move through the candidates?</label>
           <div class="option-presets" id="pacing-presets">

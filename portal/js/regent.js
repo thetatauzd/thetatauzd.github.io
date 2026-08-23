@@ -9,6 +9,7 @@
   var sessionId = null;
   var currentPollId = null;
   var currentPollType = null;
+  var roster = [];
   var unsubHasVoted = null;
   var unsubConnected = null;
   var idxRef = null;
@@ -72,6 +73,73 @@
         bannerEl.classList.toggle('hidden', total === 0 || votedCount < total);
       }
     });
+  }
+
+  /**
+   * Projector view of the candidate whose poll is currently up. Uses the poll's
+   * rosterIndex when Standards paces one candidate per poll; a self-paced quiz
+   * covers everyone at once, so there is no single candidate to show.
+   */
+  function renderRegentCandidate(poll) {
+    var el = document.getElementById('regent-candidate');
+    if (!el) return;
+
+    var cand = null;
+    if (poll && typeof poll.rosterIndex === 'number') cand = roster[poll.rosterIndex];
+
+    if (!cand) {
+      el.classList.add('hidden');
+      el.innerHTML = '';
+      return;
+    }
+
+    el.innerHTML = '';
+
+    if (cand.photo) {
+      var img = document.createElement('img');
+      img.src = cand.photo;
+      img.alt = cand.name || '';
+      el.appendChild(img);
+    }
+
+    var info = document.createElement('div');
+    info.className = 'rc-info';
+
+    var facts = [
+      ['GPA', cand.gpa],
+      ['Major', cand.major],
+      ['Class', cand.classStanding],
+      ['Heard via', cand.heardVia]
+    ].filter(function(f) { return f[1]; });
+
+    facts.forEach(function(f) {
+      var row = document.createElement('div');
+      row.className = 'rc-row';
+      var l = document.createElement('span');
+      l.className = 'rc-label';
+      l.textContent = f[0];
+      var v = document.createElement('span');
+      v.className = 'rc-value';
+      v.textContent = f[1];
+      row.appendChild(l);
+      row.appendChild(v);
+      info.appendChild(row);
+    });
+
+    if (cand.events && cand.events.length) {
+      var ev = document.createElement('div');
+      ev.className = 'rc-events';
+      cand.events.forEach(function(e) {
+        var chip = document.createElement('span');
+        chip.className = 'rc-chip' + (e.attended ? ' rc-yes' : '');
+        chip.textContent = e.label;
+        ev.appendChild(chip);
+      });
+      info.appendChild(ev);
+    }
+
+    el.appendChild(info);
+    el.classList.remove('hidden');
   }
 
   function clearBoard() {
@@ -161,6 +229,7 @@
           var p = snap.val();
           document.getElementById('regent-poll-name').textContent = (p && p.name) || '—';
           currentPollType = (p && p.type) || '';
+          renderRegentCandidate(p);
 
           var headingEl = document.getElementById('regent-heading');
           if (p && p.status !== 'open') {
@@ -215,6 +284,14 @@
         sessionId = sid;
         if (board) board.classList.remove('hidden');
         if (joinBox) joinBox.classList.add('hidden');
+
+        // Candidate photos live on the session roster; load once up front.
+        PortalDb.getRoster(sid).then(function(list) {
+          roster = list || [];
+        }).catch(function() {
+          roster = [];
+        });
+
         startListening(sid);
       }
 
