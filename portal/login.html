@@ -31,6 +31,7 @@
         <input type="text" id="reg-name" placeholder="Your name">
         <label for="reg-roll">Roll number</label>
         <input type="text" id="reg-roll" placeholder="Roll number">
+        <p id="reg-lookup-status" class="hidden" style="font-size:0.85rem; margin:-0.5rem 0 0.75rem;"></p>
         <button type="button" class="btn btn-primary" id="btn-submit-register" style="width:100%; padding: 0.75rem;">Submit for approval</button>
       </div>
       <p id="login-error" class="hidden" style="color: #c62828; margin-top: 0.5rem;"></p>
@@ -42,6 +43,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js?v=5"></script>
   <script src="js/auth.js?v=5"></script>
+  <script src="js/roster.js?v=5"></script>
   <script>
     (function() {
       var btnGoogle = document.getElementById('btn-google');
@@ -49,7 +51,19 @@
       var btnSubmitReg = document.getElementById('btn-submit-register');
       var regName = document.getElementById('reg-name');
       var regRoll = document.getElementById('reg-roll');
+
       var loginError = document.getElementById('login-error');
+
+      // Typing either a name or a roll number fills in the other from the
+      // chapter roll. Purely a convenience — the account is still created as
+      // pending and an admin still approves it.
+      if (window.PortalRoster) {
+        PortalRoster.attachAutofill({
+          nameInput: regName,
+          rollInput: regRoll,
+          statusEl: document.getElementById('reg-lookup-status')
+        });
+      }
 
       function showError(msg) {
         loginError.textContent = msg || '';
