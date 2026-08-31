@@ -95,6 +95,7 @@ portal/
 ├── chapter-results.html  # Chapter-friendly results view (pass/fail, no percentages)
 ├── timer.html            # Synchronized event timer
 ├── newsletters-admin.html # Upload & manage chapter newsletters (admin only)
+├── email-automation.html  # Build, preview, and send templated admin emails
 │
 ├── css/
 │   └── portal.css        # All portal styles (colors, layout, components)
@@ -108,6 +109,7 @@ portal/
     ├── regent.js           # Regent display board logic
     ├── admin.js            # Admin user management logic
     ├── newsletters.js      # Newsletter upload/list/delete logic
+    ├── email-automation.js # Email templates, recipient imports, mapping, gateway calls
     └── timer.js            # Synchronized timer logic
 ```
 

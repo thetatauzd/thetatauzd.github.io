@@ -283,6 +283,18 @@
     if (role === 'admin') {
       var adminDd = document.getElementById('admin-dropdown');
       if (adminDd) adminDd.classList.remove('hidden');
+      var adminMenu = document.getElementById('admin-dd-menu');
+      if (adminMenu && !adminMenu.querySelector('a[href="email-automation"]')) {
+        var emailLink = document.createElement('a');
+        emailLink.href = 'email-automation';
+        emailLink.textContent = 'Email Automation';
+        var newsletterLink = adminMenu.querySelector('a[href="newsletters-admin"]');
+        if (newsletterLink && newsletterLink.nextSibling) {
+          adminMenu.insertBefore(emailLink, newsletterLink.nextSibling);
+        } else {
+          adminMenu.appendChild(emailLink);
+        }
+      }
     } else if (role === 'rush_chair') {
       var t = document.getElementById('link-timer');
       if (t) t.classList.remove('hidden');
