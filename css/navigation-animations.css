@@ -178,7 +178,7 @@ header * {
 .header-menu.menu-open {
     display: flex !important;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     background: #0b0b0b;
     animation: menuSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
@@ -233,6 +233,13 @@ header * {
     width: 100%;
 }
 
+/* The wrapper must be a flex container for `order` on the Portal item to
+   take effect; as a plain block the markup order wins. */
+.header-menu.menu-open .header-menu-nav-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
 .header-menu.menu-open .header-menu-nav-folder {
     padding-top: 0;
 }
@@ -245,7 +252,8 @@ header * {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.header-menu.menu-open .header-menu-nav-item:last-child {
+/* With Portal pulled to the top, Newsletters is the visually-last row. */
+.header-menu.menu-open .header-menu-nav-item:nth-last-child(2) {
     border-bottom: none;
 }
 
@@ -281,9 +289,14 @@ header * {
     display: none;
 }
 
-/* Brother Portal reads as a call to action, not just another row. */
+/* Brother Portal is what most brothers open the menu for, so it jumps to the
+   top of the list (it is last in the markup on every page) and reads as a call
+   to action rather than just another row. */
 .header-menu.menu-open .header-menu-nav-item:last-child {
-    margin-top: 18px;
+    order: -1;
+    margin-top: 0;
+    margin-bottom: 14px;
+    border-bottom: none;
 }
 
 .header-menu.menu-open .header-menu-nav-item:last-child .header-menu-nav-item-content {
