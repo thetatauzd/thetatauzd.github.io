@@ -68,9 +68,11 @@
     .slide-warn { color: #b26a00; font-size: 0.78rem; }
     @media (max-width: 768px) { .slide-row .meta { display: none; } }
     .option-presets { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
-    .option-preset-btn { padding: 0.5rem 1rem; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 0.9rem; transition: border-color 0.2s; }
-    .option-preset-btn:hover { border-color: #FFCC33; }
-    .option-preset-btn.selected { border-color: #FFCC33; background: #fffde7; font-weight: 600; }
+    /* Choice chips: white until picked, so the picked one is unmistakable.
+       Scoped under .standards-section to outrank the page-wide gold button rule. */
+    .standards-section .option-preset-btn { padding: 0.5rem 1rem; margin: 0; border: 2px solid #ddd; border-radius: 8px; background: #fff; color: #333; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: border-color 0.2s, background 0.2s; }
+    .standards-section .option-preset-btn:hover { border-color: #FFCC33; background: #fffde7; }
+    .standards-section .option-preset-btn.selected { border-color: #FFCC33; background: #fffde7; color: #8B0000; font-weight: 700; box-shadow: inset 0 0 0 1px #FFCC33; }
     .batch-toggle { font-size: 0.85rem; color: #FFCC33; cursor: pointer; border: none; background: none; text-decoration: underline; padding: 0; }
     .ending-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 999; }
     .ending-box { background: #fff; border-radius: 12px; padding: 2.5rem; text-align: center; max-width: 400px; }
@@ -301,10 +303,10 @@
         <div class="bar"><div class="bar-fill" id="ap-bar-fill" style="width:0%;"></div></div>
       </div>
       <div class="now-actions">
-        <button type="button" class="btn secondary now-side" id="btn-prev-poll">← Previous</button>
-        <button type="button" class="btn btn-primary now-main" id="btn-open-poll">Open poll</button>
-        <button type="button" class="btn now-main btn-close-poll" id="btn-close-poll">Close poll</button>
-        <button type="button" class="btn btn-primary now-main" id="btn-next-poll">Next poll →</button>
+        <button type="button" class="btn secondary now-side hidden" id="btn-prev-poll">← Previous</button>
+        <button type="button" class="btn btn-primary now-main hidden" id="btn-open-poll">Open poll</button>
+        <button type="button" class="btn now-main btn-close-poll hidden" id="btn-close-poll">Close poll</button>
+        <button type="button" class="btn btn-primary now-main hidden" id="btn-next-poll">Next poll →</button>
       </div>
       <p class="step-hint now-hint" id="ap-hint"></p>
     </div>

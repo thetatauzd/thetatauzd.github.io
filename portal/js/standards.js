@@ -963,15 +963,17 @@
 
     // One main action per state: Open → Close → Next. Reopening a closed poll
     // stays possible but is demoted to a small secondary button.
-    show(prevBtn, !single); prevBtn.disabled = currentIndex <= 0;
-    show(openBtn, status !== 'open');
-    openBtn.textContent = status === 'closed' ? 'Reopen' : 'Open poll';
+    // Set classes first: assigning className would wipe a 'hidden' set before it.
     openBtn.className = status === 'closed' ? 'btn reopen' : 'btn btn-primary now-main';
+    openBtn.textContent = status === 'closed' ? 'Reopen' : 'Open poll';
+    nextBtn.className = status === 'closed' ? 'btn btn-primary now-main' : 'btn secondary now-side';
+    nextBtn.textContent = status === 'closed' ? 'Next poll →' : 'Skip →';
+    nextBtn.disabled = isLast;
+    prevBtn.disabled = currentIndex <= 0;
+    show(prevBtn, !single);
+    show(openBtn, status !== 'open');
     show(closeBtn, status === 'open');
     show(nextBtn, !single && status !== 'open');
-    nextBtn.disabled = isLast;
-    nextBtn.textContent = status === 'closed' ? 'Next poll →' : 'Skip →';
-    nextBtn.className = status === 'closed' ? 'btn btn-primary now-main' : 'btn secondary now-side';
 
     var hints = {
       upcoming: 'Brothers see this the moment you open it.',
