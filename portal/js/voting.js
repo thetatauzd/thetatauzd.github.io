@@ -142,6 +142,13 @@
         return;
       }
 
+      // Self-paced quiz over a slide deck: one candidate per screen, same
+      // flow as the scorecard but with these options as the buttons.
+      if (poll.candidates && poll.candidates.length) {
+        startQuiz(poll, container, choices, 'option');
+        return;
+      }
+
       // Polls built from a slide deck show that candidate's card above the options.
       if (poll.rosterIndex !== null && roster[poll.rosterIndex]) {
         container.appendChild(buildCandidateCard(roster[poll.rosterIndex], poll.name));
@@ -190,6 +197,35 @@
    */
   var quizIndex = 0;
   var quizNames = [];
+  var quizChoices = [];        // button labels: scores or the session's options
+  var quizKind = 'score';      // 'score' → numeric ballot, 'option' → option string
+
+  var SCORE_CHOICES = ['-2', '-1', '0', '+1', '+2'];
+
+  function quizVerb() { return quizKind === 'score' ? 'rated' : 'answered'; }
+  function quizSubmitLabel() { return quizKind === 'score' ? 'Submit All Ratings' : 'Submit All Votes'; }
+  function ballotValue(choice) { return quizKind === 'score' ? parseInt(choice, 10) : choice; }
+
+  /** One button per choice; scores get the +/- colouring, options share the row evenly. */
+  function buildChoiceButtons(name, onPick) {
+    var group = document.createElement('div');
+    group.className = 'quiz-scores' + (quizKind === 'option' ? ' quiz-options' : '');
+    if (quizKind === 'option') group.style.gridTemplateColumns = 'repeat(' + quizChoices.length + ', 1fr)';
+    quizChoices.forEach(function(s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'vote-btn quiz-score';
+      if (quizKind === 'score') {
+        if (s.charAt(0) === '+') btn.classList.add('ranked-plus');
+        else if (s.charAt(0) === '-') btn.classList.add('ranked-minus');
+      }
+      if (scorecardState[name] === s) btn.classList.add('voted');
+      btn.textContent = s;
+      btn.addEventListener('click', function() { onPick(s, btn, group); });
+      group.appendChild(btn);
+    });
+    return group;
+  }
 
   // Ratings live only in memory until submit. On a phone, a backgrounded tab
   // can be killed mid-quiz — with 170+ candidates that is a lot to lose — so
@@ -289,6 +325,12 @@
   }
 
   function renderScorecard(poll, container) {
+    startQuiz(poll, container, SCORE_CHOICES, 'score');
+  }
+
+  function startQuiz(poll, container, choices, kind) {
+    quizChoices = choices;
+    quizKind = kind;
     quizNames = poll.candidates || [];
     if (quizNames.length === 0) {
       container.innerHTML = '<p>No candidates listed for this poll.</p>';
@@ -330,30 +372,18 @@
 
     container.appendChild(buildCandidateCard(cand, name));
 
-    var group = document.createElement('div');
-    group.className = 'quiz-scores';
-    ['-2', '-1', '0', '+1', '+2'].forEach(function(s) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'vote-btn quiz-score';
-      if (s.charAt(0) === '+') btn.classList.add('ranked-plus');
-      else if (s.charAt(0) === '-') btn.classList.add('ranked-minus');
-      btn.textContent = s;
-      btn.addEventListener('click', function() {
-        group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
-        btn.classList.add('voted');
-        var ballot = {};
-        ballot[PortalDb.ballotKey(name)] = parseInt(s, 10);
-        submitVote(ballot, function(success) {
-          if (!success) {
-            group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
-            btn.classList.remove('voted');
-          }
-        });
+    container.appendChild(buildChoiceButtons(name, function(s, btn, group) {
+      group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
+      btn.classList.add('voted');
+      var ballot = {};
+      ballot[PortalDb.ballotKey(name)] = ballotValue(s);
+      submitVote(ballot, function(success) {
+        if (!success) {
+          group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
+          btn.classList.remove('voted');
+        }
       });
-      group.appendChild(btn);
-    });
-    container.appendChild(group);
+    }));
   }
 
   function ratedCount() {
@@ -385,30 +415,16 @@
     var counter = document.createElement('p');
     counter.className = 'quiz-counter';
     counter.textContent = (quizIndex + 1) + ' of ' + quizNames.length +
-      '  ·  ' + ratedCount() + ' rated';
+      '  ·  ' + ratedCount() + ' ' + quizVerb();
     host.appendChild(counter);
 
     host.appendChild(buildCandidateCard(cand, name));
 
-    var scores = ['-2', '-1', '0', '+1', '+2'];
-    var group = document.createElement('div');
-    group.className = 'quiz-scores';
-    scores.forEach(function(s) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'vote-btn quiz-score';
-      if (s.charAt(0) === '+') btn.classList.add('ranked-plus');
-      else if (s.charAt(0) === '-') btn.classList.add('ranked-minus');
-      if (scorecardState[name] === s) btn.classList.add('voted');
-      btn.textContent = s;
-      btn.addEventListener('click', function() {
-        scorecardState[name] = s;
-        quizIndex++;
-        renderQuizStep();
-      });
-      group.appendChild(btn);
-    });
-    host.appendChild(group);
+    host.appendChild(buildChoiceButtons(name, function(s) {
+      scorecardState[name] = s;
+      quizIndex++;
+      renderQuizStep();
+    }));
 
     var nav = document.createElement('div');
     nav.className = 'quiz-nav';
@@ -449,7 +465,7 @@
 
     var h = document.createElement('p');
     h.className = 'quiz-counter';
-    h.textContent = 'Review — ' + rated + ' of ' + total + ' rated';
+    h.textContent = 'Review — ' + rated + ' of ' + total + ' ' + quizVerb();
     host.appendChild(h);
 
     var list = document.createElement('div');
@@ -466,7 +482,7 @@
 
       var right = document.createElement('span');
       right.className = 'qr-score';
-      right.textContent = scorecardState[name] === null ? 'not rated' : scorecardState[name];
+      right.textContent = scorecardState[name] === null ? 'not ' + quizVerb() : scorecardState[name];
 
       row.appendChild(left);
       row.appendChild(right);
@@ -480,14 +496,14 @@
     submitBtn.className = 'btn btn-primary';
     submitBtn.id = 'btn-submit-scorecard';
     submitBtn.style.cssText = 'display:block; margin:1rem auto 0; padding:0.75rem 2rem; font-size:1.1rem;';
-    submitBtn.textContent = 'Submit All Ratings';
+    submitBtn.textContent = quizSubmitLabel();
     submitBtn.addEventListener('click', submitScorecard);
     host.appendChild(submitBtn);
 
     if (rated < total) {
       var note = document.createElement('p');
       note.style.cssText = 'text-align:center; color:#b26a00; font-size:0.9rem; margin-top:0.5rem;';
-      note.textContent = 'Tap any row above to rate the ' + (total - rated) + ' still missing.';
+      note.textContent = 'Tap any row above to answer the ' + (total - rated) + ' still missing.';
       host.appendChild(note);
     }
   }
@@ -498,14 +514,14 @@
     if (unrated.length > 0) {
       var errorEl = document.getElementById('vote-error');
       if (errorEl) {
-        errorEl.textContent = 'You must rate all ' + keys.length + ' candidates. ' + unrated.length + ' remaining.';
+        errorEl.textContent = 'You must answer for all ' + keys.length + ' candidates. ' + unrated.length + ' remaining.';
         errorEl.classList.remove('hidden');
       }
       return;
     }
     var ballot = {};
     keys.forEach(function(name) {
-      ballot[PortalDb.ballotKey(name)] = parseInt(scorecardState[name], 10);
+      ballot[PortalDb.ballotKey(name)] = ballotValue(scorecardState[name]);
     });
 
     var errorEl = document.getElementById('vote-error');
@@ -518,7 +534,7 @@
     submitVote(ballot, function onDone(success) {
       if (!success && submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit All Ratings';
+        submitBtn.textContent = quizSubmitLabel();
       }
     });
   }

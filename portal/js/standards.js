@@ -79,15 +79,16 @@
     });
     $('session-active-info').classList.remove('hidden');
     $('active-code').textContent = accessCode;
-    $('active-session-type').textContent = '(' + typeLabel(sessionType) + ')';
+    $('active-session-type').textContent = typeLabel(sessionType);
     $('link-open-regent').href = 'regent#' + sessionId;
     $('btn-create-session').disabled = true;
-    $('session-code').disabled = true;
 
-    // Hide session type picker and options when active
-    $('session-type-picker').classList.add('hidden');
-    var regOpts = $('regular-options-setup');
-    if (regOpts) regOpts.classList.add('hidden');
+    // The whole setup flow goes away while a session is live.
+    $('panel-setup').classList.add('hidden');
+    $('bar-title').textContent = typeLabel(sessionType) + ' session';
+    db.ref('sessions/' + sessionId + '/meta/sessionTitle').once('value').then(function(snap) {
+      if (snap.val()) $('bar-title').textContent = snap.val();
+    }).catch(function() {});
 
     // Show correct add-poll form
     if (sessionType === 'ranked') {
@@ -105,12 +106,11 @@
     });
     $('session-active-info').classList.add('hidden');
     $('btn-create-session').disabled = false;
-    $('session-code').disabled = false;
-    $('session-code').value = '';
-
-    $('session-type-picker').classList.remove('hidden');
     $('add-ranked-form').classList.add('hidden');
     $('add-regular-form').classList.add('hidden');
+
+    $('panel-setup').classList.remove('hidden');
+    resetSetup();
   }
 
   // ── Session type & options picker ──
@@ -125,10 +125,7 @@
         btns.forEach(function(b) { b.classList.remove('selected'); });
         btn.classList.add('selected');
         selectedSessionType = btn.getAttribute('data-type');
-        $('regular-options-setup').classList.toggle('hidden', selectedSessionType !== 'regular');
-        // Slides can back either session type.
-        $('slides-setup').classList.remove('hidden');
-        $('ranked-pacing').classList.toggle('hidden', selectedSessionType !== 'ranked');
+        refreshSetupSteps();
       });
     });
 
@@ -139,18 +136,109 @@
         btn.classList.add('selected');
         selectedPreset = btn.getAttribute('data-preset');
         $('custom-options-group').classList.toggle('hidden', selectedPreset !== 'custom');
+        refreshSetupSteps();
       });
     });
+    $('custom-options-text').addEventListener('input', refreshSetupSteps);
+  }
+
+  // ── Setup flow: each step appears once the one before it is answered ──
+
+  var ballotSource = null;   // 'slides' | 'manual'
+
+  var BALLOT_HINTS = {
+    slides: 'Every candidate comes straight off the deck — photo, number and info included.',
+    manual: 'You will type poll names into the queue once the room is open. Good for motions and one-off votes.'
+  };
+
+  function initBallotPicker() {
+    var wrap = $('ballot-presets');
+    if (!wrap) return;
+    var btns = wrap.querySelectorAll('.option-preset-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        ballotSource = btn.getAttribute('data-source');
+        $('ballot-hint').textContent = BALLOT_HINTS[ballotSource] || '';
+        $('slides-setup').classList.toggle('hidden', ballotSource !== 'slides');
+        refreshSetupSteps();
+      });
+    });
+  }
+
+  function optionsChosen() {
+    if (selectedSessionType !== 'regular') return true;
+    if (!selectedPreset) return false;
+    return getVoteOptionsFromUI().length >= 2;
+  }
+
+  function setupSummary() {
+    var bits = [typeLabel(selectedSessionType)];
+    if (selectedSessionType === 'regular') bits.push(getVoteOptionsFromUI().join(' / '));
+    if (ballotSource === 'slides') {
+      bits.push(parsedRoster.length + ' candidate' + (parsedRoster.length === 1 ? '' : 's') + ' from the deck');
+      bits.push(slidesPacing === 'self' ? 'self-paced quiz' : 'you open each candidate');
+    } else {
+      bits.push('polls added by hand');
+    }
+    return 'Opening: ' + bits.join(' · ');
+  }
+
+  function refreshSetupSteps() {
+    var type = selectedSessionType;
+    var isRegular = type === 'regular';
+    var n = 1;
+
+    $('regular-options-setup').classList.toggle('hidden', !isRegular);
+    if (isRegular) n++;
+
+    var showBallot = !!type && optionsChosen();
+    $('step-ballot').classList.toggle('hidden', !showBallot);
+    if (showBallot) $('step-ballot-num').textContent = ++n;
+
+    var slidesReady = ballotSource === 'slides' && parsedRoster.length > 0;
+    var showPacing = showBallot && slidesReady;
+    $('slides-pacing').classList.toggle('hidden', !showPacing);
+    if (showPacing) $('step-pacing-num').textContent = ++n;
+
+    var showLaunch = showBallot && (ballotSource === 'manual' || slidesReady);
+    $('step-launch').classList.toggle('hidden', !showLaunch);
+    if (showLaunch) {
+      $('step-launch-num').textContent = ++n;
+      $('slides-title-group').classList.toggle('hidden', ballotSource !== 'slides');
+      $('setup-summary').textContent = setupSummary();
+    }
+  }
+
+  function resetSetup() {
+    selectedSessionType = null;
+    selectedPreset = null;
+    ballotSource = null;
+    parsedRoster = [];
+    ['session-type-picker', 'option-presets', 'ballot-presets'].forEach(function(id) {
+      $(id).querySelectorAll('.selected').forEach(function(b) { b.classList.remove('selected'); });
+    });
+    $('custom-options-group').classList.add('hidden');
+    $('custom-options-text').value = '';
+    $('slides-setup').classList.add('hidden');
+    $('slides-file').value = '';
+    $('slides-title').value = '';
+    $('session-code').value = '';
+    $('ballot-hint').textContent = '';
+    slidesStatus('');
+    renderRosterReview();
+    refreshSetupSteps();
   }
 
   // ── Candidate slide deck ──
 
   var parsedRoster = [];
-  var rankedPacing = 'self';   // 'self' = one quiz poll, 'standards' = one poll per candidate
+  var slidesPacing = 'self';   // 'self' = one quiz poll, 'standards' = one poll per candidate
 
   var PACING_HINTS = {
-    self: 'One poll holding everyone. Brothers rate at their own speed, can go back, and submit all ratings at the end.',
-    standards: 'One poll per candidate. Nobody can rate ahead — you open each candidate and close them when the room has voted.'
+    self: 'One poll holding everyone. Brothers go through the candidates at their own speed, can go back, and submit all their answers at the end.',
+    standards: 'One poll per candidate. Nobody can vote ahead — you open each candidate and close them when the room has voted.'
   };
 
   function initPacingPicker() {
@@ -161,9 +249,10 @@
       btn.addEventListener('click', function() {
         btns.forEach(function(b) { b.classList.remove('selected'); });
         btn.classList.add('selected');
-        rankedPacing = btn.getAttribute('data-pacing') || 'self';
+        slidesPacing = btn.getAttribute('data-pacing') || 'self';
         var hint = $('pacing-hint');
-        if (hint) hint.textContent = PACING_HINTS[rankedPacing] || '';
+        if (hint) hint.textContent = PACING_HINTS[slidesPacing] || '';
+        refreshSetupSteps();
       });
     });
   }
@@ -225,6 +314,7 @@
       del.addEventListener('click', function() {
         parsedRoster.splice(i, 1);
         renderRosterReview();
+        refreshSetupSteps();
       });
 
       row.appendChild(img);
@@ -271,9 +361,11 @@
         } else {
           slidesStatus(candidates.length + ' candidates ready.', 'ok');
         }
+        refreshSetupSteps();
       }).catch(function(err) {
         console.error('Slide parse failed', err);
         slidesStatus(err.message || 'Could not read that file.', 'error');
+        refreshSetupSteps();
       });
     });
 
@@ -284,6 +376,7 @@
         input.value = '';
         slidesStatus('');
         renderRosterReview();
+        refreshSetupSteps();
       });
     }
   }
@@ -312,44 +405,41 @@
         return '#' + c.number + ' ' + c.name;
       }
 
-      if (type === 'ranked' && rankedPacing === 'standards') {
-        // One scorecard poll per candidate, so Standards controls the pace.
+      if (slidesPacing === 'standards') {
+        // One poll per candidate, so Standards controls the pace.
         roster.forEach(function(c, i) {
           var pid = db.ref('sessions/' + sid + '/polls').push().key;
-          updates['sessions/' + sid + '/polls/' + pid] = {
+          var poll = {
             name: candidateTitle(c),
-            type: 'ranked',
-            candidates: [c.name],
-            minimumScore: 0,
+            type: type === 'ranked' ? 'ranked' : 'regular',
             useRoster: true,
             rosterIndex: i,
             status: 'upcoming'
           };
+          if (type === 'ranked') {
+            poll.candidates = [c.name];
+            poll.minimumScore = 0;
+          } else {
+            poll.options = opts || [];
+          }
+          updates['sessions/' + sid + '/polls/' + pid] = poll;
           newOrder.push(pid);
         });
-      } else if (type === 'ranked') {
+      } else {
+        // One quiz poll holding every candidate; brothers page through it
+        // themselves and submit a single ballot at the end.
         var pollId = db.ref('sessions/' + sid + '/polls').push().key;
-        updates['sessions/' + sid + '/polls/' + pollId] = {
-          name: title || 'Scorecard',
-          type: 'ranked',
+        var quiz = {
+          name: title || (type === 'ranked' ? 'Scorecard' : 'Vote'),
+          type: type === 'ranked' ? 'ranked' : 'regular',
           candidates: roster.map(function(c) { return c.name; }),
-          minimumScore: 0,
           useRoster: true,
           status: 'upcoming'
         };
+        if (type === 'ranked') quiz.minimumScore = 0;
+        else quiz.options = opts || [];
+        updates['sessions/' + sid + '/polls/' + pollId] = quiz;
         newOrder.push(pollId);
-      } else {
-        roster.forEach(function(c, i) {
-          var pid = db.ref('sessions/' + sid + '/polls').push().key;
-          updates['sessions/' + sid + '/polls/' + pid] = {
-            name: candidateTitle(c),
-            type: 'regular',
-            options: opts || [],
-            rosterIndex: i,
-            status: 'upcoming'
-          };
-          newOrder.push(pid);
-        });
       }
 
       updates['sessions/' + sid + '/pollOrder'] = newOrder;
@@ -394,6 +484,8 @@
       var opts = getVoteOptionsFromUI();
       if (opts.length < 2) { alert('Regular vote needs at least 2 options.'); return; }
     }
+    if (!ballotSource) { alert('Choose whether the ballot comes from slides or is added by hand.'); return; }
+    if (ballotSource === 'slides' && !parsedRoster.length) { alert('Upload the slide deck first, or switch to adding polls by hand.'); return; }
 
     var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
     if (!uid) return;
@@ -441,7 +533,7 @@
     updates['sessions/' + sid + '/pollOrder'] = [];
 
     return db.ref().update(updates).then(function() {
-      return attachRosterToSession(sid, type, opts);
+      return ballotSource === 'slides' ? attachRosterToSession(sid, type, opts) : null;
     }).then(function() {
       rejoinSession(sid, code, type, opts);
     }).catch(function(err) {
@@ -523,6 +615,7 @@
     }
 
     if (type === 'regular') {
+      if (agg.candidateOptions) return 'See results table';
       var oc = agg.optionCounts || {};
       var parts = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; });
       return parts.join(' | ') || 'No votes';
@@ -708,8 +801,13 @@
     var container = $('poll-queue-list');
     if (!container) return;
 
+    var qc = $('queue-count');
+    if (qc) qc.textContent = pollOrder.length ? pollOrder.length + (pollOrder.length === 1 ? ' poll' : ' polls') : '';
+
     if (pollOrder.length === 0) {
-      container.innerHTML = '<p class="queue-empty">No polls added yet. Add one below.</p>';
+      container.innerHTML = '<p class="queue-empty">Nothing queued yet. Add your first poll below.</p>';
+      var addDetails = $('add-polls-details');
+      if (addDetails) addDetails.open = true;
       return;
     }
 
@@ -828,13 +926,26 @@
   function renderActivePoll() {
     var meta = getCurrentPollData();
 
+    var total = pollOrder.length;
+    var single = total <= 1;
+    var isLast = currentIndex >= total - 1;
+    var prevBtn = $('btn-prev-poll'), openBtn = $('btn-open-poll'),
+        closeBtn = $('btn-close-poll'), nextBtn = $('btn-next-poll');
+    function show(el, on) { el.classList.toggle('hidden', !on); }
+
     if (!meta) {
-      $('ap-name').textContent = pollOrder.length ? 'All polls completed' : 'No polls in queue';
+      $('ap-counter').textContent = '';
+      $('ap-name').textContent = total ? 'All polls completed' : 'No polls yet';
       $('ap-type').textContent = '';
       $('ap-status').textContent = '';
-      $('ap-status').className = 'poll-status';
+      $('ap-status').className = 'poll-status hidden';
       $('ap-vote-text').textContent = '0 / 0 voted';
       $('ap-bar-fill').style.width = '0%';
+      $('ap-hint').textContent = total
+        ? 'Every poll has run. Export the results or end the session above.'
+        : 'Add a poll in the queue below and it will show up here.';
+      show(prevBtn, total > 0); prevBtn.disabled = currentIndex <= 0;
+      show(openBtn, false); show(closeBtn, false); show(nextBtn, false);
       $('ap-threshold-row').classList.add('hidden');
       $('results-summary').innerHTML = '';
       var tb = $('results-voters').querySelector('tbody');
@@ -843,14 +954,32 @@
       return;
     }
 
+    $('ap-counter').textContent = single ? '' : 'Poll ' + (currentIndex + 1) + ' of ' + total;
     $('ap-name').textContent = meta.name || '—';
     $('ap-type').textContent = typeLabel(meta.type);
     var status = meta.status || 'upcoming';
     $('ap-status').textContent = status;
     $('ap-status').className = 'poll-status ' + status;
 
-    $('btn-open-poll').disabled = (status === 'open');
-    $('btn-close-poll').disabled = (status !== 'open');
+    // One main action per state: Open → Close → Next. Reopening a closed poll
+    // stays possible but is demoted to a small secondary button.
+    show(prevBtn, !single); prevBtn.disabled = currentIndex <= 0;
+    show(openBtn, status !== 'open');
+    openBtn.textContent = status === 'closed' ? 'Reopen' : 'Open poll';
+    openBtn.className = status === 'closed' ? 'btn reopen' : 'btn btn-primary now-main';
+    show(closeBtn, status === 'open');
+    show(nextBtn, !single && status !== 'open');
+    nextBtn.disabled = isLast;
+    nextBtn.textContent = status === 'closed' ? 'Next poll →' : 'Skip →';
+    nextBtn.className = status === 'closed' ? 'btn btn-primary now-main' : 'btn secondary now-side';
+
+    var hints = {
+      upcoming: 'Brothers see this the moment you open it.',
+      open: 'Brothers are voting. Close it when the room is done — results lock in then.',
+      closed: isLast ? 'Results are locked. That was the last poll.' : 'Results are locked. Move on when you are ready.'
+    };
+    $('ap-hint').textContent = hints[status] || '';
+    $('results-heading').textContent = status === 'open' ? 'Live results' : 'Results';
 
     var type = meta.type;
     if (type === 'ranked' || type === 'rush_prelim') {
@@ -983,7 +1112,7 @@
       var agg = p.aggregation || PortalDb.computeAggregation(p.type, votes, p.candidates);
       var summary = $('results-summary');
       var leaderboard = $('results-leaderboard');
-      var voterTable = $('results-voters');
+      var voterTable = $('voters-details');
       leaderboard.classList.add('hidden');
       leaderboard.innerHTML = '';
 
@@ -994,7 +1123,12 @@
       }
       voterTable.classList.remove('hidden');
 
-      if (p.type === 'regular') {
+      if (p.type === 'regular' && agg.candidateOptions) {
+        var optRows = PortalDb.candidateOptionRows(agg, p.candidates, p.options);
+        summary.innerHTML = optRows.rows.length + ' candidates &middot; ' + (agg.totalVoters || 0) + ' voters';
+        leaderboard.innerHTML = PortalDb.candidateOptionTableHtml(agg, p.candidates, p.options, 'leaderboard-table');
+        leaderboard.classList.remove('hidden');
+      } else if (p.type === 'regular') {
         var oc = agg.optionCounts || {};
         var totalVoters = agg.totalVoters || 0;
         var parts = Object.keys(oc).map(function(k) {
@@ -1079,8 +1213,11 @@
         var isRanked = p.type === 'ranked' || p.type === 'rush_prelim';
 
         // ── Overview row ──
+        var isCandidateQuiz = p.type === 'regular' && !!agg.candidateOptions;
         if (isRanked) {
           overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Ranked (see tab)']);
+        } else if (isCandidateQuiz) {
+          overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Per candidate (see tab)']);
         } else if (p.type === 'regular') {
           var oc = agg.optionCounts || {};
           var ocKeys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
@@ -1118,6 +1255,14 @@
           pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Rank', 'Candidate', 'Score']];
           sorted.forEach(function(c, idx) { pollRows.push([idx + 1, c.name, c.score]); });
+        } else if (isCandidateQuiz) {
+          var cq = PortalDb.candidateOptionRows(agg, p.candidates, p.options);
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
+            ['Rank', 'Candidate'].concat(cq.options).concat(cq.hasYesNo ? ['% Yes'] : [])];
+          cq.rows.forEach(function(r, idx) {
+            pollRows.push([idx + 1, r.name].concat(cq.options.map(function(o) { return r.counts[o] || 0; }))
+              .concat(cq.hasYesNo ? [r.yesPct + '%'] : []));
+          });
         } else {
           pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Brother', 'Vote']];
@@ -1184,6 +1329,7 @@
       connectedBrothersData = s.val() || {};
       connectedCount = Object.keys(connectedBrothersData).length;
       $('connected-count').textContent = connectedCount;
+      $('bar-connected').textContent = connectedCount + ' connected';
       renderConnectedList();
       updateVoteCount();
     }, onErr('connectedBrothers'));
@@ -1204,8 +1350,10 @@
       PortalAuth.initNav(profile);
 
       initTypePicker();
+      initBallotPicker();
       initSlideUpload();
       initPacingPicker();
+      refreshSetupSteps();
 
       $('btn-create-session').addEventListener('click', createSession);
       $('btn-end-session').addEventListener('click', endSession);
@@ -1225,7 +1373,7 @@
         var g = $('batch-group');
         var visible = !g.classList.contains('hidden');
         g.classList.toggle('hidden');
-        this.textContent = visible ? '+ Batch add multiple' : '- Hide batch add';
+        this.textContent = visible ? '+ Add several at once' : '− Hide';
       });
       $('btn-batch-add').addEventListener('click', batchAddRegularPolls);
 

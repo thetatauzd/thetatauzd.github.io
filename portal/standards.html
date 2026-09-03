@@ -6,7 +6,7 @@
   <title>Standards – Session control</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=7">
+  <link rel="stylesheet" href="css/portal.css?v=8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -77,6 +77,79 @@
     .ending-box h3 { color: #8B0000; margin-bottom: 0.75rem; }
     .ending-box .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid #eee; border-top-color: #FFCC33; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Setup flow ── */
+    #panel-setup h2 { margin-bottom: 0.25rem; }
+    .setup-intro { color: #666; margin: 0 0 1.25rem; }
+    .setup-step { padding: 1.1rem 0 0.4rem; border-top: 1px solid #eee; }
+    .setup-step:first-of-type { border-top: none; padding-top: 0.25rem; }
+    .setup-step h3 { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #8B0000; color: #fff; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+    .step-hint { font-size: 0.85rem; color: #666; margin: 0.25rem 0 0.5rem; line-height: 1.45; }
+    .field-label { display: block; font-size: 0.85rem; font-weight: 600; margin: 0.5rem 0 0.25rem; }
+    .standards-section .field { width: 100%; max-width: 420px; border: 1px solid #ccc; border-radius: 6px; padding: 0.55rem 0.7rem; font: inherit; font-size: 0.95rem; margin: 0; }
+    .standards-section .code-field { text-transform: uppercase; font-family: monospace; letter-spacing: 0.08em; font-size: 1.05rem; }
+    .launch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 1.5rem; }
+    .setup-summary { margin: 0.9rem 0 0.75rem; padding: 0.7rem 0.9rem; background: #fffde7; border-left: 4px solid #FFCC33; border-radius: 6px; font-size: 0.92rem; color: #444; }
+    .standards-section .btn-launch { font-size: 1.05rem; padding: 0.8rem 1.75rem; margin: 0; }
+    .slides-status { margin-top: 0.5rem; font-size: 0.9rem; min-height: 1.2em; }
+    .slides-review-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .standards-section .btn-text { background: none; border: none; color: #8B0000; text-decoration: underline; padding: 0; margin: 0.5rem 0 0; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .standards-section .btn-text:hover { background: none; color: #5a0000; }
+    .standards-section #slides-file { margin: 0; padding: 0.4rem 0; border: none; }
+
+    /* ── Session bar ── */
+    .session-bar { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; padding: 1rem 1.5rem; }
+    .sb-main { flex: 1 1 200px; min-width: 0; }
+    .sb-title { font-weight: 700; font-size: 1.1rem; color: #8B0000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sb-meta { font-size: 0.85rem; color: #777; }
+    .sb-dot { margin: 0 0.4rem; }
+    .sb-code { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+    .sb-code-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; }
+    .sb-code-value { font-family: monospace; font-size: 1.7rem; font-weight: 700; color: #8B0000; letter-spacing: 0.08em; }
+    .sb-actions { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+    .sb-link { color: #8B0000; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
+    .standards-section .sb-actions .btn { margin: 0; }
+
+    /* ── Now card ── */
+    .now-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem; }
+    .now-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: #b8960c; font-weight: 700; }
+    .now-counter { font-size: 0.85rem; color: #888; }
+    .active-poll-type .poll-status { margin-left: 0.6rem; }
+    .now-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; align-items: stretch; }
+    .standards-section .now-actions .btn { margin: 0; }
+    .standards-section .now-main { flex: 1 1 220px; font-size: 1.1rem; padding: 0.9rem 1.25rem; }
+    .standards-section .now-side { flex: 0 0 auto; }
+    .standards-section .btn-close-poll { background: #c62828; color: #fff; }
+    .standards-section .btn-close-poll:hover { background: #a01010; }
+    .standards-section .btn.reopen { background: #eee; color: #444; flex: 0 0 auto; font-size: 0.9rem; padding: 0.6rem 1rem; }
+    .now-hint { margin-top: 0.75rem; }
+
+    /* ── Results / queue / connected ── */
+    .results-summary { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .panel-collapse { margin-top: 0.75rem; border-top: 1px solid #eee; padding-top: 0.5rem; }
+    .panel-collapse > summary { cursor: pointer; font-weight: 600; color: #8B0000; padding: 0.4rem 0; list-style: none; display: flex; align-items: center; gap: 0.5rem; }
+    .panel-collapse > summary::-webkit-details-marker { display: none; }
+    .panel-collapse > summary::before { content: '▸'; font-size: 0.8rem; color: #999; transition: transform 0.15s; }
+    .panel-collapse[open] > summary::before { transform: rotate(90deg); }
+    .count-pill { display: inline-block; background: #eee; color: #555; border-radius: 10px; padding: 0.05rem 0.55rem; font-size: 0.78rem; font-weight: 600; vertical-align: middle; }
+    .standards-section .btn-small { padding: 0.45rem 0.9rem; font-size: 0.9rem; margin: 0.75rem 0 0; }
+    .add-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+    .add-row > div { flex: 1 1 200px; }
+    .standards-section .add-row .btn-small { margin: 0 0 0.1rem; }
+    .threshold-adjust label { font-size: 0.85rem; font-weight: 600; }
+    .standards-section .threshold-adjust input { width: 80px; margin: 0; }
+    .standards-section .threshold-adjust .btn-small { margin: 0; }
+    #panel-connected h3 { margin: 0; }
+    #panel-connected .panel-collapse { border-top: none; margin-top: 0; padding-top: 0; }
+
+    @media (max-width: 640px) {
+      .session-bar { gap: 0.75rem 1rem; }
+      .sb-actions { margin-left: 0; width: 100%; justify-content: space-between; }
+      .now-actions .now-side { flex: 1 1 100%; order: 2; }
+      .now-actions .now-main { flex: 1 1 100%; order: 1; }
+      .now-actions .btn.reopen { order: 3; flex: 1 1 100%; }
+    }
   </style>
 </head>
 <body class="auth-pending">
@@ -113,172 +186,191 @@
   <main class="portal-container">
     <div id="reconnect-banner" class="reconnect-banner hidden">Reconnecting…</div>
 
-    <!-- Session creation -->
-    <div class="portal-card standards-section" id="panel-session">
-      <h2>Create a Session</h2>
-      <p>Choose a session type and share the access code with brothers.</p>
+    <!-- ── Setup: hidden while a session is live ── -->
+    <div class="portal-card standards-section" id="panel-setup">
+      <h2>Start a vote</h2>
+      <p class="setup-intro">Answer a few questions, then share the code. Brothers join from the Voting page.</p>
 
-      <div class="session-type-picker" id="session-type-picker">
-        <div class="session-type-btn" data-type="ranked">
-          <h4>Ranked Scorecard</h4>
-          <p>Brothers rate candidates -2 to +2. For rush prelims and PNM votes.</p>
+      <section class="setup-step" id="step-type">
+        <h3><span class="step-num">1</span>What kind of vote is this?</h3>
+        <div class="session-type-picker" id="session-type-picker">
+          <div class="session-type-btn" data-type="ranked">
+            <h4>Ranked Scorecard</h4>
+            <p>Brothers rate each candidate from −2 to +2. Rush prelims and PNM reviews.</p>
+          </div>
+          <div class="session-type-btn" data-type="regular">
+            <h4>Regular Vote</h4>
+            <p>Brothers pick one answer per question. Bids, motions, anything Yes / No.</p>
+          </div>
         </div>
-        <div class="session-type-btn" data-type="regular">
-          <h4>Regular Vote</h4>
-          <p>Brothers pick from options you define. For bids, motions, etc.</p>
-        </div>
-      </div>
+      </section>
 
-      <div id="regular-options-setup" class="hidden" style="margin-bottom:1rem;">
-        <label style="font-size:0.9rem; font-weight:600;">Vote options for this session:</label>
+      <section class="setup-step hidden" id="regular-options-setup">
+        <h3><span class="step-num">2</span>What can brothers pick?</h3>
         <div class="option-presets" id="option-presets">
-          <button type="button" class="option-preset-btn" data-preset="yes_no_idk">Yes / No / I Don't Know</button>
           <button type="button" class="option-preset-btn" data-preset="yes_no">Yes / No</button>
+          <button type="button" class="option-preset-btn" data-preset="yes_no_idk">Yes / No / I Don't Know</button>
           <button type="button" class="option-preset-btn" data-preset="custom">Custom</button>
         </div>
-        <div id="custom-options-group" class="hidden" style="margin-top:0.5rem;">
-          <label style="font-size:0.85rem;">Custom options (one per line)</label>
-          <textarea id="custom-options-text" rows="4" style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Option A&#10;Option B&#10;Option C"></textarea>
+        <div id="custom-options-group" class="hidden">
+          <label for="custom-options-text" class="field-label">Custom options, one per line</label>
+          <textarea id="custom-options-text" rows="4" class="field" placeholder="Option A&#10;Option B&#10;Option C"></textarea>
         </div>
-      </div>
+      </section>
 
-      <div id="slides-setup" class="hidden" style="margin-bottom:1rem;">
-        <label style="font-size:0.9rem; font-weight:600;">Slides (optional)</label>
-        <p style="font-size:0.85rem; color:#666; margin:0.25rem 0 0.5rem;">
-          In Google Slides choose <strong>File → Download → Microsoft PowerPoint (.pptx)</strong>, then upload it here.
-          Each slide becomes a candidate with their photo, number and info. Photos are shrunk in your browser before upload.
+      <section class="setup-step hidden" id="step-ballot">
+        <h3><span class="step-num" id="step-ballot-num">2</span>Who or what is on the ballot?</h3>
+        <div class="option-presets" id="ballot-presets">
+          <button type="button" class="option-preset-btn" data-source="slides">Upload the slide deck</button>
+          <button type="button" class="option-preset-btn" data-source="manual">Add polls by hand</button>
+        </div>
+        <p id="ballot-hint" class="step-hint"></p>
+
+        <div id="slides-setup" class="hidden">
+          <p class="step-hint">
+            In Google Slides choose <strong>File → Download → Microsoft PowerPoint (.pptx)</strong> and upload it here.
+            Each slide becomes a candidate with their photo, number and info. Photos are shrunk in your browser before upload.
+          </p>
+          <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+          <div id="slides-status" class="slides-status"></div>
+          <div id="slides-review" class="hidden">
+            <div class="slides-review-head">
+              <strong id="slides-count"></strong>
+              <button type="button" class="btn-text" id="btn-slides-clear">Clear deck</button>
+            </div>
+            <div id="slides-list" class="slides-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="setup-step hidden" id="slides-pacing">
+        <h3><span class="step-num" id="step-pacing-num">3</span>How do brothers move through the candidates?</h3>
+        <div class="option-presets" id="pacing-presets">
+          <button type="button" class="option-preset-btn selected" data-pacing="self">Self-paced quiz</button>
+          <button type="button" class="option-preset-btn" data-pacing="standards">Standards opens each one</button>
+        </div>
+        <p id="pacing-hint" class="step-hint">
+          One poll holding everyone. Brothers go through the candidates at their own speed, can go back, and submit all their answers at the end.
         </p>
-        <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
-        <div id="slides-status" style="margin-top:0.5rem; font-size:0.9rem;"></div>
+      </section>
 
-        <div style="margin-top:0.9rem;">
-          <label for="slides-title" style="font-size:0.9rem; font-weight:600; display:block;">Vote title</label>
-          <p style="font-size:0.82rem; color:#666; margin:0.2rem 0 0.4rem;">
-            What brothers see at the top of the voting screen.
-          </p>
-          <input type="text" id="slides-title" maxlength="60" placeholder="e.g. Spring 2026 Rush Prelim"
-                 style="width:100%; max-width:400px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;">
-        </div>
-
-        <div id="ranked-pacing" class="hidden" style="margin-top:0.9rem;">
-          <label style="font-size:0.9rem; font-weight:600;">How do brothers move through the candidates?</label>
-          <div class="option-presets" id="pacing-presets">
-            <button type="button" class="option-preset-btn selected" data-pacing="self">Self-paced quiz</button>
-            <button type="button" class="option-preset-btn" data-pacing="standards">Standards opens each one</button>
+      <section class="setup-step hidden" id="step-launch">
+        <h3><span class="step-num" id="step-launch-num">4</span>Name it and open the room</h3>
+        <div class="launch-grid">
+          <div id="slides-title-group">
+            <label for="slides-title" class="field-label">Vote title</label>
+            <input type="text" id="slides-title" maxlength="60" class="field" placeholder="e.g. Fall 2026 Rush Prelim">
+            <p class="step-hint">Shown at the top of every brother's screen.</p>
           </div>
-          <p id="pacing-hint" style="font-size:0.82rem; color:#666; margin:0;">
-            One poll holding everyone. Brothers rate at their own speed, can go back, and submit all ratings at the end.
-          </p>
-        </div>
-        <div id="slides-review" class="hidden" style="margin-top:0.75rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <strong id="slides-count"></strong>
-            <button type="button" class="btn" id="btn-slides-clear" style="background:#eee; color:#333;">Clear deck</button>
+          <div>
+            <label for="session-code" class="field-label">Access code</label>
+            <input type="text" id="session-code" maxlength="12" class="field code-field" placeholder="e.g. CHAPTER26" autocomplete="off">
+            <p class="step-hint">Brothers type this on the Voting page.</p>
           </div>
-          <div id="slides-list" class="slides-list"></div>
         </div>
-      </div>
+        <p class="setup-summary" id="setup-summary"></p>
+        <button type="button" class="btn btn-primary btn-launch" id="btn-create-session">Open the session</button>
+      </section>
+    </div>
 
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="session-code" placeholder="Access code (e.g. CHAPTER26)" maxlength="12" style="text-transform:uppercase;">
-        <button type="button" class="btn btn-primary" id="btn-create-session">Create session</button>
+    <!-- ── Live session ── -->
+    <div class="portal-card standards-section session-bar hidden" id="session-active-info">
+      <div class="sb-main">
+        <div class="sb-title" id="bar-title">Session</div>
+        <div class="sb-meta"><span id="active-session-type"></span><span class="sb-dot">·</span><span id="bar-connected">0 connected</span></div>
       </div>
-      <div id="session-active-info" class="hidden" style="margin-top:1rem;">
-        <p><strong>Session active</strong> — Code: <span id="active-code" style="font-family:monospace; font-size:1.1rem; color:#FFCC33;"></span>
-          <span id="active-session-type" style="margin-left:0.75rem; font-size:0.9rem; color:#888;"></span></p>
-        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-top:0.5rem;">
-          <a href="#" id="link-open-regent" target="_blank" style="color:#FFCC33;">Open Regent board in new tab</a>
-          <button type="button" class="btn btn-end-session" id="btn-end-session">End session</button>
-        </div>
+      <div class="sb-code">
+        <span class="sb-code-label">Code</span>
+        <span class="sb-code-value" id="active-code"></span>
+      </div>
+      <div class="sb-actions">
+        <a href="#" id="link-open-regent" target="_blank" class="sb-link">Regent board ↗</a>
+        <button type="button" class="btn btn-end-session" id="btn-end-session">End session</button>
       </div>
     </div>
 
-    <!-- Active poll -->
     <div class="portal-card standards-section active-poll-card hidden" id="panel-active-poll">
-      <h3>Active poll</h3>
-      <div id="active-poll-content">
-        <p class="active-poll-name" id="ap-name">—</p>
-        <p class="active-poll-type" id="ap-type"></p>
-        <span class="poll-status" id="ap-status"></span>
+      <div class="now-head">
+        <span class="now-label">Now</span>
+        <span class="now-counter" id="ap-counter"></span>
       </div>
+      <p class="active-poll-name" id="ap-name">—</p>
+      <p class="active-poll-type"><span id="ap-type"></span><span class="poll-status" id="ap-status"></span></p>
       <div class="vote-count-bar" id="ap-vote-bar">
         <span id="ap-vote-text">0 / 0 voted</span>
         <div class="bar"><div class="bar-fill" id="ap-bar-fill" style="width:0%;"></div></div>
       </div>
-      <div class="threshold-adjust hidden" id="ap-threshold-row">
-        <label>Min score:</label>
-        <input type="number" id="ap-threshold" min="-100" max="100" value="0" style="width:70px;">
-        <button type="button" class="btn btn-primary" id="btn-save-threshold" style="padding:0.3rem 0.75rem; font-size:0.85rem;">Save</button>
+      <div class="now-actions">
+        <button type="button" class="btn secondary now-side" id="btn-prev-poll">← Previous</button>
+        <button type="button" class="btn btn-primary now-main" id="btn-open-poll">Open poll</button>
+        <button type="button" class="btn now-main btn-close-poll" id="btn-close-poll">Close poll</button>
+        <button type="button" class="btn btn-primary now-main" id="btn-next-poll">Next poll →</button>
       </div>
-      <div class="btn-row">
-        <button type="button" class="btn secondary" id="btn-prev-poll">← Previous</button>
-        <button type="button" class="btn btn-primary" id="btn-open-poll">Open poll</button>
-        <button type="button" class="btn secondary" id="btn-close-poll" style="background:#c62828; color:#fff;">Close poll</button>
-        <button type="button" class="btn secondary" id="btn-next-poll">Next poll →</button>
-      </div>
+      <p class="step-hint now-hint" id="ap-hint"></p>
     </div>
 
-    <!-- Poll queue -->
-    <div class="portal-card standards-section hidden" id="panel-queue">
-      <h3>Poll queue</h3>
-      <div id="poll-queue-list"></div>
-      <h3 class="mt-2">Add poll</h3>
-
-      <!-- Ranked session: name + candidates + min score -->
-      <div id="add-ranked-form" class="hidden">
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:flex-end;">
-          <div>
-            <label style="font-size:0.85rem;">Poll name</label>
-            <input type="text" id="ranked-poll-name" placeholder="e.g. Rush Round 1 Prelim">
-          </div>
-          <div>
-            <label style="font-size:0.85rem;">Min score (cutoff)</label>
-            <input type="number" id="ranked-min-score" value="0" style="width:70px;">
-          </div>
-          <button type="button" class="btn btn-primary" id="btn-add-ranked">Add to queue</button>
-        </div>
-        <div style="margin-top:0.75rem;">
-          <label style="font-size:0.85rem;">Candidate names (one per line or comma-separated)</label>
-          <textarea id="ranked-candidates" rows="6" style="width:100%; max-width:500px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="Jane Doe&#10;John Smith&#10;Alice Johnson"></textarea>
-        </div>
-      </div>
-
-      <!-- Regular session: name only (options inherited from session) -->
-      <div id="add-regular-form" class="hidden">
-        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:flex-end;">
-          <div>
-            <label style="font-size:0.85rem;">Poll name</label>
-            <input type="text" id="regular-poll-name" placeholder="e.g. John Smith">
-          </div>
-          <button type="button" class="btn btn-primary" id="btn-add-regular">Add to queue</button>
-        </div>
-        <div style="margin-top:0.75rem;">
-          <button type="button" class="batch-toggle" id="btn-toggle-batch">+ Batch add multiple</button>
-          <div id="batch-group" class="hidden" style="margin-top:0.5rem;">
-            <label style="font-size:0.85rem;">Paste names (one per line) to queue all at once</label>
-            <textarea id="batch-names" rows="6" style="width:100%; max-width:500px; border:1px solid #ccc; border-radius:6px; padding:0.5rem; font-size:0.95rem;" placeholder="John Smith&#10;Jane Doe&#10;Alice Johnson"></textarea>
-            <button type="button" class="btn btn-primary mt-2" id="btn-batch-add" style="margin-top:0.5rem;">Add all to queue</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Results -->
     <div class="portal-card standards-section hidden" id="panel-results">
-      <h3>Results</h3>
-      <div id="results-summary" style="font-size:1.1rem; font-weight:600; margin-bottom:1rem;"></div>
-      <div id="results-leaderboard" class="hidden" style="margin-bottom:1rem;"></div>
-      <table class="results-table" id="results-voters">
-        <thead><tr><th>Brother</th><th>Vote</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button type="button" class="btn btn-primary mt-2" id="btn-export-excel">Export full session to Excel</button>
+      <h3 id="results-heading">Results</h3>
+      <div id="results-summary" class="results-summary"></div>
+      <div class="threshold-adjust hidden" id="ap-threshold-row">
+        <label for="ap-threshold">Cutoff (minimum score)</label>
+        <input type="number" id="ap-threshold" min="-100" max="100" value="0">
+        <button type="button" class="btn btn-primary btn-small" id="btn-save-threshold">Save</button>
+      </div>
+      <div id="results-leaderboard" class="hidden"></div>
+      <details class="panel-collapse" id="voters-details">
+        <summary>Who voted what</summary>
+        <table class="results-table" id="results-voters">
+          <thead><tr><th>Brother</th><th>Vote</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+      <button type="button" class="btn secondary btn-small" id="btn-export-excel">Export session to Excel</button>
     </div>
 
-    <!-- Connected brothers -->
+    <div class="portal-card standards-section hidden" id="panel-queue">
+      <h3>Queue <span class="count-pill" id="queue-count"></span></h3>
+      <div id="poll-queue-list"></div>
+      <details class="panel-collapse" id="add-polls-details">
+        <summary>Add polls</summary>
+        <div id="add-ranked-form" class="hidden">
+          <div class="add-row">
+            <div>
+              <label class="field-label">Poll name</label>
+              <input type="text" id="ranked-poll-name" class="field" placeholder="e.g. Rush Round 1 Prelim">
+            </div>
+            <div>
+              <label class="field-label">Cutoff (min score)</label>
+              <input type="number" id="ranked-min-score" value="0" class="field" style="width:90px;">
+            </div>
+          </div>
+          <label class="field-label">Candidate names, one per line or comma-separated</label>
+          <textarea id="ranked-candidates" rows="5" class="field" placeholder="Jane Doe&#10;John Smith&#10;Alice Johnson"></textarea>
+          <button type="button" class="btn btn-primary btn-small" id="btn-add-ranked">Add to queue</button>
+        </div>
+        <div id="add-regular-form" class="hidden">
+          <div class="add-row">
+            <div>
+              <label class="field-label">Poll name</label>
+              <input type="text" id="regular-poll-name" class="field" placeholder="e.g. Bid: John Smith">
+            </div>
+            <button type="button" class="btn btn-primary btn-small" id="btn-add-regular">Add to queue</button>
+          </div>
+          <button type="button" class="btn-text" id="btn-toggle-batch">+ Add several at once</button>
+          <div id="batch-group" class="hidden">
+            <label class="field-label">Paste names, one per line</label>
+            <textarea id="batch-names" rows="5" class="field" placeholder="John Smith&#10;Jane Doe&#10;Alice Johnson"></textarea>
+            <button type="button" class="btn btn-primary btn-small" id="btn-batch-add">Add all to queue</button>
+          </div>
+        </div>
+      </details>
+    </div>
+
     <div class="portal-card standards-section hidden" id="panel-connected">
-      <h3>Connected brothers: <span id="connected-count">0</span></h3>
-      <ul class="brother-list" id="connected-list"></ul>
+      <details class="panel-collapse" id="connected-details">
+        <summary>Connected brothers <span class="count-pill" id="connected-count">0</span></summary>
+        <ul class="brother-list" id="connected-list"></ul>
+      </details>
     </div>
   </main>
 
@@ -287,10 +379,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="js/firebase-config.js?v=7"></script>
-  <script src="js/auth.js?v=7"></script>
-  <script src="js/db.js?v=7"></script>
-  <script src="js/slides.js?v=7"></script>
-  <script src="js/standards.js?v=7"></script>
+  <script src="js/firebase-config.js?v=8"></script>
+  <script src="js/auth.js?v=8"></script>
+  <script src="js/db.js?v=8"></script>
+  <script src="js/slides.js?v=8"></script>
+  <script src="js/standards.js?v=8"></script>
 </body>
 </html>

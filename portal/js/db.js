@@ -327,18 +327,84 @@
    * this change (keyed by plain names, which were already legal keys).
    */
   function decodeAggregation(agg, candidates) {
-    if (!agg || typeof agg !== 'object' || !agg.candidateScores) return agg || {};
+    if (!agg || typeof agg !== 'object') return agg || {};
+    if (!agg.candidateScores && !agg.candidateOptions) return agg;
     var byKey = {};
     (candidates || []).forEach(function(c) { byKey[ballotKey(c)] = c; });
-    var cs = agg.candidateScores, out = {};
-    Object.keys(cs).forEach(function(k) {
-      var entry = cs[k] || {};
-      out[entry.name || byKey[k] || k] = entry;
-    });
+    function decodeMap(map) {
+      var out = {};
+      Object.keys(map).forEach(function(k) {
+        var entry = map[k] || {};
+        out[entry.name || byKey[k] || k] = entry;
+      });
+      return out;
+    }
     var copy = {};
     Object.keys(agg).forEach(function(k) { copy[k] = agg[k]; });
-    copy.candidateScores = out;
+    if (agg.candidateScores) copy.candidateScores = decodeMap(agg.candidateScores);
+    if (agg.candidateOptions) copy.candidateOptions = decodeMap(agg.candidateOptions);
     return copy;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch];
+    });
+  }
+
+  /**
+   * Rows for a self-paced regular quiz result: one per candidate, with the
+   * count for every option and a % Yes when the options include Yes and No.
+   * Sorted by % Yes (desc) when that exists, otherwise in candidate order.
+   */
+  function candidateOptionRows(agg, candidates, options) {
+    var decoded = decodeAggregation(agg, candidates);
+    var co = (decoded && decoded.candidateOptions) || {};
+    var opts = (options || []).slice();
+    Object.keys(co).forEach(function(name) {
+      Object.keys(co[name].counts || {}).forEach(function(o) {
+        if (opts.indexOf(o) === -1) opts.push(o);
+      });
+    });
+    var lower = opts.map(function(o) { return String(o).toLowerCase(); });
+    var yesIdx = lower.indexOf('yes'), noIdx = lower.indexOf('no');
+    var hasYesNo = yesIdx !== -1 && noIdx !== -1;
+
+    var order = (candidates || []).slice();
+    Object.keys(co).forEach(function(n) { if (order.indexOf(n) === -1) order.push(n); });
+
+    var rows = order.map(function(name, i) {
+      var counts = (co[name] && co[name].counts) || {};
+      var voters = 0;
+      opts.forEach(function(o) { voters += counts[o] || 0; });
+      var yesPct = null;
+      if (hasYesNo) {
+        var y = counts[opts[yesIdx]] || 0, n = counts[opts[noIdx]] || 0;
+        yesPct = (y + n) ? Math.round(100 * y / (y + n)) : 0;
+      }
+      return { name: name, counts: counts, voters: voters, yesPct: yesPct, order: i };
+    });
+    if (hasYesNo) {
+      rows.sort(function(a, b) { return (b.yesPct - a.yesPct) || (a.order - b.order); });
+    }
+    return { options: opts, hasYesNo: hasYesNo, rows: rows };
+  }
+
+  /** HTML table for candidateOptionRows(); tableClass picks the page's styling. */
+  function candidateOptionTableHtml(agg, candidates, options, tableClass) {
+    var data = candidateOptionRows(agg, candidates, options);
+    var html = '<table class="' + (tableClass || 'leaderboard-table') + '"><thead><tr><th>#</th><th>Name</th>';
+    data.options.forEach(function(o) { html += '<th>' + escapeHtml(o) + '</th>'; });
+    if (data.hasYesNo) html += '<th>% Yes</th>';
+    html += '</tr></thead><tbody>';
+    data.rows.forEach(function(r, i) {
+      html += '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(r.name) + '</td>';
+      data.options.forEach(function(o) { html += '<td>' + (r.counts[o] || 0) + '</td>'; });
+      if (data.hasYesNo) html += '<td><strong>' + r.yesPct + '%</strong></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
   }
 
   /**
@@ -375,14 +441,33 @@
     }
 
     if (pollType === POLL_TYPES.REGULAR) {
+      // Plain regular poll: each vote is one option string.
+      // Self-paced quiz over a slide deck: each vote is { candidateKey: option },
+      // aggregated per candidate under candidateOptions (safe keys, real name
+      // inside each entry, same convention as candidateScores).
       var optionCounts = {};
+      var candidateOptions = null;
+      (candidates || []).forEach(function(c) {
+        if (!candidateOptions) candidateOptions = {};
+        candidateOptions[ballotKey(c)] = { name: c, counts: {} };
+      });
       uids.forEach(function(uid) {
         var v = votes[uid].vote;
         if (typeof v === 'string') {
           optionCounts[v] = (optionCounts[v] || 0) + 1;
+        } else if (v && typeof v === 'object') {
+          if (!candidateOptions) candidateOptions = {};
+          Object.keys(v).forEach(function(rawKey) {
+            var key = ballotKey(rawKey);
+            if (!candidateOptions[key]) candidateOptions[key] = { name: rawKey, counts: {} };
+            var choice = String(v[rawKey]);
+            candidateOptions[key].counts[choice] = (candidateOptions[key].counts[choice] || 0) + 1;
+          });
         }
       });
-      return { optionCounts: optionCounts, totalVoters: uids.length };
+      var regularAgg = { optionCounts: optionCounts, totalVoters: uids.length };
+      if (candidateOptions) regularAgg.candidateOptions = candidateOptions;
+      return regularAgg;
     }
 
     // yes/no/abstain vote types
@@ -429,6 +514,8 @@
     ballotKey: ballotKey,
     decodeBallot: decodeBallot,
     decodeAggregation: decodeAggregation,
+    candidateOptionRows: candidateOptionRows,
+    candidateOptionTableHtml: candidateOptionTableHtml,
     computeAggregation: computeAggregation
   };
 })(typeof window !== 'undefined' ? window : this);

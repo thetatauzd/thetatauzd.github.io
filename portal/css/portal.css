@@ -512,6 +512,13 @@ body {
   font-size: 1.15rem;
   font-weight: 700;
 }
+.quiz-scores.quiz-options .quiz-score {
+  font-size: 1rem;
+  padding: 0.75rem 0.4rem;
+  white-space: normal;
+  line-height: 1.2;
+}
+
 .quiz-nav {
   display: flex;
   gap: 0.5rem;

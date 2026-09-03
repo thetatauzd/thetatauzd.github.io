@@ -6,7 +6,7 @@
   <title>Chapter Results – Brother Portal</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=7">
+  <link rel="stylesheet" href="css/portal.css?v=8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -104,9 +104,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=7"></script>
-  <script src="js/auth.js?v=7"></script>
-  <script src="js/db.js?v=7"></script>
+  <script src="js/firebase-config.js?v=8"></script>
+  <script src="js/auth.js?v=8"></script>
+  <script src="js/db.js?v=8"></script>
   <script>
   (function() {
     'use strict';
@@ -123,6 +123,7 @@
 
     function isYesNoPoll(poll) {
       var agg = poll.aggregation || {};
+      if (agg.candidateOptions) return false;   // per-candidate quiz: shown as a table
       var oc = agg.optionCounts || {};
       var keys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
       return keys.indexOf('yes') !== -1 && keys.indexOf('no') !== -1;
@@ -251,14 +252,21 @@
         h4.textContent = poll.name || '(unnamed)';
         card.appendChild(h4);
 
-        var countsRow = document.createElement('div');
-        countsRow.className = 'option-counts-row';
-        Object.keys(oc).forEach(function(opt) {
-          var span = document.createElement('span');
-          span.textContent = opt + ': ' + oc[opt];
-          countsRow.appendChild(span);
-        });
-        card.appendChild(countsRow);
+        if (agg.candidateOptions) {
+          var tableWrap = document.createElement('div');
+          tableWrap.style.cssText = 'overflow-x:auto; margin:0.5rem 0;';
+          tableWrap.innerHTML = PortalDb.candidateOptionTableHtml(agg, poll.candidates, poll.options, 'leaderboard-table');
+          card.appendChild(tableWrap);
+        } else {
+          var countsRow = document.createElement('div');
+          countsRow.className = 'option-counts-row';
+          Object.keys(oc).forEach(function(opt) {
+            var span = document.createElement('span');
+            span.textContent = opt + ': ' + oc[opt];
+            countsRow.appendChild(span);
+          });
+          card.appendChild(countsRow);
+        }
 
         var voters = document.createElement('p');
         voters.style.cssText = 'font-size:0.85rem; color:#888; margin:0.25rem 0 0;';

@@ -6,7 +6,7 @@
   <title>Session History – Brother Portal</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=7">
+  <link rel="stylesheet" href="css/portal.css?v=8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -80,9 +80,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="js/firebase-config.js?v=7"></script>
-  <script src="js/auth.js?v=7"></script>
-  <script src="js/db.js?v=7"></script>
+  <script src="js/firebase-config.js?v=8"></script>
+  <script src="js/auth.js?v=8"></script>
+  <script src="js/db.js?v=8"></script>
   <script>
   (function() {
     'use strict';
@@ -102,6 +102,7 @@
 
     // Returns true if a 'regular' poll aggregation has yes/no data
     function regularIsYesNo(agg) {
+      if (agg.candidateOptions) return false;   // per-candidate quiz: shown as a table
       var oc = agg.optionCounts || {};
       var keys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
       return keys.indexOf('yes') !== -1 && keys.indexOf('no') !== -1;
@@ -203,6 +204,10 @@
           html += '<p class="result-line">' + rpct + '% yes</p>';
           html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + yn.yes +
             ' · No: ' + yn.no + (yn.abstain ? ' · Other: ' + yn.abstain : '') + '</p>';
+        } else if (agg.candidateOptions) {
+          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' +
+            (p.candidates || []).length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
+          html += PortalDb.candidateOptionTableHtml(agg, p.candidates, p.options, 'leaderboard-mini');
         } else {
           var oc = agg.optionCounts || {};
           html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">';
@@ -381,8 +386,11 @@
         var isRanked = p.type === 'rush_prelim' || p.type === 'ranked';
 
         // ── Overview row ──
+        var isCandidateQuiz = p.type === 'regular' && !!agg.candidateOptions;
         if (isRanked) {
           overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Ranked (see tab)']);
+        } else if (isCandidateQuiz) {
+          overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Per candidate (see tab)']);
         } else if (p.type === 'regular' && !regularIsYesNo(agg)) {
           var oc = agg.optionCounts || {};
           var breakdown = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; }).join(', ');
@@ -405,6 +413,14 @@
           pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Rank', 'Name', 'Score']];
           board.forEach(function(c) { pollRows.push([c.rank, c.name, c.score]); });
+        } else if (isCandidateQuiz) {
+          var cq = PortalDb.candidateOptionRows(agg, p.candidates, p.options);
+          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
+            ['Rank', 'Candidate'].concat(cq.options).concat(cq.hasYesNo ? ['% Yes'] : [])];
+          cq.rows.forEach(function(r, idx) {
+            pollRows.push([idx + 1, r.name].concat(cq.options.map(function(o) { return r.counts[o] || 0; }))
+              .concat(cq.hasYesNo ? [r.yesPct + '%'] : []));
+          });
         } else {
           pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Brother', 'Vote']];
