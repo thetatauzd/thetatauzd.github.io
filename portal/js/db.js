@@ -19,7 +19,9 @@
  *     - all others vote is a string ('yes'/'no'/'abstain')
  *   sessions/{sessionId}/polls/{pollId}/hasVoted/{uid} = true
  *   sessions/{sessionId}/polls/{pollId}/aggregation
- *     - rush_prelim: { candidateScores: { name: { total, count } }, totalVoters }
+ *     - rush_prelim: { candidateScores: { safeKey: { name, total, count } }, totalVoters }
+ *       (keys are ballotKey(name) so they are legal Firebase keys; use
+ *       decodeAggregation() before displaying)
  *     - yes/no types: { yes, no, abstain, totalVoters }
  *   sessions/{sessionId}/connectedBrothers/{uid} = timestamp (presence)
  *   sessionHistory/{sessionId} = snapshot saved when session ends
@@ -319,6 +321,27 @@
   }
 
   /**
+   * Returns a copy of a ranked aggregation whose candidateScores are keyed by
+   * the real candidate name, for display and export. Works on both the new
+   * safe-keyed shape (entries carry .name) and aggregations stored before
+   * this change (keyed by plain names, which were already legal keys).
+   */
+  function decodeAggregation(agg, candidates) {
+    if (!agg || typeof agg !== 'object' || !agg.candidateScores) return agg || {};
+    var byKey = {};
+    (candidates || []).forEach(function(c) { byKey[ballotKey(c)] = c; });
+    var cs = agg.candidateScores, out = {};
+    Object.keys(cs).forEach(function(k) {
+      var entry = cs[k] || {};
+      out[entry.name || byKey[k] || k] = entry;
+    });
+    var copy = {};
+    Object.keys(agg).forEach(function(k) { copy[k] = agg[k]; });
+    copy.candidateScores = out;
+    return copy;
+  }
+
+  /**
    * Compute aggregation from votes snapshot.
    * ranked / rush_prelim: vote is { candidateName: score }, sums scores per candidate.
    * regular: counts votes per option string.
@@ -329,15 +352,22 @@
     var uids = Object.keys(votes);
 
     if (pollType === POLL_TYPES.RANKED || pollType === POLL_TYPES.RUSH_PRELIM) {
+      // This object is written straight into Firebase by closePoll(), so it
+      // must be keyed by the storage-safe key (a name like "Jorge Naranjo Jr."
+      // contains a "." and is an illegal key). The real name rides along in
+      // each entry; decodeAggregation() restores name-keyed data for display.
       var candidateScores = {};
-      (candidates || []).forEach(function(c) { candidateScores[c] = { total: 0, count: 0 }; });
+      (candidates || []).forEach(function(c) {
+        candidateScores[ballotKey(c)] = { name: c, total: 0, count: 0 };
+      });
       uids.forEach(function(uid) {
-        var ballot = decodeBallot(votes[uid].vote, candidates);
+        var ballot = votes[uid].vote;
         if (typeof ballot === 'object' && ballot !== null) {
-          Object.keys(ballot).forEach(function(name) {
-            if (!candidateScores[name]) candidateScores[name] = { total: 0, count: 0 };
-            candidateScores[name].total += Number(ballot[name]) || 0;
-            candidateScores[name].count++;
+          Object.keys(ballot).forEach(function(rawKey) {
+            var key = ballotKey(rawKey);
+            if (!candidateScores[key]) candidateScores[key] = { name: rawKey, total: 0, count: 0 };
+            candidateScores[key].total += Number(ballot[rawKey]) || 0;
+            candidateScores[key].count++;
           });
         }
       });
@@ -398,6 +428,7 @@
     onConnectedBrothers: onConnectedBrothers,
     ballotKey: ballotKey,
     decodeBallot: decodeBallot,
+    decodeAggregation: decodeAggregation,
     computeAggregation: computeAggregation
   };
 })(typeof window !== 'undefined' ? window : this);

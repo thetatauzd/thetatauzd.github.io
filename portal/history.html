@@ -6,7 +6,7 @@
   <title>Session History – Brother Portal</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=6">
+  <link rel="stylesheet" href="css/portal.css?v=7">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -80,9 +80,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="js/firebase-config.js?v=6"></script>
-  <script src="js/auth.js?v=6"></script>
-  <script src="js/db.js?v=6"></script>
+  <script src="js/firebase-config.js?v=7"></script>
+  <script src="js/auth.js?v=7"></script>
+  <script src="js/db.js?v=7"></script>
   <script>
   (function() {
     'use strict';
@@ -143,8 +143,8 @@
     }
 
     // Builds ranked leaderboard sorted by score descending
-    function buildLeaderboard(agg, minScore) {
-      var cs = agg.candidateScores || {};
+    function buildLeaderboard(agg, minScore, candidates) {
+      var cs = PortalDb.decodeAggregation(agg, candidates).candidateScores || {};
       return Object.keys(cs).map(function(name) {
         return { name: name, score: cs[name].total || 0 };
       }).sort(function(a, b) { return b.score - a.score; }).map(function(c, i) {
@@ -173,7 +173,7 @@
 
       if (type === 'rush_prelim' || type === 'ranked') {
         var minScore = p.minimumScore || 0;
-        var board = buildLeaderboard(agg, minScore);
+        var board = buildLeaderboard(agg, minScore, p.candidates);
         html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' +
           board.length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
         html += renderLeaderboardTable(board);
@@ -219,7 +219,7 @@
         if (voterKeys.length > 0) {
           html += '<div class="voter-grid">';
           voterKeys.forEach(function(uid) {
-            var v = voters[uid].vote;
+            var v = PortalDb.decodeBallot(voters[uid].vote, p.candidates);
             html += '<span><strong>' + voters[uid].name + '</strong>: ' +
               (typeof v === 'object' ? JSON.stringify(v) : v) + '</span>';
           });
@@ -354,7 +354,7 @@
           var pids = Object.keys(sesData.polls || {});
           var p = (sesData.polls || {})[pids[idx]];
           if (!p || !p.aggregation) return;
-          var board = buildLeaderboard(p.aggregation, min);
+          var board = buildLeaderboard(p.aggregation, min, p.candidates);
           var container = document.getElementById('poll-' + uid);
           var existing = container.querySelector('.leaderboard-mini');
           if (existing) existing.outerHTML = renderLeaderboardTable(board);
@@ -401,7 +401,7 @@
         // ── Individual poll sheet ──
         var pollRows;
         if (isRanked) {
-          var board = buildLeaderboard(agg, p.minimumScore || 0);
+          var board = buildLeaderboard(agg, p.minimumScore || 0, p.candidates);
           pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Rank', 'Name', 'Score']];
           board.forEach(function(c) { pollRows.push([c.rank, c.name, c.score]); });
@@ -409,7 +409,7 @@
           pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
             ['Brother', 'Vote']];
           voterKeys.forEach(function(uid) {
-            var v = voters[uid].vote;
+            var v = PortalDb.decodeBallot(voters[uid].vote, p.candidates);
             pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
           });
         }

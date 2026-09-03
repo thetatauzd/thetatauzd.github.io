@@ -6,7 +6,7 @@
   <title>Chapter Results – Brother Portal</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=6">
+  <link rel="stylesheet" href="css/portal.css?v=7">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -104,9 +104,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=6"></script>
-  <script src="js/auth.js?v=6"></script>
-  <script src="js/db.js?v=6"></script>
+  <script src="js/firebase-config.js?v=7"></script>
+  <script src="js/auth.js?v=7"></script>
+  <script src="js/db.js?v=7"></script>
   <script>
   (function() {
     'use strict';
@@ -189,7 +189,7 @@
       polls.forEach(function(item) {
         var poll = item.poll;
         var agg = poll.aggregation || {};
-        var cs = agg.candidateScores || {};
+        var cs = PortalDb.decodeAggregation(agg, poll.candidates).candidateScores || {};
         var minScore = rminParams[item.pid] != null ? rminParams[item.pid] : (poll.minimumScore || 0);
 
         var sorted = Object.keys(cs).map(function(name) {

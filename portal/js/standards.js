@@ -493,9 +493,9 @@
               var namesDone = 0;
               uids.forEach(function(uid) {
                 getName(uid, function(n) {
-                  // Decode once here so history and the Excel export only ever
-                  // see real candidate names, never the storage-safe keys.
-                  pollSnap.voters[uid] = { name: n, vote: PortalDb.decodeBallot(votes[uid].vote, p.candidates) };
+                  // Store the ballot exactly as cast (storage-safe keys); the
+                  // history page decodes it to real names when displaying.
+                  pollSnap.voters[uid] = { name: n, vote: votes[uid].vote };
                   if (++namesDone === uids.length) {
                     snapshot.polls[pid] = pollSnap;
                     if (--remaining === 0) cb(snapshot);
@@ -1039,7 +1039,7 @@
   }
 
   function renderRankedResults(poll, agg, summaryEl, leaderboardEl) {
-    var cs = agg.candidateScores || {};
+    var cs = PortalDb.decodeAggregation(agg, poll.candidates).candidateScores || {};
     var sorted = Object.keys(cs).map(function(name) {
       return { name: name, score: cs[name].total, voters: cs[name].count };
     }).sort(function(a, b) { return b.score - a.score; });
@@ -1111,7 +1111,7 @@
         // ── Individual poll sheet ──
         var pollRows;
         if (isRanked) {
-          var cs = agg.candidateScores || {};
+          var cs = PortalDb.decodeAggregation(agg, p.candidates).candidateScores || {};
           var sorted = Object.keys(cs)
             .map(function(n) { return { name: n, score: cs[n].total || 0 }; })
             .sort(function(a, b) { return b.score - a.score; });
