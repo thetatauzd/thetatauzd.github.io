@@ -973,7 +973,9 @@
     show(prevBtn, !single);
     show(openBtn, status !== 'open');
     show(closeBtn, status === 'open');
-    show(nextBtn, !single && status !== 'open');
+    // Nothing to move on to after the last poll, so drop the button rather
+    // than parking a big disabled one there; the hint already says it's last.
+    show(nextBtn, !single && status !== 'open' && !isLast);
 
     var hints = {
       upcoming: 'Brothers see this the moment you open it.',
