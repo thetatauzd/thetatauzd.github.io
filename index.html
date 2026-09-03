@@ -40,8 +40,10 @@
     /* Remove custom header styles - let navigation-animations.css handle it */
     
     /* Hero Section */
+    /* min-height, not height: if the content is ever taller than the viewport
+       the hero grows instead of clipping the letters behind the header. */
     .hero-section {
-        height: 100vh;
+        min-height: 100vh;
         position: relative;
         display: flex;
         align-items: center;
@@ -80,11 +82,13 @@
         z-index: 1; /* was -1 */
     }
     
+    /* Top/bottom padding reserves room for the fixed header and the scroll
+       hint, so vertical centring never lands content underneath them. */
     .hero-content {
         text-align: center;
         color: white;
         max-width: 800px;
-        padding: 0 4vw;
+        padding: 90px 4vw 80px;
         z-index: 2; /* above overlay */
     }
     
@@ -102,7 +106,7 @@
        em so it scales with the letters. */
     .hero-letters {
         font-family: 'Times New Roman', serif;
-        font-size: clamp(5rem, min(28vw, 24vh), 14rem);
+        font-size: clamp(4.5rem, min(28vw, 22vh), 14rem);
         line-height: 1;
         margin-bottom: -0.25em;
     }
@@ -184,11 +188,26 @@
     /* Responsive fixes for scroll indicator overlap */
     @media (max-width: 1200px) {
         .hero-buttons {
-            margin-bottom: 120px !important;
+            margin-bottom: 90px !important;
         }
-        
+
         .scroll-indicator {
             bottom: 35px !important;
+        }
+    }
+
+    /* Short viewports (landscape phones, small browser panes): the scroll hint
+       has no room and only causes overlap, so drop it and the margin that
+       existed to clear it. */
+    @media (max-height: 600px) {
+        .scroll-indicator {
+            display: none;
+        }
+        .hero-buttons {
+            margin-bottom: 0 !important;
+        }
+        .hero-content {
+            padding-bottom: 40px;
         }
     }
     
@@ -416,14 +435,18 @@
             grid-template-columns: 1fr;
             gap: 2rem;
         }
-        
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* The two buttons only need to stack once the screen is genuinely narrow.
+       Stacking at 768px cost 130px of height on tablets and small panes. */
+    @media (max-width: 480px) {
         .hero-buttons {
             flex-direction: column;
             align-items: center;
-        }
-        
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
         }
     }
     
