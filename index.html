@@ -96,24 +96,28 @@
         animation: fadeInUp 1s ease-out;
     }
     
+    /* The Greek letters. Sized off the viewport so they fill a phone screen
+       without swallowing it, and cap at the original desktop size. The overlap
+       between the two lines is in em so it scales with the letters. */
+    .hero-letters {
+        font-family: 'Times New Roman', serif;
+        font-size: clamp(4.5rem, 24vw, 12rem);
+        line-height: 1;
+        margin-bottom: -0.25em;
+    }
+
+    .hero-letters--last {
+        margin-bottom: 0.35em;
+    }
+
     .hero-tagline {
         font-size: clamp(1.05rem, 2.8vw, 1.35rem);
         font-weight: 500;
-        margin: 0 auto 0.35rem;
+        margin: 0 auto 1.75rem;
         max-width: 36rem;
         line-height: 1.35;
         opacity: 0.95;
         animation: fadeInUp 1s ease-out 0.3s both;
-    }
-
-    .hero-supporting {
-        font-size: clamp(0.95rem, 2.2vw, 1.1rem);
-        font-weight: 400;
-        margin: 0 auto 1.75rem;
-        max-width: 36rem;
-        line-height: 1.45;
-        opacity: 0.92;
-        animation: fadeInUp 1s ease-out 0.42s both;
     }
     
     .hero-buttons {
@@ -562,10 +566,9 @@
                 <div class="hero-overlay"></div>
                 
                 <div class="hero-content">
-                    <h1 class="hero-title" style="font-family: 'Times New Roman', serif; font-size: 12rem; margin-bottom: -3rem;">ΘΤ</h1>
-                    <h1 class="hero-title" style="font-family: 'Times New Roman', serif; font-size: 12rem; margin-bottom: 1rem;">ΖΔ</h1>
+                    <h1 class="hero-title hero-letters">ΘΤ</h1>
+                    <h1 class="hero-title hero-letters hero-letters--last">ΖΔ</h1>
                     <p class="hero-tagline"><em>The Foremost Fraternity for Engineers</em></p>
-                    <p class="hero-supporting">Engineering leaders for Service, Profession, and Brotherhood.</p>
                     <div class="hero-buttons">
                         <a href="/rush" class="btn-primary">Rush Theta Tau</a>
                         <a href="#about" class="btn-secondary">Learn More</a>

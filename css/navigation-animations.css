@@ -171,33 +171,45 @@ header * {
     }
 }
 
-/* Full-screen mobile menu when open */
+/* Full-screen mobile menu when open.
+   Opaque so the hero letters no longer ghost through, items centred in the
+   viewport instead of bunched at the top, and a slide-in rather than a plain
+   fade so it feels like a panel opening. */
 .header-menu.menu-open {
     display: flex !important;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    animation: menuFadeIn 0.25s ease-out;
+    background: #0b0b0b;
+    animation: menuSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Close button injected by nav.js */
+/* Close button injected by nav.js — same 44px target as the hamburger. */
 .menu-close-btn {
     position: absolute;
-    top: 14px;
-    right: 16px;
+    top: 10px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
+    border-radius: 8px;
     color: #fff;
-    font-size: 2.2rem;
+    font-size: 1.9rem;
     line-height: 1;
     cursor: pointer;
-    padding: 6px 10px;
+    padding: 0;
     z-index: 1001;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-.menu-close-btn:hover {
+.menu-close-btn:hover,
+.menu-close-btn:active {
     color: var(--color-gold);
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .header-menu.menu-open .header-menu-nav {
@@ -205,24 +217,99 @@ header * {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    padding: 70px 20px 40px;
+    max-width: 420px;
+    /* site.css gives this height:100%, which pins the list to the top and
+       defeats the centring above. Let it size to content and cap it instead. */
+    height: auto;
+    max-height: 100%;
+    padding: 56px 24px 32px;
+    overflow-y: auto;
 }
 
+.header-menu.menu-open .header-menu-nav-list,
+.header-menu.menu-open .header-menu-nav-folder,
+.header-menu.menu-open .header-menu-nav-folder-content,
+.header-menu.menu-open .header-menu-nav-wrapper {
+    width: 100%;
+}
+
+.header-menu.menu-open .header-menu-nav-folder {
+    padding-top: 0;
+}
+
+/* Each link is a full-width row with a comfortable tap height and a hairline
+   divider, so the eye has something to track and the thumb has room. */
 .header-menu.menu-open .header-menu-nav-item {
     text-align: center;
-    margin-bottom: 28px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-menu.menu-open .header-menu-nav-item:last-child {
+    border-bottom: none;
+}
+
+.header-menu.menu-open .header-menu-nav-item a {
+    display: block;
+    padding: 0;
 }
 
 .header-menu.menu-open .header-menu-nav-item-content {
-    font-size: 1.6rem;
+    display: block;
+    padding: 18px 8px !important;
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     color: #fff;
+    line-height: 1.2 !important;
+    height: auto !important;
+    transition: color 0.2s ease;
 }
 
-.header-menu.menu-open .header-menu-nav-item a:hover .header-menu-nav-item-content {
+.header-menu.menu-open .header-menu-nav-item a:hover .header-menu-nav-item-content,
+.header-menu.menu-open .header-menu-nav-item a:active .header-menu-nav-item-content {
     color: var(--color-gold);
 }
 
-@keyframes menuFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+/* The active page keeps its gold underline but drawn under the text, not
+   floating; the desktop hover-underline animation is not wanted here. */
+.header-menu.menu-open .header-menu-nav-item--active .header-menu-nav-item-content {
+    color: var(--color-gold);
+}
+
+.header-menu.menu-open .header-menu-nav-item a::after {
+    display: none;
+}
+
+/* Brother Portal reads as a call to action, not just another row. */
+.header-menu.menu-open .header-menu-nav-item:last-child {
+    margin-top: 18px;
+}
+
+.header-menu.menu-open .header-menu-nav-item:last-child .header-menu-nav-item-content {
+    display: inline-block;
+    padding: 14px 32px !important;
+    border: 2px solid var(--color-gold);
+    border-radius: 50px;
+    color: var(--color-gold) !important;
+    font-size: 1.1rem;
+}
+
+.header-menu.menu-open .header-menu-nav-item:last-child a:active .header-menu-nav-item-content {
+    background: var(--color-gold);
+    color: #111 !important;
+}
+
+/* Hide the empty social block nav.js leaves at the bottom. */
+.header-menu.menu-open .header-menu-actions:empty {
+    display: none;
+}
+
+@keyframes menuSlideIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-menu.menu-open { animation: none; }
 }

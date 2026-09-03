@@ -524,33 +524,46 @@
   }
   
   /* Burger Menu Styles */
+  /* A 44px tap target around a chunkier icon — thin 2px lines read as faint
+     on a phone, and the old box was too small to hit reliably. */
   .burger {
 	background: transparent;
 	border: none;
 	cursor: pointer;
 	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
 	padding: 0;
+	border-radius: 8px;
+	transition: background-color 0.2s ease;
   }
-  
+
+  .burger:active {
+	background-color: rgba(255, 255, 255, 0.12);
+  }
+
   .burger-box {
-	width: 30px;
-	height: 24px;
+	width: 28px;
+	height: 20px;
 	display: inline-block;
 	position: relative;
   }
-  
+
   .burger-inner {
 	width: 100%;
 	height: 100%;
 	position: relative;
   }
-  
+
   .top-bun, .patty, .bottom-bun {
 	position: absolute;
 	width: 100%;
-	height: 2px;
+	height: 3px;
+	border-radius: 2px;
 	background-color: #fff;
-	transition: transform 0.15s ease;
+	transition: transform 0.2s ease, opacity 0.2s ease;
   }
   
   .top-bun {
@@ -567,7 +580,7 @@
   }
   
   body.menu-is-open .top-bun {
-	transform: rotate(45deg) translate(5px, 5px);
+	transform: rotate(45deg) translate(6px, 6px);
   }
   
   body.menu-is-open .patty {
@@ -575,7 +588,7 @@
   }
   
   body.menu-is-open .bottom-bun {
-	transform: rotate(-45deg) translate(7px, -6px);
+	transform: rotate(-45deg) translate(6px, -6px);
   }
   
   /* Additional Utilities */
