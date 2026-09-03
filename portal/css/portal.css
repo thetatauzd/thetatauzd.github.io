@@ -494,16 +494,21 @@ body {
   margin-bottom: 0.75rem;
   font-weight: 600;
 }
+/* Five equal columns so -2..+2 is always one row, on any screen. A flex row
+   wrapped on phones because .vote-btn's 1.5rem side padding and 120px
+   min-width made each button ~70px+. Here the buttons fill their cells. */
 .quiz-scores {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 0.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 0.75rem;
+  max-width: 420px;
+  margin: 0 auto 0.75rem;
 }
 .quiz-score {
-  min-width: 64px;
+  min-width: 0;
+  width: 100%;
   min-height: 60px;
+  padding: 0.75rem 0;
   font-size: 1.15rem;
   font-weight: 700;
 }
@@ -558,7 +563,7 @@ body {
   .candidate-name { font-size: 1.1rem; }
   .candidate-facts > div { font-size: 0.85rem; }
   .cf-label { min-width: 4.5rem; }
-  .quiz-score { min-width: 56px; min-height: 56px; font-size: 1.05rem; }
+  .quiz-score { min-height: 56px; font-size: 1.05rem; }
 }
 
 @media (max-width: 480px) {
@@ -567,7 +572,7 @@ body {
   .candidate-facts > div { justify-content: center; }
   .candidate-events { justify-content: center; }
   .quiz-scores { gap: 0.35rem; }
-  .quiz-score { min-width: 52px; min-height: 52px; font-size: 1rem; }
+  .quiz-score { min-height: 52px; padding: 0.6rem 0; font-size: 1rem; }
 }
 
 .access-code-input {
