@@ -493,7 +493,9 @@
               var namesDone = 0;
               uids.forEach(function(uid) {
                 getName(uid, function(n) {
-                  pollSnap.voters[uid] = { name: n, vote: votes[uid].vote };
+                  // Decode once here so history and the Excel export only ever
+                  // see real candidate names, never the storage-safe keys.
+                  pollSnap.voters[uid] = { name: n, vote: PortalDb.decodeBallot(votes[uid].vote, p.candidates) };
                   if (++namesDone === uids.length) {
                     snapshot.polls[pid] = pollSnap;
                     if (--remaining === 0) cb(snapshot);
@@ -1028,7 +1030,7 @@
           var row = tbody.insertRow();
           var nc = row.insertCell(0);
           var vc = row.insertCell(1);
-          var v = votes[uid].vote;
+          var v = PortalDb.decodeBallot(votes[uid].vote, (getCurrentPollData() || {}).candidates);
           vc.textContent = typeof v === 'object' ? JSON.stringify(v) : v;
           getName(uid, function(n) { nc.textContent = n; });
         });

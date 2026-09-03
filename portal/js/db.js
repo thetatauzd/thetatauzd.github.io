@@ -296,6 +296,29 @@
   }
 
   /**
+   * Scorecard ballots are stored as { candidate: score }. Firebase forbids
+   * . # $ [ ] / in keys, so a candidate like "Jorge Naranjo Jr." made the
+   * write throw synchronously and left every phone stuck on "Submitting…".
+   * Ballots are written under a safe key and decoded back to the real name
+   * wherever they are read. A name with none of those characters is its own
+   * key, so ballots stored before this change decode unchanged.
+   */
+  function ballotKey(name) {
+    return String(name == null ? '' : name).replace(/[.#$\[\]\/]/g, '_');
+  }
+
+  function decodeBallot(ballot, candidates) {
+    if (!ballot || typeof ballot !== 'object') return ballot;
+    var byKey = {};
+    (candidates || []).forEach(function(c) { byKey[ballotKey(c)] = c; });
+    var out = {};
+    Object.keys(ballot).forEach(function(k) {
+      out[byKey[k] || k] = ballot[k];
+    });
+    return out;
+  }
+
+  /**
    * Compute aggregation from votes snapshot.
    * ranked / rush_prelim: vote is { candidateName: score }, sums scores per candidate.
    * regular: counts votes per option string.
@@ -309,7 +332,7 @@
       var candidateScores = {};
       (candidates || []).forEach(function(c) { candidateScores[c] = { total: 0, count: 0 }; });
       uids.forEach(function(uid) {
-        var ballot = votes[uid].vote;
+        var ballot = decodeBallot(votes[uid].vote, candidates);
         if (typeof ballot === 'object' && ballot !== null) {
           Object.keys(ballot).forEach(function(name) {
             if (!candidateScores[name]) candidateScores[name] = { total: 0, count: 0 };
@@ -373,6 +396,8 @@
     onAggregation: onAggregation,
     setConnected: setConnected,
     onConnectedBrothers: onConnectedBrothers,
+    ballotKey: ballotKey,
+    decodeBallot: decodeBallot,
     computeAggregation: computeAggregation
   };
 })(typeof window !== 'undefined' ? window : this);

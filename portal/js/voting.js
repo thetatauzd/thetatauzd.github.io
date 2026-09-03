@@ -191,6 +191,36 @@
   var quizIndex = 0;
   var quizNames = [];
 
+  // Ratings live only in memory until submit. On a phone, a backgrounded tab
+  // can be killed mid-quiz — with 170+ candidates that is a lot to lose — so
+  // progress is mirrored to sessionStorage per poll and restored on reload.
+  function quizStorageKey() {
+    return (sessionId && currentPoll) ? 'quiz_' + sessionId + '_' + currentPoll.pollId : null;
+  }
+
+  function saveQuizProgress() {
+    var key = quizStorageKey();
+    if (!key) return;
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ index: quizIndex, state: scorecardState }));
+    } catch (e) {}
+  }
+
+  function loadQuizProgress() {
+    var key = quizStorageKey();
+    if (!key) return null;
+    try {
+      var raw = sessionStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  function clearQuizProgress() {
+    var key = quizStorageKey();
+    if (!key) return;
+    try { sessionStorage.removeItem(key); } catch (e) {}
+  }
+
   function candidateByName(name) {
     for (var i = 0; i < roster.length; i++) {
       if (roster[i] && roster[i].name === name) return roster[i];
@@ -275,6 +305,18 @@
       return;
     }
 
+    // Pick up where a killed tab or reload left off, if the candidate list
+    // is the same one the saved progress was for.
+    var saved = loadQuizProgress();
+    if (saved && saved.state) {
+      var sameList = quizNames.every(function(n) { return n in saved.state; }) &&
+                     Object.keys(saved.state).length === quizNames.length;
+      if (sameList) {
+        scorecardState = saved.state;
+        quizIndex = Math.min(Math.max(0, saved.index | 0), quizNames.length);
+      }
+    }
+
     var host = document.createElement('div');
     host.id = 'quiz-host';
     container.appendChild(host);
@@ -301,7 +343,7 @@
         group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
         btn.classList.add('voted');
         var ballot = {};
-        ballot[name] = parseInt(s, 10);
+        ballot[PortalDb.ballotKey(name)] = parseInt(s, 10);
         submitVote(ballot, function(success) {
           if (!success) {
             group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
@@ -321,6 +363,7 @@
   function renderQuizStep() {
     var host = document.getElementById('quiz-host');
     if (!host) return;
+    saveQuizProgress();
     host.innerHTML = '';
 
     if (quizIndex >= quizNames.length) {
@@ -462,7 +505,7 @@
     }
     var ballot = {};
     keys.forEach(function(name) {
-      ballot[name] = parseInt(scorecardState[name], 10);
+      ballot[PortalDb.ballotKey(name)] = parseInt(scorecardState[name], 10);
     });
 
     var errorEl = document.getElementById('vote-error');
@@ -482,8 +525,19 @@
 
   function submitVote(vote, doneCb) {
     var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-    if (!sessionId || !currentPoll || !uid) return;
     var errorEl = document.getElementById('vote-error');
+
+    function fail(message) {
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove('hidden');
+      }
+      if (doneCb) doneCb(false);
+    }
+
+    // Every exit must report back, or the button stays on "Submitting…".
+    if (!uid) return fail('Your sign-in expired. Reload the page and sign in again.');
+    if (!sessionId || !currentPoll) return fail('Lost the session. Reload and rejoin with the code.');
 
     var updates = {};
     updates['sessions/' + sessionId + '/polls/' + currentPoll.pollId + '/votes/' + uid] = {
@@ -492,16 +546,22 @@
     };
     updates['sessions/' + sessionId + '/polls/' + currentPoll.pollId + '/hasVoted/' + uid] = true;
 
-    db.ref().update(updates).then(function() {
+    // An invalid key makes update() throw before it returns a promise, which
+    // .catch() never sees. Trap that too.
+    var write;
+    try {
+      write = db.ref().update(updates);
+    } catch (err) {
+      return fail(err.message || 'Failed to submit vote.');
+    }
+
+    write.then(function() {
       if (errorEl) errorEl.classList.add('hidden');
+      clearQuizProgress();
       renderVoteOptions(currentPoll, true, vote);
       if (doneCb) doneCb(true);
     }).catch(function(err) {
-      if (errorEl) {
-        errorEl.textContent = err.message || 'Failed to submit vote.';
-        errorEl.classList.remove('hidden');
-      }
-      if (doneCb) doneCb(false);
+      fail(err.message || 'Failed to submit vote.');
     });
   }
 
@@ -735,11 +795,22 @@
     PortalDb.getRoster(sid).then(function(list) {
       roster = list || [];
       rosterLoaded = true;
-      // A poll may have rendered before the roster arrived — redraw so photos appear.
+      // The roster (with photos) can arrive well after the poll rendered on a
+      // slow connection — a 170-candidate deck is a few MB. Bring the photos
+      // in WITHOUT resetting anything the brother has already done.
       if (roster.length && currentPoll && currentPoll.status === 'open') {
-        voteUIRendered = false;
-        renderVoteOptions(currentPoll, false, null);
-        voteUIRendered = true;
+        if (document.getElementById('quiz-host')) {
+          renderQuizStep();          // redraw the current step in place
+        } else {
+          var myUid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+          var votedRef = myUid && db.ref('sessions/' + sid + '/polls/' + currentPoll.pollId + '/hasVoted/' + myUid);
+          (votedRef ? votedRef.once('value') : Promise.resolve(null)).then(function(s) {
+            if (s && s.val()) return;   // already voted; never show fresh options
+            voteUIRendered = false;
+            renderVoteOptions(currentPoll, false, null);
+            voteUIRendered = true;
+          }).catch(function() {});
+        }
       }
     }).catch(function() {
       rosterLoaded = true;
