@@ -574,10 +574,10 @@ body {
 }
 
 @media (max-width: 480px) {
-  .candidate-card { flex-direction: column; align-items: center; text-align: center; }
+  .candidate-card { flex-direction: column; align-items: flex-start; text-align: left; }
   .candidate-photo { width: 150px; height: 200px; }
-  .candidate-facts > div { justify-content: center; }
-  .candidate-events { justify-content: center; }
+  .candidate-facts > div { justify-content: flex-start; }
+  .candidate-events { justify-content: flex-start; }
   .quiz-scores { gap: 0.35rem; }
   .quiz-score { min-height: 52px; padding: 0.6rem 0; font-size: 1rem; }
 }

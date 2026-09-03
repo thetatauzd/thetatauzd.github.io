@@ -133,7 +133,8 @@
   function isReservedLabel(label) {
     return INFO_LABELS.concat(SKIP_LABELS.map(function (re) { return { match: re }; }))
       .some(function (l) {
-        var m = label.match(l.match);
+        // The info patterns expect the trailing colon; labels arrive without it.
+        var m = (label + ':').match(l.match);
         return m && m.index === 0;
       });
   }

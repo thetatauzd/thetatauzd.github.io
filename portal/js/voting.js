@@ -287,8 +287,9 @@
     body.appendChild(heading);
 
     if (cand) {
+      // GPA always shows so a blank one reads as N/A rather than vanishing.
       var facts = [
-        ['GPA', cand.gpa],
+        ['GPA', cand.gpa || 'N/A'],
         ['Major', cand.major],
         ['Class', cand.classStanding],
         ['Heard via', cand.heardVia]
@@ -311,6 +312,8 @@
         var ev = document.createElement('div');
         ev.className = 'candidate-events';
         cand.events.forEach(function(e) {
+          // Decks uploaded before the parser fix carry the GPA line as an event.
+          if (/^gpa\b/i.test(e.label || '')) return;
           var chip = document.createElement('span');
           chip.className = 'ev-chip' + (e.attended ? ' ev-yes' : '');
           chip.textContent = e.label;
