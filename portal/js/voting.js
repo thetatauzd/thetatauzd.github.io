@@ -370,6 +370,10 @@
     }
     box.appendChild(buildCandidateCard(cand, poll.name));
     box.classList.remove('hidden');
+    // "Up next" would just repeat the card while this poll is upcoming; after a
+    // close it points at the following candidate, which is worth keeping.
+    var nextEl = document.getElementById('waiting-next');
+    if (nextEl && status !== 'closed') nextEl.classList.add('hidden');
     if (msg) {
       msg.textContent = status === 'closed'
         ? 'Voting on this candidate is closed.'
