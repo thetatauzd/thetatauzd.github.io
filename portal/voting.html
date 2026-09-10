@@ -6,7 +6,7 @@
   <title>Brother Portal – Voting</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=13">
+  <link rel="stylesheet" href="css/portal.css?v=14">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -58,7 +58,8 @@
     <div id="step-waiting" class="portal-card hidden" style="text-align:center;">
       <h2>Joined session</h2>
       <p id="poll-counter" style="font-weight:600; font-size:1.1rem; margin-bottom:0.5rem;"></p>
-      <p>Waiting for Standards to open a poll. This page will update automatically.</p>
+      <p id="waiting-msg">Waiting for Standards to open a poll. This page will update automatically.</p>
+      <div id="waiting-candidate" class="vote-stage waiting-candidate hidden"></div>
       <p id="waiting-next" style="font-weight:600; color:#FFCC33; margin-top:0.75rem;"></p>
       <p id="waiting-debug" style="color:#999; font-size:0.85rem; margin-top:0.5rem;"></p>
     </div>
@@ -68,7 +69,7 @@
       <p id="session-title" class="hidden" style="font-weight:600; color:#8B0000; margin-bottom:0.15rem;"></p>
       <h2 id="poll-title"></h2>
       <p id="poll-type-label" class="mb-2" style="color:#888; font-size:0.9rem;"></p>
-      <div id="vote-options" class="vote-options"></div>
+      <div id="vote-options" class="vote-options vote-stage"></div>
       <p id="vote-confirm" class="hidden text-center">Your vote has been recorded. You cannot change it.</p>
       <p id="vote-next" class="hidden" style="font-weight:500; color:#FFCC33; margin-top:0.75rem; text-align:center;"></p>
       <p id="vote-error" class="hidden" style="color: #c62828; text-align: center;"></p>
@@ -92,9 +93,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=13"></script>
-  <script src="js/auth.js?v=13"></script>
-  <script src="js/db.js?v=13"></script>
-  <script src="js/voting.js?v=13"></script>
+  <script src="js/firebase-config.js?v=14"></script>
+  <script src="js/auth.js?v=14"></script>
+  <script src="js/db.js?v=14"></script>
+  <script src="js/voting.js?v=14"></script>
 </body>
 </html>

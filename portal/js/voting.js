@@ -349,6 +349,34 @@
     return card;
   }
 
+  /**
+   * Standards-paced polls carry one candidate each. While that poll is still
+   * upcoming (or already closed) the waiting screen shows the candidate's card
+   * so the room can look them over — just without any way to vote yet.
+   */
+  var WAITING_DEFAULT = 'Waiting for Standards to open a poll. This page will update automatically.';
+
+  function renderWaitingCandidate(poll, status) {
+    var box = document.getElementById('waiting-candidate');
+    var msg = document.getElementById('waiting-msg');
+    if (!box) return;
+    var idx = (poll && typeof poll.rosterIndex === 'number') ? poll.rosterIndex : null;
+    var cand = (idx !== null && roster[idx]) ? roster[idx] : null;
+    box.innerHTML = '';
+    if (!cand) {
+      box.classList.add('hidden');
+      if (msg) msg.textContent = WAITING_DEFAULT;
+      return;
+    }
+    box.appendChild(buildCandidateCard(cand, poll.name));
+    box.classList.remove('hidden');
+    if (msg) {
+      msg.textContent = status === 'closed'
+        ? 'Voting on this candidate is closed.'
+        : 'Up now. Voting opens when Standards opens the poll.';
+    }
+  }
+
   function renderScorecard(poll, container) {
     startQuiz(poll, container, SCORE_CHOICES, 'score');
   }
@@ -737,6 +765,7 @@
         updatePollCounter();
         showNextUp(document.getElementById('waiting-next'));
         showStep('step-waiting');
+        renderWaitingCandidate(currentPoll, status);
         // Reset so buttons render fresh if poll re-opens
         voteUIRendered = false;
         return;
@@ -859,6 +888,9 @@
       // The roster (with photos) can arrive well after the poll rendered on a
       // slow connection — a 170-candidate deck is a few MB. Bring the photos
       // in WITHOUT resetting anything the brother has already done.
+      if (roster.length && currentPoll && currentPoll.status !== 'open') {
+        renderWaitingCandidate(currentPoll, currentPoll.status);
+      }
       if (roster.length && currentPoll && currentPoll.status === 'open') {
         if (document.getElementById('quiz-host')) {
           renderQuizStep();          // redraw the current step in place
