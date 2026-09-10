@@ -405,10 +405,7 @@ body {
   transition: background 0.2s, color 0.2s;
 }
 
-.vote-btn:hover {
-  background: var(--color-maroon);
-  color: #fff;
-}
+
 
 .vote-btn.voted {
   background: var(--color-gold);
@@ -418,9 +415,9 @@ body {
 }
 
 .vote-btn.ranked-plus { border-color: #2e7d32; color: #2e7d32; }
-.vote-btn.ranked-plus:hover { background: #2e7d32; color: #fff; }
+
 .vote-btn.ranked-minus { border-color: #c62828; color: #c62828; }
-.vote-btn.ranked-minus:hover { background: #c62828; color: #fff; }
+
 
 /* ── Candidate card (from an uploaded rushee slide deck) ── */
 .candidate-card {
@@ -444,6 +441,7 @@ body {
   background: #f0f0f0;
 }
 
+.candidate-photo--empty { display: flex; align-items: center; justify-content: center; background: #eee; color: #999; font-size: 0.85rem; }
 .candidate-body { flex: 1; min-width: 0; }
 
 .candidate-name {
@@ -475,6 +473,17 @@ body {
 }
 
 /* ── Quiz-style scorecard ── */
+/* Hover styling only where a real pointer exists. On touch screens the last tap leaves
+   a sticky :hover on whatever renders under the finger — the next candidate's button. */
+@media (hover: hover) {
+  .vote-btn:hover {
+  background: var(--color-maroon);
+  color: #fff;
+}
+  .vote-btn.ranked-plus:hover { background: #2e7d32; color: #fff; }
+  .vote-btn.ranked-minus:hover { background: #c62828; color: #fff; }
+}
+
 .quiz-progress {
   height: 6px;
   background: #eee;
@@ -574,12 +583,23 @@ body {
 }
 
 @media (max-width: 480px) {
-  /* Photo and name are the hero, centred and larger; the facts under them stay left-aligned. */
-  .candidate-card { flex-direction: column; align-items: stretch; text-align: left; }
-  .candidate-photo { width: 210px; height: 280px; align-self: center; }
-  .candidate-name { font-size: 1.45rem; text-align: center; margin-bottom: 0.6rem; }
-  .candidate-facts > div { justify-content: flex-start; }
-  .candidate-events { justify-content: flex-start; }
+  /* Phone: the vote screen becomes one column ordered photo → name → buttons → details,
+     so the buttons sit at the same height for every candidate no matter how much
+     info follows. The card and its body dissolve (display: contents) so their
+     children can be ordered directly. */
+  #vote-options, #vote-options #quiz-host { display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; width: 100%; }
+  #vote-options .candidate-card, #vote-options .candidate-body { display: contents; }
+  #vote-options .quiz-progress { order: 0; }
+  #vote-options .quiz-counter { order: 1; }
+  #vote-options .candidate-photo { order: 2; align-self: center; width: 210px; height: 280px; }
+  #vote-options .candidate-name { order: 3; text-align: center; font-size: 1.45rem; line-height: 1.3; height: 1.3em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin: 0.6rem 0 0.75rem; }
+  #vote-options .quiz-scores, #vote-options > .vote-btn { order: 4; }
+  /* As a flex item the grid's auto margins would shrink it to its content; span the column instead. */
+  #vote-options .quiz-scores { width: 100%; max-width: none; margin: 0 0 0.75rem; }
+  #vote-options .candidate-facts { order: 5; margin-top: 1rem; text-align: left; }
+  #vote-options .candidate-facts > div { justify-content: flex-start; }
+  #vote-options .candidate-events { order: 6; justify-content: flex-start; }
+  #vote-options .quiz-nav { order: 7; }
   .quiz-scores { gap: 0.35rem; }
   .quiz-score { min-height: 52px; padding: 0.6rem 0; font-size: 1rem; }
 }

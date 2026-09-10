@@ -265,16 +265,38 @@
   }
 
   /** Photo + number + name + slide info, laid out like the rushee slide. */
+  // Rush events in the order the chapter runs them; anything else keeps slide order after these.
+  var EVENT_ORDER = ['info night', 'pd workshop', 'speed dating', 'passion pitch', 'professional dinner'];
+
+  function orderEvents(events) {
+    function rank(e) {
+      var label = String(e.label || '').toLowerCase();
+      for (var i = 0; i < EVENT_ORDER.length; i++) {
+        if (label.indexOf(EVENT_ORDER[i]) !== -1) return i;
+      }
+      return EVENT_ORDER.length;
+    }
+    return events.map(function(e, i) { return { e: e, r: rank(e), i: i }; })
+      .sort(function(a, b) { return (a.r - b.r) || (a.i - b.i); })
+      .map(function(x) { return x.e; });
+  }
+
   function buildCandidateCard(cand, fallbackName) {
     var card = document.createElement('div');
     card.className = 'candidate-card';
 
+    // Always render the photo box, so the layout below it never shifts.
     if (cand && cand.photo) {
       var img = document.createElement('img');
       img.className = 'candidate-photo';
       img.src = cand.photo;
       img.alt = cand.name || '';
       card.appendChild(img);
+    } else {
+      var empty = document.createElement('div');
+      empty.className = 'candidate-photo candidate-photo--empty';
+      empty.textContent = 'No photo';
+      card.appendChild(empty);
     }
 
     var body = document.createElement('div');
@@ -311,7 +333,7 @@
       if (cand.events && cand.events.length) {
         var ev = document.createElement('div');
         ev.className = 'candidate-events';
-        cand.events.forEach(function(e) {
+        orderEvents(cand.events).forEach(function(e) {
           // Decks uploaded before the parser fix carry the GPA line as an event.
           if (/^gpa\b/i.test(e.label || '')) return;
           var chip = document.createElement('span');
@@ -659,16 +681,44 @@
     if (!pollId || !sessionId) return;
     voteUIRendered = false;
 
-    var ref = db.ref('sessions/' + sessionId + '/polls/' + pollId);
-    var cb = ref.on('value', function(snap) {
-      if (disconnected) return;
-      var p = snap.val();
-      if (!p) {
+    // Brothers get only the poll's public fields plus their own ballot. The
+    // fixed fields are read once and only `status` is watched live, so no
+    // phone ever downloads other people's votes (the rules block it too).
+    var base = 'sessions/' + sessionId + '/polls/' + pollId;
+    var FIELDS = ['name', 'type', 'candidates', 'options', 'rosterIndex', 'useRoster', 'threshold', 'minimumScore'];
+    var cancelled = false;
+    var statusRef = null, statusCb = null;
+    currentPollListener = function() {
+      cancelled = true;
+      if (statusRef && statusCb) statusRef.off('value', statusCb);
+    };
+
+    Promise.all(FIELDS.map(function(f) {
+      return db.ref(base + '/' + f).once('value').then(function(s) { return s.val(); });
+    })).then(function(vals) {
+      if (cancelled || disconnected) return;
+      var p = {};
+      FIELDS.forEach(function(f, i) { p[f] = vals[i]; });
+      if (p.type == null && p.name == null) {
         debugMsg('Poll data not found.');
         showStep('step-waiting');
         return;
       }
+      statusRef = db.ref(base + '/status');
+      statusCb = statusRef.on('value', function(snap) {
+        if (cancelled || disconnected) return;
+        handlePollState(pollId, p, snap.val() || 'closed');
+      }, function(err) {
+        debugMsg('Error listening to poll: ' + err.message);
+        showStep('step-waiting');
+      });
+    }).catch(function(err) {
+      debugMsg('Error loading poll: ' + err.message);
+      showStep('step-waiting');
+    });
+  }
 
+  function handlePollState(pollId, p, status) {
       currentPoll = {
         pollId: pollId,
         name: p.name,
@@ -679,10 +729,10 @@
         useRoster: !!p.useRoster,
         threshold: p.threshold != null ? p.threshold : 75,
         minimumScore: p.minimumScore != null ? p.minimumScore : 0,
-        status: p.status || 'closed'
+        status: status
       };
 
-      if (p.status !== 'open') {
+      if (status !== 'open') {
         debugMsg('');
         updatePollCounter();
         showNextUp(document.getElementById('waiting-next'));
@@ -725,9 +775,7 @@
       }
 
       var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-      if (uid && p.votes && p.votes[uid]) {
-        renderVoteOptions(currentPoll, true, p.votes[uid].vote);
-      } else if (uid) {
+      if (uid) {
         db.ref('sessions/' + sessionId + '/polls/' + pollId + '/votes/' + uid).once('value').then(function(vSnap) {
           var my = vSnap.val();
           renderVoteOptions(currentPoll, !!my, my && my.vote);
@@ -737,12 +785,6 @@
       } else {
         renderVoteOptions(currentPoll, false, null);
       }
-    }, function(err) {
-      debugMsg('Error listening to poll: ' + err.message);
-      showStep('step-waiting');
-    });
-
-    currentPollListener = function() { ref.off('value', cb); };
   }
 
   function resolveCurrentPollId(cb) {

@@ -31,8 +31,16 @@
         "polls": {
           ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'regent')",
           "$pollId": {
-            ".read": "auth != null",
             ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+            "name":         { ".read": "auth != null" },
+            "type":         { ".read": "auth != null" },
+            "candidates":   { ".read": "auth != null" },
+            "options":      { ".read": "auth != null" },
+            "rosterIndex":  { ".read": "auth != null" },
+            "useRoster":    { ".read": "auth != null" },
+            "threshold":    { ".read": "auth != null" },
+            "minimumScore": { ".read": "auth != null" },
+            "status":       { ".read": "auth != null" },
             "votes": {
               ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
               "$voteUid": {
