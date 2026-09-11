@@ -442,6 +442,9 @@ body {
 }
 
 .candidate-photo--empty { display: flex; align-items: center; justify-content: center; background: #eee; color: #999; font-size: 0.85rem; }
+/* Inside the vote container (a wrapping row) the card must own the whole row. */
+.vote-options > .candidate-card { flex: 1 1 100%; width: 100%; }
+.vote-options > .quiz-scores { flex: 1 1 100%; }
 .candidate-body { flex: 1; min-width: 0; }
 /* Candidate shown on the waiting screen for Standards-paced polls (no buttons yet). */
 .waiting-candidate { text-align: left; margin: 1rem auto; max-width: 640px; }

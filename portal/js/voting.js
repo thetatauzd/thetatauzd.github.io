@@ -149,9 +149,26 @@
         return;
       }
 
-      // Polls built from a slide deck show that candidate's card above the options.
+      // Polls built from a slide deck show that candidate's card above the
+      // options, with the options in one evenly split row beneath it.
       if (poll.rosterIndex !== null && roster[poll.rosterIndex]) {
-        container.appendChild(buildCandidateCard(roster[poll.rosterIndex], poll.name));
+        var cand = roster[poll.rosterIndex];
+        container.appendChild(buildCandidateCard(cand, poll.name));
+        quizKind = 'option';
+        quizChoices = choices;
+        scorecardState = {};
+        container.appendChild(buildChoiceButtons(cand.name, function(v, btn, group) {
+          if (hasVoted) return;
+          group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
+          btn.classList.add('voted');
+          submitVote(v, function(success) {
+            if (!success) {
+              group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
+              btn.classList.remove('voted');
+            }
+          });
+        }));
+        return;
       }
       choices.forEach(function(v) {
         var btn = document.createElement('button');
