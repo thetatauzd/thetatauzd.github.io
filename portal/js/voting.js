@@ -58,19 +58,23 @@
 
   // ── Session persistence ──
 
+  // localStorage rather than sessionStorage: phones kill background tabs and
+  // reopen the page fresh, which wipes sessionStorage and dropped brothers out
+  // of the session. Every access is guarded — private mode can throw.
+  function store() { try { return window.localStorage; } catch (e) { return null; } }
+
   function saveVotingSession() {
-    if (sessionId) {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ sid: sessionId }));
-    }
+    if (!sessionId) return;
+    try { store().setItem(STORAGE_KEY, JSON.stringify({ sid: sessionId })); } catch (e) {}
   }
 
   function clearVotingSession() {
-    sessionStorage.removeItem(STORAGE_KEY);
+    try { store().removeItem(STORAGE_KEY); } catch (e) {}
   }
 
   function getSavedVotingSession() {
     try {
-      var raw = sessionStorage.getItem(STORAGE_KEY);
+      var raw = store().getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
   }
@@ -255,15 +259,30 @@
     var key = quizStorageKey();
     if (!key) return;
     try {
-      sessionStorage.setItem(key, JSON.stringify({ index: quizIndex, state: scorecardState }));
+      store().setItem(key, JSON.stringify({ index: quizIndex, state: scorecardState }));
     } catch (e) {}
+    reportQuizProgress();
+  }
+
+  // Standards sees who has started but not submitted. Throttled so a fast
+  // tapper does not write on every step.
+  var progressTimer = null;
+  function reportQuizProgress() {
+    var uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+    if (!uid || !sessionId || !currentPoll || !quizNames.length) return;
+    clearTimeout(progressTimer);
+    progressTimer = setTimeout(function() {
+      db.ref('sessions/' + sessionId + '/polls/' + currentPoll.pollId + '/progress/' + uid)
+        .set({ answered: ratedCount(), total: quizNames.length, at: firebase.database.ServerValue.TIMESTAMP })
+        .catch(function() {});
+    }, 800);
   }
 
   function loadQuizProgress() {
     var key = quizStorageKey();
     if (!key) return null;
     try {
-      var raw = sessionStorage.getItem(key);
+      var raw = store().getItem(key);
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
   }
@@ -271,7 +290,7 @@
   function clearQuizProgress() {
     var key = quizStorageKey();
     if (!key) return;
-    try { sessionStorage.removeItem(key); } catch (e) {}
+    try { store().removeItem(key); } catch (e) {}
   }
 
   function candidateByName(name) {
@@ -531,6 +550,11 @@
     nav.appendChild(review);
 
     host.appendChild(nav);
+
+    var hint = document.createElement('p');
+    hint.className = 'quiz-step-hint';
+    hint.textContent = 'Nothing is counted until you submit on the review screen at the end.';
+    host.appendChild(hint);
   }
 
   function renderQuizReview(host) {
@@ -541,6 +565,13 @@
     h.className = 'quiz-counter';
     h.textContent = 'Review — ' + rated + ' of ' + total + ' ' + quizVerb();
     host.appendChild(h);
+
+    // Plenty of brothers stopped here thinking they were done. Say it plainly.
+    var callout = document.createElement('div');
+    callout.className = 'quiz-submit-callout';
+    callout.innerHTML = '<strong>One more step.</strong> Nothing is counted until you tap <strong>' +
+      quizSubmitLabel() + '</strong> at the bottom of this list.';
+    host.appendChild(callout);
 
     var list = document.createElement('div');
     list.className = 'quiz-review-list';
@@ -567,10 +598,9 @@
 
     var submitBtn = document.createElement('button');
     submitBtn.type = 'button';
-    submitBtn.className = 'btn btn-primary';
+    submitBtn.className = 'btn btn-primary quiz-submit-btn';
     submitBtn.id = 'btn-submit-scorecard';
-    submitBtn.style.cssText = 'display:block; margin:1rem auto 0; padding:0.75rem 2rem; font-size:1.1rem;';
-    submitBtn.textContent = quizSubmitLabel();
+    submitBtn.textContent = quizSubmitLabel() + (rated < total ? '' : ' ✓');
     submitBtn.addEventListener('click', submitScorecard);
     host.appendChild(submitBtn);
 
@@ -663,6 +693,7 @@
 
   function detachAllListeners() {
     detachPollListener();
+    if (presenceOff) presenceOff();
     if (presenceListener) { presenceListener(); presenceListener = null; }
     if (metaListener) { metaListener(); metaListener = null; }
     if (sessionId) {
@@ -672,6 +703,11 @@
   }
 
   function resetToCodeEntry() {
+    // Leaving on purpose: drop our presence entry right away.
+    var leavingUid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+    if (sessionId && leavingUid && !disconnected) {
+      db.ref('sessions/' + sessionId + '/connectedBrothers/' + leavingUid).remove().catch(function() {});
+    }
     detachAllListeners();
     sessionId = null;
     currentPoll = null;
@@ -697,13 +733,49 @@
         return;
       }
       if (!snap.exists() && !disconnected) {
-        disconnected = true;
-        detachAllListeners();
-        clearVotingSession();
-        showStep('step-kicked');
+        // A dropped connection also removes this entry (onDisconnect). Give the
+        // reconnect a moment to put it back before calling it a kick.
+        setTimeout(function() {
+          if (disconnected) return;
+          ref.once('value').then(function(again) {
+            if (again.exists() || disconnected) return;
+            disconnected = true;
+            detachAllListeners();
+            clearVotingSession();
+            showStep('step-kicked');
+          }).catch(function() {});
+        }, 3000);
       }
     }, function() {});
     presenceListener = function() { ref.off('value', cb); };
+  }
+
+  // ── Presence ──
+  // The server removes our entry the moment the connection drops (onDisconnect)
+  // and we re-add it whenever the connection returns, so the connected count on
+  // the Standards and Regent screens tracks who is actually in the room.
+  var presenceOff = null;
+
+  function setupPresence(sid, uid) {
+    if (presenceOff) presenceOff();
+    var meRef = db.ref('sessions/' + sid + '/connectedBrothers/' + uid);
+    var infoRef = db.ref('.info/connected');
+    var kickAttached = false;
+    var cb = infoRef.on('value', function(snap) {
+      if (!snap.val() || disconnected) return;
+      meRef.onDisconnect().remove().then(function() {
+        return meRef.set(firebase.database.ServerValue.TIMESTAMP);
+      }).then(function() {
+        if (!kickAttached) { kickAttached = true; listenForKick(sid, uid); }
+      }).catch(function(err) {
+        debugMsg('Presence write failed: ' + err.message);
+      });
+    });
+    presenceOff = function() {
+      infoRef.off('value', cb);
+      meRef.onDisconnect().cancel().catch(function() {});
+      presenceOff = null;
+    };
   }
 
   // ── Session end detection ──
@@ -931,11 +1003,7 @@
     });
 
     if (uid) {
-      db.ref('sessions/' + sid + '/connectedBrothers/' + uid).set(firebase.database.ServerValue.TIMESTAMP).then(function() {
-        listenForKick(sid, uid);
-      }).catch(function(err) {
-        debugMsg('Presence write failed: ' + err.message);
-      });
+      setupPresence(sid, uid);
 
       if (!unloadHandlerAdded) {
         unloadHandlerAdded = true;

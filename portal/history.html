@@ -6,38 +6,73 @@
   <title>Session History – Brother Portal</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=16">
+  <link rel="stylesheet" href="css/portal.css?v=17">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
   <style>
-    .session-card { cursor: pointer; transition: border-color 0.2s; }
-    .session-card:hover { border-color: #FFCC33; }
+    .session-card { transition: border-color 0.2s; }
     .session-card.expanded { border-color: #FFCC33; }
-    .session-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; color: #888; font-size: 0.9rem; margin-bottom: 0.5rem; }
-    .poll-result-card { background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
-    .poll-result-card h4 { margin: 0 0 0.25rem 0; }
-    .poll-result-card .result-line { font-weight: 600; margin: 0.25rem 0 0.5rem 0; color: #444; }
-    .whatif-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #ddd; font-size: 0.85rem; }
-    .whatif-row label { font-weight: 500; }
-    .whatif-row input { width: 65px; padding: 0.2rem 0.4rem; border: 1px solid #ccc; border-radius: 4px; }
-    .leaderboard-mini { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
-    .leaderboard-mini th, .leaderboard-mini td { padding: 0.25rem 0.5rem; text-align: left; border-bottom: 1px solid #eee; }
-    .leaderboard-mini th { background: #eee; font-weight: 600; }
-    .voter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.25rem 1rem; font-size: 0.9rem; }
-    .voter-grid span { padding: 0.15rem 0; }
-    .session-polls { display: none; margin-top: 1rem; }
-    .session-card.expanded .session-polls { display: block; }
-    .no-history { color: #999; text-align: center; padding: 3rem; }
-    .export-btn { font-size: 0.85rem; padding: 0.3rem 0.75rem; margin-left: 0.5rem; }
-    .delete-btn { font-size: 0.85rem; padding: 0.3rem 0.75rem; margin-left: 0.5rem; background: #c62828; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .session-head { cursor: pointer; }
+    .session-head-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+    .session-head h3 { margin: 0; }
+    .session-title { color: #8B0000; }
+    .session-code { font-family: monospace; color: #888; font-weight: 500; font-size: 0.95rem; margin-left: 0.5rem; }
+    .session-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; color: #888; font-size: 0.9rem; margin: 0.35rem 0 0; }
+    .session-actions .btn { font-size: 0.85rem; padding: 0.3rem 0.75rem; margin-left: 0.35rem; }
+    .delete-btn { font-size: 0.85rem; padding: 0.3rem 0.75rem; margin-left: 0.35rem; background: #c62828; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
     .delete-btn:hover { background: #a01010; }
-    .summary-card { background: #f0f4ff; border: 2px solid #FFCC33; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
-    .summary-card h3 { margin: 0 0 0.75rem 0; color: #8B0000; }
-    .summary-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    .summary-table th, .summary-table td { padding: 0.35rem 0.6rem; text-align: left; border-bottom: 1px solid #ddd; }
-    .summary-table th { background: #e8eaf6; font-weight: 600; }
+    .session-body { display: none; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem; }
+    .session-card.expanded .session-body { display: block; }
+    .expand-hint { font-size: 0.8rem; color: #aaa; margin: 0.35rem 0 0; }
+    .no-history { color: #999; text-align: center; padding: 3rem; }
+
+    .section-title { font-size: 1rem; color: #8B0000; margin: 1rem 0 0.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .section-title .count-pill { display: inline-block; background: #eee; color: #555; border-radius: 10px; padding: 0.05rem 0.55rem; font-size: 0.78rem; font-weight: 600; }
+    .cand-search { margin-left: auto; border: 1px solid #ccc; border-radius: 6px; padding: 0.4rem 0.7rem; font: inherit; font-size: 0.9rem; max-width: 240px; width: 100%; }
+
+    .cand { border: 1px solid #eee; border-radius: 8px; margin-bottom: 0.4rem; background: #fff; }
+    .cand[open] { border-color: #FFCC33; }
+    .cand > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.8rem; }
+    .cand > summary::-webkit-details-marker { display: none; }
+    .cand > summary::before { content: '▸'; color: #999; font-size: 0.8rem; transition: transform 0.15s; flex-shrink: 0; }
+    .cand[open] > summary::before { transform: rotate(90deg); }
+    .cand-name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cand-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; }
+    .rchip { font-family: monospace; font-size: 0.8rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 10px; background: #eee; color: #555; white-space: nowrap; }
+    .rchip.pass { background: #e8f5e9; color: #2e7d32; }
+    .rchip.fail { background: #ffebee; color: #c62828; }
+    .cand.hidden { display: none; }
+
+    .rd { padding: 0.6rem 0.9rem 0.9rem 2rem; border-top: 1px solid #f2f2f2; }
+    .rd-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.2rem; }
+    .rd-round { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #b8960c; font-weight: 700; }
+    .rd-name { font-weight: 600; }
+    .rd-type { color: #999; font-size: 0.85rem; }
+    .rd-line { margin: 0 0 0.5rem; font-weight: 600; color: #444; font-size: 0.95rem; }
+    .rd-muted { color: #999; font-size: 0.9rem; margin: 0; }
+    .dist { display: grid; gap: 0.25rem; max-width: 420px; margin-bottom: 0.6rem; }
+    .dist-row { display: grid; grid-template-columns: 3.2rem 1fr 3rem; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .dist-k { font-family: monospace; font-weight: 700; text-align: right; }
+    .dist-n { color: #666; }
+    .hbar { display: block; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; }
+    .hbar-fill { display: block; height: 100%; border-radius: 5px; }
+    .vgroups { display: grid; gap: 0.3rem; font-size: 0.88rem; }
+    .vgroup { display: flex; gap: 0.6rem; align-items: baseline; }
+    .vg-label { font-weight: 700; flex: 0 0 7.5rem; font-family: monospace; }
+    .vg-names { color: #444; line-height: 1.45; }
+
+    .other-poll { border: 1px solid #eee; border-radius: 8px; margin-bottom: 0.4rem; }
+    .other-poll > summary { list-style: none; cursor: pointer; display: flex; gap: 0.75rem; align-items: center; padding: 0.55rem 0.8rem; }
+    .other-poll > summary::-webkit-details-marker { display: none; }
+    .other-poll .op-name { font-weight: 600; flex: 1; }
+    .other-poll .op-result { color: #444; font-size: 0.9rem; }
+    @media (max-width: 640px) {
+      .cand-chips { justify-content: flex-start; }
+      .vg-label { flex-basis: 5.5rem; }
+      .rd { padding-left: 1rem; }
+    }
   </style>
 </head>
 <body class="auth-pending">
@@ -75,17 +110,17 @@
     <div id="history-list"></div>
     <div id="loading" class="portal-card" style="text-align:center; color:#999;">Loading sessions...</div>
   </main>
-
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="js/firebase-config.js?v=16"></script>
-  <script src="js/auth.js?v=16"></script>
-  <script src="js/db.js?v=16"></script>
+  <script src="js/firebase-config.js?v=17"></script>
+  <script src="js/auth.js?v=17"></script>
+  <script src="js/db.js?v=17"></script>
   <script>
   (function() {
     'use strict';
+
     var db = firebase.database();
 
     var TYPE_LABELS = {
@@ -97,350 +132,320 @@
       ranked:       'Ranked Scorecard',
       regular:      'Regular Vote'
     };
-
     function typeLabel(t) { return TYPE_LABELS[t] || t || ''; }
-
-    // Returns true if a 'regular' poll aggregation has yes/no data
-    function regularIsYesNo(agg) {
-      if (agg.candidateOptions) return false;   // per-candidate quiz: shown as a table
-      var oc = agg.optionCounts || {};
-      var keys = Object.keys(oc).map(function(k) { return k.toLowerCase(); });
-      return keys.indexOf('yes') !== -1 && keys.indexOf('no') !== -1;
-    }
-
-    // Extracts yes/no/abstain counts from a 'regular' poll's optionCounts
-    function yesNoFromRegular(agg) {
-      var oc = agg.optionCounts || {};
-      var yes = 0, no = 0, abstain = 0;
-      Object.keys(oc).forEach(function(k) {
-        var l = k.toLowerCase();
-        if (l === 'yes') yes = oc[k];
-        else if (l === 'no') no = oc[k];
-        else abstain += oc[k];
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function(c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
       });
-      return { yes: yes, no: no, abstain: abstain };
     }
-
+    function lower(k) { return String(k).toLowerCase(); }
     function formatDate(d) {
       if (!d) return '—';
       return new Date(d).toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-        hour: 'numeric', minute: '2-digit'
+        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
       });
     }
+    function signed(n) { return (n > 0 ? '+' : '') + n; }
 
-    // Returns yes% as integer, excluding abstains. Handles yes/no/abstain types
-    // and 'regular' polls that have yes/no option counts.
-    function yesPct(agg, pollType) {
-      var yes, no;
-      if (pollType === 'regular') {
-        var yn = yesNoFromRegular(agg);
-        yes = yn.yes; no = yn.no;
-      } else {
-        yes = agg.yes || 0; no = agg.no || 0;
-      }
-      var total = yes + no;
-      return total ? Math.round(100 * yes / total) : 0;
+    // ── Reading a saved session into per-candidate breakdowns ──
+    // Every poll about a person ends up under that person, one entry per
+    // round, whether it came from a Standards-paced poll (one candidate each)
+    // or a self-paced quiz (every candidate in one poll).
+
+    function isCandidatePoll(p) {
+      return !!((p.candidates && p.candidates.length) || typeof p.rosterIndex === 'number' || /^#\d+\s/.test(p.name || ''));
     }
-
-    // Builds ranked leaderboard sorted by score descending
-    function buildLeaderboard(agg, minScore, candidates) {
-      var cs = PortalDb.decodeAggregation(agg, candidates).candidateScores || {};
-      return Object.keys(cs).map(function(name) {
-        return { name: name, score: cs[name].total || 0 };
-      }).sort(function(a, b) { return b.score - a.score; }).map(function(c, i) {
-        return { rank: i + 1, name: c.name, score: c.score, passes: c.score >= minScore };
+    function candidateNameOf(p) {
+      if (p.candidates && p.candidates.length === 1) return p.candidates[0];
+      return String(p.name || '').replace(/^#\d+\s+/, '');
+    }
+    function candidateNumberOf(p) {
+      var m = String(p.name || '').match(/^#(\d+)/);
+      return m ? m[1] : null;
+    }
+    function yesNoStats(counts) {
+      var yes = 0, no = 0, other = 0, total = 0, hasYN = false;
+      Object.keys(counts).forEach(function(k) {
+        var l = lower(k); total += counts[k];
+        if (l === 'yes') { yes += counts[k]; hasYN = true; }
+        else if (l === 'no') { no += counts[k]; hasYN = true; }
+        else other += counts[k];
       });
+      return { yes: yes, no: no, other: other, total: total, hasYN: hasYN, pct: (yes + no) ? Math.round(100 * yes / (yes + no)) : 0 };
     }
 
-    function renderLeaderboardTable(board) {
-      var html = '<table class="leaderboard-mini"><thead><tr><th>#</th><th>Name</th><th>Score</th></tr></thead><tbody>';
-      board.forEach(function(c) {
-        html += '<tr><td>' + c.rank + '</td><td>' + c.name + '</td><td>' + c.score + '</td></tr>';
-      });
-      html += '</tbody></table>';
-      return html;
-    }
+    function analyzeSession(s) {
+      var polls = s.polls || {};
+      var byName = {}, others = [], maxVoters = 0;
+      Object.keys(polls).forEach(function(pid) {
+        var p = polls[pid];
+        var voters = p.voters || {};
+        maxVoters = Math.max(maxVoters, Object.keys(voters).length);
+        if (!isCandidatePoll(p)) { others.push({ pid: pid, p: p }); return; }
+        var round = p.round || 1;
+        var isRanked = p.type === 'ranked' || p.type === 'rush_prelim';
+        var isQuiz = !!(p.candidates && p.candidates.length > 1);
+        var names = isQuiz ? p.candidates.slice() : [candidateNameOf(p)];
 
-    function renderPollCard(pid, p, uniqueId) {
-      var agg = p.aggregation || {};
-      var voters = p.voters || {};
-      var voterKeys = Object.keys(voters);
-      var type = p.type || '';
+        names.forEach(function(name) {
+          var entry = byName[name] || (byName[name] = { name: name, number: null, rounds: [] });
+          if (!entry.number && !isQuiz) entry.number = candidateNumberOf(p);
 
-      var html = '<div class="poll-result-card" id="poll-' + uniqueId + '">';
-      html += '<h4>' + (p.name || '(unnamed)') +
-        ' <span style="color:#888; font-weight:400; font-size:0.85rem;">(' + typeLabel(type) + ')</span></h4>';
-
-      if (type === 'rush_prelim' || type === 'ranked') {
-        var minScore = p.minimumScore || 0;
-        var board = buildLeaderboard(agg, minScore, p.candidates);
-        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' +
-          board.length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
-        html += renderLeaderboardTable(board);
-        html += '<div class="whatif-row">';
-        html += '<label>What-if min score:</label>' +
-          '<input type="number" value="' + minScore + '" class="whatif-prelim-min" data-uid="' + uniqueId + '">';
-        html += '<button type="button" class="btn btn-primary" style="padding:0.2rem 0.6rem; font-size:0.8rem;"' +
-          ' data-uid="' + uniqueId + '" data-pid="' + pid + '">Recalculate</button>';
-        html += '</div>';
-
-      } else if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
-        var pct = yesPct(agg, type);
-        html += '<p class="result-line">' + pct + '% yes</p>';
-        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) +
-          ' · No: ' + (agg.no || 0) + ' · Abstain: ' + (agg.abstain || 0) + '</p>';
-
-      } else if (type === 'pnm_depledge') {
-        var dpct = yesPct(agg, type);
-        html += '<p class="result-line">' + dpct + '% voted yes to de-pledge</p>';
-        html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + (agg.yes || 0) +
-          ' · No: ' + (agg.no || 0) + '</p>';
-
-      } else if (type === 'regular') {
-        if (regularIsYesNo(agg)) {
-          var yn = yesNoFromRegular(agg);
-          var rpct = yesPct(agg, 'regular');
-          html += '<p class="result-line">' + rpct + '% yes</p>';
-          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">Yes: ' + yn.yes +
-            ' · No: ' + yn.no + (yn.abstain ? ' · Other: ' + yn.abstain : '') + '</p>';
-        } else if (agg.candidateOptions) {
-          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">' +
-            (p.candidates || []).length + ' candidates · ' + (agg.totalVoters || 0) + ' voters</p>';
-          html += PortalDb.candidateOptionTableHtml(agg, p.candidates, p.options, 'leaderboard-mini');
-        } else {
-          var oc = agg.optionCounts || {};
-          html += '<p style="font-size:0.9rem; margin:0 0 0.5rem;">';
-          html += Object.keys(oc).map(function(k) { return k + ': <strong>' + oc[k] + '</strong>'; }).join(' · ');
-          html += '</p>';
-        }
-
-      } else {
-        if (p.result) html += '<p class="result-line">' + p.result + '</p>';
-      }
-
-      // Voter breakdown for all non-prelim types
-      if (type !== 'rush_prelim') {
-        if (voterKeys.length > 0) {
-          html += '<div class="voter-grid">';
-          voterKeys.forEach(function(uid) {
+          var perVoter = [];
+          Object.keys(voters).forEach(function(uid) {
             var v = PortalDb.decodeBallot(voters[uid].vote, p.candidates);
-            html += '<span><strong>' + voters[uid].name + '</strong>: ' +
-              (typeof v === 'object' ? JSON.stringify(v) : v) + '</span>';
+            var val = (v && typeof v === 'object') ? v[name] : v;
+            if (val === undefined || val === null) return;
+            perVoter.push({ name: voters[uid].name || 'Unknown', vote: val });
           });
-          html += '</div>';
-        } else {
-          html += '<p style="color:#999; font-size:0.9rem;">No votes recorded.</p>';
-        }
-      }
 
-      html += '</div>';
-      return html;
-    }
-
-    // Builds summary rows sorted by yes% descending. Handles all yes/no variants.
-    function computeYesNoSummary(polls) {
-      return polls.map(function(item) {
-        var agg = item.poll.aggregation || {};
-        var t = item.poll.type;
-        var pct = yesPct(agg, t);
-        var yes, no, abstain;
-        if (t === 'regular') {
-          var yn = yesNoFromRegular(agg);
-          yes = yn.yes; no = yn.no; abstain = yn.abstain;
-        } else {
-          yes = agg.yes || 0; no = agg.no || 0; abstain = agg.abstain || 0;
-        }
-        return { name: item.poll.name, type: typeLabel(t), pct: pct, yes: yes, no: no, abstain: abstain };
-      }).sort(function(a, b) { return b.pct - a.pct; });
-    }
-
-    function renderSummaryTable(rows) {
-      var html = '<table class="summary-table">';
-      html += '<thead><tr><th>Name</th><th>Type</th><th>Yes %</th><th>Yes</th><th>No</th><th>Abstain</th></tr></thead><tbody>';
-      rows.forEach(function(r) {
-        html += '<tr><td>' + r.name + '</td><td>' + r.type + '</td><td>' + r.pct + '%</td>' +
-          '<td>' + r.yes + '</td><td>' + r.no + '</td><td>' + r.abstain + '</td></tr>';
+          var r = { round: round, pollName: p.name, type: p.type, kind: isRanked ? 'score' : 'options', voters: perVoter };
+          if (isRanked) {
+            var total = 0, dist = { '-2': 0, '-1': 0, '0': 0, '1': 0, '2': 0 };
+            perVoter.forEach(function(x) { var n = Number(x.vote) || 0; total += n; dist[String(n)] = (dist[String(n)] || 0) + 1; });
+            r.total = total; r.count = perVoter.length;
+            r.avg = perVoter.length ? total / perVoter.length : 0;
+            r.dist = dist;
+            r.minScore = p.minimumScore != null ? p.minimumScore : 0;
+            r.passes = total >= r.minScore;
+          } else {
+            var counts = {};
+            perVoter.forEach(function(x) { counts[x.vote] = (counts[x.vote] || 0) + 1; });
+            r.counts = counts;
+            r.stats = yesNoStats(counts);
+            r.options = (p.options && p.options.length) ? p.options.slice() : [];
+            Object.keys(counts).forEach(function(o) { if (r.options.indexOf(o) === -1) r.options.push(o); });
+          }
+          entry.rounds.push(r);
+        });
       });
-      html += '</tbody></table>';
-      return html;
+
+      var candidates = Object.keys(byName).map(function(k) { return byName[k]; });
+      candidates.forEach(function(c) {
+        c.rounds.sort(function(a, b) { return a.round - b.round; });
+        var last = c.rounds[c.rounds.length - 1];
+        c.lastRound = last;
+        c.maxRound = last ? last.round : 1;
+        c.sortKey = !last ? 0 : (last.kind === 'score' ? last.total : (last.stats.hasYN ? last.stats.pct : 0));
+      });
+      // Furthest round first, then best result, then name.
+      candidates.sort(function(a, b) { return (b.maxRound - a.maxRound) || (b.sortKey - a.sortKey) || a.name.localeCompare(b.name); });
+      var roundCount = candidates.reduce(function(m, c) { return Math.max(m, c.maxRound); }, candidates.length ? 1 : 0);
+      return { candidates: candidates, others: others, roundCount: roundCount, maxVoters: maxVoters };
     }
 
-    function renderYesNoSummaryCard(polls, sid) {
-      var rows = computeYesNoSummary(polls);
-      var uid = sid + '-summary-yesno';
-      var html = '<div class="summary-card" id="summary-' + uid + '">';
-      html += '<h3>Yes/No Vote Summary (' + rows.length + ' polls)</h3>';
-      html += renderSummaryTable(rows);
-      html += '</div>';
-      return html;
+    // ── Rendering ──
+
+    function bar(pct, color) {
+      return '<span class="hbar"><span class="hbar-fill" style="width:' + Math.max(0, Math.min(100, pct)) + '%; background:' + color + '"></span></span>';
+    }
+    function roundOutcome(r) {           // 'pass' | 'fail' | ''
+      if (r.kind === 'score') return r.passes ? 'pass' : 'fail';
+      return r.stats.hasYN ? (r.stats.pct >= 50 ? 'pass' : 'fail') : '';
+    }
+    function roundChipText(r) {
+      if (r.kind === 'score') return signed(r.total);
+      return r.stats.hasYN ? r.stats.pct + '%' : '—';
+    }
+    function roundSummaryText(r) {
+      if (r.kind === 'score') {
+        return signed(r.total) + ' total · avg ' + signed(Number(r.avg.toFixed(2))) + ' · ' + r.count + ' vote' + (r.count === 1 ? '' : 's') +
+          (r.minScore ? ' · cutoff ' + r.minScore : '');
+      }
+      if (r.stats.hasYN) {
+        return r.stats.pct + '% yes · ' + r.stats.yes + ' yes / ' + r.stats.no + ' no' + (r.stats.other ? ' / ' + r.stats.other + ' other' : '');
+      }
+      return Object.keys(r.counts).map(function(k) { return esc(k) + ': ' + r.counts[k]; }).join(' · ') || 'No votes';
+    }
+
+    function votersByGroup(voters, keys, keyOf, labelOf) {
+      if (!voters.length) return '<p class="rd-muted">No votes recorded.</p>';
+      var groups = {};
+      voters.forEach(function(v) { var k = keyOf(v.vote); (groups[k] = groups[k] || []).push(v.name); });
+      var html = '<div class="vgroups">';
+      function row(k) {
+        var names = groups[k]; if (!names) return;
+        names.sort();
+        html += '<div class="vgroup"><span class="vg-label">' + esc(labelOf(k)) + ' (' + names.length + ')</span>' +
+          '<span class="vg-names">' + names.map(esc).join(', ') + '</span></div>';
+        delete groups[k];
+      }
+      keys.forEach(row);
+      Object.keys(groups).forEach(row);
+      return html + '</div>';
+    }
+
+    function renderRoundDetail(r) {
+      var html = '<div class="rd"><div class="rd-head"><span class="rd-round">Round ' + r.round + '</span>' +
+        '<span class="rd-name">' + esc(r.pollName) + '</span><span class="rd-type">' + typeLabel(r.type) + '</span></div>';
+      html += '<p class="rd-line">' + roundSummaryText(r) + '</p>';
+      if (r.kind === 'score') {
+        html += '<div class="dist">';
+        ['2', '1', '0', '-1', '-2'].forEach(function(k) {
+          var n = r.dist[k] || 0, pct = r.count ? Math.round(100 * n / r.count) : 0;
+          html += '<div class="dist-row"><span class="dist-k">' + signed(Number(k)) + '</span>' +
+            bar(pct, Number(k) > 0 ? '#2e7d32' : (Number(k) < 0 ? '#c62828' : '#999')) + '<span class="dist-n">' + n + '</span></div>';
+        });
+        html += '</div>';
+        html += votersByGroup(r.voters, ['2', '1', '0', '-1', '-2'],
+          function(v) { return String(Number(v) || 0); }, function(k) { return signed(Number(k)); });
+      } else {
+        if (r.stats.hasYN) {
+          html += '<div class="dist"><div class="dist-row"><span class="dist-k">Yes</span>' + bar(r.stats.pct, '#2e7d32') +
+            '<span class="dist-n">' + r.stats.pct + '%</span></div></div>';
+        }
+        html += votersByGroup(r.voters, r.options, function(v) { return String(v); }, function(k) { return k; });
+      }
+      return html + '</div>';
+    }
+
+    function renderCandidate(c) {
+      var chips = c.rounds.map(function(r) {
+        return '<span class="rchip ' + roundOutcome(r) + '" title="Round ' + r.round + ': ' + esc(roundSummaryText(r)) + '">R' + r.round + ' ' + roundChipText(r) + '</span>';
+      }).join('');
+      return '<details class="cand" data-name="' + esc(c.name.toLowerCase()) + '"><summary>' +
+        '<span class="cand-name">' + (c.number ? '#' + c.number + ' ' : '') + esc(c.name) + '</span>' +
+        '<span class="cand-chips">' + chips + '</span></summary>' +
+        c.rounds.map(renderRoundDetail).join('') + '</details>';
+    }
+
+    function otherPollResult(p) {
+      var agg = p.aggregation || {};
+      if (p.type === 'rush_bid' || p.type === 'motion' || p.type === 'pnm_vote' || p.type === 'pnm_depledge') {
+        var yes = agg.yes || 0, no = agg.no || 0, pct = (yes + no) ? Math.round(100 * yes / (yes + no)) : 0;
+        return pct + '% yes · ' + yes + ' yes / ' + no + ' no' + (agg.abstain ? ' / ' + agg.abstain + ' abstain' : '');
+      }
+      var oc = agg.optionCounts || {};
+      var st = yesNoStats(oc);
+      if (st.hasYN) return st.pct + '% yes · ' + st.yes + ' yes / ' + st.no + ' no' + (st.other ? ' / ' + st.other + ' other' : '');
+      return Object.keys(oc).map(function(k) { return esc(k) + ': ' + oc[k]; }).join(' · ') || (p.result ? esc(p.result) : 'No votes');
+    }
+
+    function renderOtherPoll(item) {
+      var p = item.p, voters = p.voters || {};
+      var list = Object.keys(voters).map(function(uid) {
+        var v = voters[uid].vote;
+        return { name: voters[uid].name || 'Unknown', vote: typeof v === 'object' ? JSON.stringify(v) : String(v) };
+      });
+      var keys = (p.options && p.options.length) ? p.options.slice() : [];
+      if (p.type === 'rush_bid' || p.type === 'motion' || p.type === 'pnm_vote') keys = ['yes', 'no', 'abstain'];
+      if (p.type === 'pnm_depledge') keys = ['yes', 'no'];
+      return '<details class="other-poll"><summary><span class="op-name">' + esc(p.name || '(unnamed)') +
+        ' <span class="rd-type">' + typeLabel(p.type) + '</span></span><span class="op-result">' + otherPollResult(p) + '</span></summary>' +
+        '<div class="rd">' + votersByGroup(list, keys, function(v) { return v; }, function(k) { return k.charAt(0).toUpperCase() + k.slice(1); }) + '</div></details>';
     }
 
     var sessionDataCache = {};
 
     function renderSession(sid, s) {
       sessionDataCache[sid] = s;
-      var polls = s.polls || {};
-      var pollIds = Object.keys(polls);
+      var a = analyzeSession(s);
+      var pollCount = Object.keys(s.polls || {}).length;
+
       var card = document.createElement('div');
       card.className = 'portal-card session-card';
 
-      var header = '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">';
-      header += '<h3 style="margin:0;">Session: ' + (s.accessCode || sid.substring(0, 8)) + '</h3>';
-      header += '<div>';
-      header += '<button type="button" class="btn btn-primary chapter-view-btn" data-sid="' + sid + '"' +
-        ' style="font-size:0.85rem; padding:0.3rem 0.75rem; margin-right:0.35rem;">Show Chapter</button>';
-      header += '<button class="btn btn-primary export-btn" data-sid="' + sid + '">Export Excel</button>';
-      header += '<button class="delete-btn" data-sid="' + sid + '">Delete</button>';
-      header += '</div></div>';
-      header += '<div class="session-meta">';
-      header += '<span>Ended: ' + formatDate(s.endedAt) + '</span>';
-      header += '<span>Polls: ' + pollIds.length + '</span>';
-      header += '</div>';
-      header += '<p style="font-size:0.85rem; color:#aaa; margin:0;">Click to expand</p>';
+      var html = '<div class="session-head">';
+      html += '<div class="session-head-row">';
+      html += '<h3><span class="session-title">' + esc(s.sessionTitle || (typeLabel(s.sessionType) || 'Session')) + '</span>' +
+        '<span class="session-code">' + esc(s.accessCode || sid.substring(0, 8)) + '</span></h3>';
+      html += '<div class="session-actions">' +
+        '<button type="button" class="btn btn-primary chapter-view-btn">Show Chapter</button>' +
+        '<button type="button" class="btn btn-primary export-btn">Export Excel</button>' +
+        '<button type="button" class="delete-btn">Delete</button></div>';
+      html += '</div>';
+      html += '<div class="session-meta"><span>Ended ' + formatDate(s.endedAt) + '</span>';
+      if (a.candidates.length) html += '<span>' + a.candidates.length + ' candidate' + (a.candidates.length === 1 ? '' : 's') + '</span>' +
+        '<span>' + a.roundCount + ' round' + (a.roundCount === 1 ? '' : 's') + '</span>';
+      if (a.others.length) html += '<span>' + a.others.length + ' other vote' + (a.others.length === 1 ? '' : 's') + '</span>';
+      html += '<span>' + pollCount + ' poll' + (pollCount === 1 ? '' : 's') + '</span>';
+      if (a.maxVoters) html += '<span>up to ' + a.maxVoters + ' voters</span>';
+      html += '</div><p class="expand-hint">Click to expand</p></div>';
 
-      // Collect all yes/no type polls for the summary card
-      var yesNoPolls = pollIds
-        .map(function(pid) { return { pid: pid, poll: polls[pid] }; })
-        .filter(function(item) {
-          var t = item.poll.type;
-          if (t === 'rush_bid' || t === 'pnm_vote' || t === 'motion' || t === 'pnm_depledge') return true;
-          if (t === 'regular') return regularIsYesNo(item.poll.aggregation || {});
-          return false;
-        });
+      html += '<div class="session-body">';
+      if (a.candidates.length) {
+        html += '<div class="section-title">Candidates <span class="count-pill">' + a.candidates.length + '</span>' +
+          '<input type="search" class="cand-search" placeholder="Find a candidate…" autocomplete="off"></div>';
+        html += '<div class="cand-list">' + a.candidates.map(renderCandidate).join('') + '</div>';
+      }
+      if (a.others.length) {
+        html += '<div class="section-title">Other votes <span class="count-pill">' + a.others.length + '</span></div>';
+        html += a.others.map(renderOtherPoll).join('');
+      }
+      if (!a.candidates.length && !a.others.length) html += '<p class="rd-muted">No polls were run in this session.</p>';
+      html += '</div>';
 
-      var pollsHtml = '<div class="session-polls">';
-      if (yesNoPolls.length > 0) pollsHtml += renderYesNoSummaryCard(yesNoPolls, sid);
-      pollIds.forEach(function(pid, i) {
-        pollsHtml += renderPollCard(pid, polls[pid], sid + '-' + i);
-      });
-      pollsHtml += '</div>';
-
-      card.innerHTML = header + pollsHtml;
-
-      card.addEventListener('click', function(e) {
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' ||
-            e.target.tagName === 'A' || e.target.closest('a')) return;
+      card.innerHTML = html;
+      card.querySelector('.session-head').addEventListener('click', function(e) {
+        if (e.target.closest('button')) return;
         card.classList.toggle('expanded');
       });
-
+      var search = card.querySelector('.cand-search');
+      if (search) {
+        search.addEventListener('input', function() {
+          var q = search.value.trim().toLowerCase();
+          card.querySelectorAll('.cand').forEach(function(el) {
+            el.classList.toggle('hidden', !!q && el.getAttribute('data-name').indexOf(q) === -1);
+          });
+        });
+      }
       card.querySelector('.chapter-view-btn').addEventListener('click', function() {
-        var params = 'sid=' + encodeURIComponent(sid);
-        var minInputs = card.querySelectorAll('.whatif-prelim-min');
-        minInputs.forEach(function(inp) {
-          var uid = inp.getAttribute('data-uid');
-          var parts = uid.split('-');
-          var idx = parseInt(parts[parts.length - 1], 10);
-          var pids = Object.keys((sessionDataCache[sid] || {}).polls || {});
-          if (pids[idx]) params += '&rmin_' + pids[idx] + '=' + (parseInt(inp.value, 10) || 0);
-        });
-        window.open('chapter-results?' + params, '_blank');
+        window.open('chapter-results?sid=' + encodeURIComponent(sid), '_blank');
       });
-
-      card.querySelector('.export-btn').addEventListener('click', function() {
-        exportSessionExcel(s, sid);
-      });
-      card.querySelector('.delete-btn').addEventListener('click', function() {
-        deleteSession(sid, s.accessCode, card);
-      });
-
-      // What-if: rush_prelim / ranked min-score recalculate
-      card.querySelectorAll('.whatif-row button[data-pid]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var uid = this.getAttribute('data-uid');
-          var minInput = card.querySelector('.whatif-prelim-min[data-uid="' + uid + '"]');
-          if (!minInput) return;
-          var min = parseInt(minInput.value, 10) || 0;
-          var parts = uid.split('-');
-          var sesId = parts.slice(0, -1).join('-');
-          var idx = parseInt(parts[parts.length - 1], 10);
-          var sesData = sessionDataCache[sesId];
-          if (!sesData) return;
-          var pids = Object.keys(sesData.polls || {});
-          var p = (sesData.polls || {})[pids[idx]];
-          if (!p || !p.aggregation) return;
-          var board = buildLeaderboard(p.aggregation, min, p.candidates);
-          var container = document.getElementById('poll-' + uid);
-          var existing = container.querySelector('.leaderboard-mini');
-          if (existing) existing.outerHTML = renderLeaderboardTable(board);
-        });
-      });
-
+      card.querySelector('.export-btn').addEventListener('click', function() { exportSessionExcel(s, sid); });
+      card.querySelector('.delete-btn').addEventListener('click', function() { deleteSession(sid, s.accessCode, card); });
       return card;
     }
 
+    // ── Excel export: overview, one tab per candidate breakdown, one per other vote ──
+
     function exportSessionExcel(s, sid) {
       if (typeof XLSX === 'undefined') { alert('SheetJS not loaded.'); return; }
-      var polls = s.polls || {};
-      var pollIds = Object.keys(polls);
+      var a = analyzeSession(s);
       var wb = XLSX.utils.book_new();
+      var usedNames = {};
+      function sheetName(base) {
+        var n = base.replace(/[\\\/\?\*\[\]:]/g, ' ').substring(0, 28) || 'Sheet';
+        var i = 1, out = n;
+        while (usedNames[out]) out = n.substring(0, 25) + ' ' + (++i);
+        usedNames[out] = true;
+        return out;
+      }
 
-      var overviewRows = [['Poll', 'Type', 'Yes', 'No', 'Abstain', 'Yes %']];
-      var pollSheets = [];
-
-      pollIds.forEach(function(pid, i) {
-        var p = polls[pid];
-        var agg = p.aggregation || {};
-        var voters = p.voters || {};
-        var voterKeys = Object.keys(voters);
-        var isRanked = p.type === 'rush_prelim' || p.type === 'ranked';
-
-        // ── Overview row ──
-        var isCandidateQuiz = p.type === 'regular' && !!agg.candidateOptions;
-        if (isRanked) {
-          overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Ranked (see tab)']);
-        } else if (isCandidateQuiz) {
-          overviewRows.push([p.name || '', typeLabel(p.type), '—', '—', '—', 'Per candidate (see tab)']);
-        } else if (p.type === 'regular' && !regularIsYesNo(agg)) {
-          var oc = agg.optionCounts || {};
-          var breakdown = Object.keys(oc).map(function(k) { return k + ': ' + oc[k]; }).join(', ');
-          overviewRows.push([p.name || '', typeLabel(p.type), breakdown, '', '', '—']);
-        } else {
-          var yn = (p.type === 'regular') ? yesNoFromRegular(agg)
-            : { yes: agg.yes || 0, no: agg.no || 0, abstain: agg.abstain || 0 };
-          var abstainCell = (p.type === 'pnm_depledge') ? '—' : yn.abstain;
-          overviewRows.push([
-            p.name || '', typeLabel(p.type),
-            yn.yes, yn.no, abstainCell,
-            yesPct(agg, p.type) + '%'
-          ]);
-        }
-
-        // ── Individual poll sheet ──
-        var pollRows;
-        if (isRanked) {
-          var board = buildLeaderboard(agg, p.minimumScore || 0, p.candidates);
-          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
-            ['Rank', 'Name', 'Score']];
-          board.forEach(function(c) { pollRows.push([c.rank, c.name, c.score]); });
-        } else if (isCandidateQuiz) {
-          var cq = PortalDb.candidateOptionRows(agg, p.candidates, p.options);
-          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
-            ['Rank', 'Candidate'].concat(cq.options).concat(cq.hasYesNo ? ['% Yes'] : [])];
-          cq.rows.forEach(function(r, idx) {
-            pollRows.push([idx + 1, r.name].concat(cq.options.map(function(o) { return r.counts[o] || 0; }))
-              .concat(cq.hasYesNo ? [r.yesPct + '%'] : []));
-          });
-        } else {
-          pollRows = [['Poll: ' + (p.name || '')], ['Type: ' + typeLabel(p.type)], [],
-            ['Brother', 'Vote']];
-          voterKeys.forEach(function(uid) {
-            var v = PortalDb.decodeBallot(voters[uid].vote, p.candidates);
-            pollRows.push([voters[uid].name, typeof v === 'object' ? JSON.stringify(v) : v]);
-          });
-        }
-        pollSheets.push({
-          name: (i + 1) + '. ' + (p.name || 'Poll').substring(0, 25),
-          rows: pollRows
+      var overview = [['Candidate', 'Round', 'Poll', 'Type', 'Result', 'Votes']];
+      a.candidates.forEach(function(c) {
+        c.rounds.forEach(function(r) {
+          overview.push([(c.number ? '#' + c.number + ' ' : '') + c.name, r.round, r.pollName || '', typeLabel(r.type),
+            r.kind === 'score' ? signed(r.total) + ' (avg ' + signed(Number(r.avg.toFixed(2))) + ')' : (r.stats.hasYN ? r.stats.pct + '% yes' : roundSummaryText(r)),
+            r.voters.length]);
         });
       });
-
-      // Overview goes first, individual tabs follow
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(overviewRows), 'Overview');
-      pollSheets.forEach(function(sheet) {
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheet.rows), sheet.name);
+      a.others.forEach(function(item) {
+        overview.push(['(other) ' + (item.p.name || ''), '', item.p.name || '', typeLabel(item.p.type), otherPollResult(item.p).replace(/&amp;/g, '&'), Object.keys(item.p.voters || {}).length]);
       });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(overview), 'Overview');
 
+      a.candidates.forEach(function(c) {
+        var rows = [[(c.number ? '#' + c.number + ' ' : '') + c.name], []];
+        c.rounds.forEach(function(r) {
+          rows.push(['Round ' + r.round + ' — ' + (r.pollName || '') + ' (' + typeLabel(r.type) + ')']);
+          rows.push([roundSummaryText(r).replace(/&amp;/g, '&')]);
+          rows.push(['Brother', 'Vote']);
+          r.voters.slice().sort(function(x, y) { return x.name.localeCompare(y.name); })
+            .forEach(function(v) { rows.push([v.name, r.kind === 'score' ? Number(v.vote) : v.vote]); });
+          rows.push([]);
+        });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), sheetName(c.name));
+      });
+      a.others.forEach(function(item) {
+        var p = item.p, voters = p.voters || {};
+        var rows = [[p.name || 'Vote'], [otherPollResult(p).replace(/&amp;/g, '&')], [], ['Brother', 'Vote']];
+        Object.keys(voters).forEach(function(uid) {
+          var v = voters[uid].vote;
+          rows.push([voters[uid].name || 'Unknown', typeof v === 'object' ? JSON.stringify(v) : v]);
+        });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), sheetName(p.name || 'Vote'));
+      });
       XLSX.writeFile(wb, 'session_' + (s.accessCode || sid.substring(0, 8)) + '.xlsx');
     }
 
@@ -463,6 +468,7 @@
       PortalAuth.requireAdmin().then(function(profile) {
         if (!profile) return;
         PortalAuth.initNav(profile);
+
         db.ref('sessionHistory').orderByChild('endedAt').once('value', function(snap) {
           document.getElementById('loading').classList.add('hidden');
           var data = snap.val();
@@ -471,11 +477,12 @@
               '<div class="no-history portal-card">No session history yet. Sessions are saved here when Standards ends them.</div>';
             return;
           }
-          var sids = Object.keys(data).sort(function(a, b) {
-            return (data[a].endedAt || 0) > (data[b].endedAt || 0) ? -1 : 1;
-          });
           var container = document.getElementById('history-list');
-          sids.forEach(function(sid) { container.appendChild(renderSession(sid, data[sid])); });
+          Object.keys(data).map(function(sid) { return { sid: sid, s: data[sid] }; })
+            .sort(function(x, y) { return String(y.s.endedAt || '').localeCompare(String(x.s.endedAt || '')); })
+            .forEach(function(item) { container.appendChild(renderSession(item.sid, item.s)); });
+        }, function(err) {
+          document.getElementById('loading').textContent = 'Could not load history: ' + err.message;
         });
       });
     }

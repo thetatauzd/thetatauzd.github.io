@@ -20,6 +20,7 @@
   var connectedCount = 0;
   var connectedBrothersData = {};
   var cachedVotedCount = 0;
+  var cachedVotedMap = {};
   var activePollListeners = [];
   var sessionListeners = [];
 
@@ -101,10 +102,11 @@
   }
 
   function hideSessionPanels() {
-    ['panel-active-poll', 'panel-queue', 'panel-results', 'panel-connected'].forEach(function(id) {
+    ['panel-active-poll', 'panel-queue', 'panel-results', 'panel-connected', 'panel-next-round'].forEach(function(id) {
       $(id).classList.add('hidden');
     });
     $('session-active-info').classList.add('hidden');
+    sessionRoster = null;
     $('btn-create-session').disabled = false;
     $('add-ranked-form').classList.add('hidden');
     $('add-regular-form').classList.add('hidden');
@@ -557,6 +559,7 @@
       snapshot.createdBy = meta.createdBy || null;
       snapshot.sessionType = meta.sessionType || snapshot.sessionType;
       snapshot.voteOptions = meta.voteOptions || snapshot.voteOptions;
+      snapshot.sessionTitle = meta.sessionTitle || null;
 
       return db.ref('sessions/' + sid + '/pollOrder').once('value');
     }).then(function(orderSnap) {
@@ -803,6 +806,7 @@
 
     var qc = $('queue-count');
     if (qc) qc.textContent = pollOrder.length ? pollOrder.length + (pollOrder.length === 1 ? ' poll' : ' polls') : '';
+    refreshNextRoundPanel();
 
     if (pollOrder.length === 0) {
       container.innerHTML = '<p class="queue-empty">Nothing queued yet. Add your first poll below.</p>';
@@ -831,6 +835,7 @@
       var canUp   = canManage && i > currentIndex + 1;
       var canDown = canManage && i < pollOrder.length - 1;
 
+      var roundBadge = (meta && meta.round > 1) ? '<span class="qi-round">Round ' + meta.round + '</span>' : '';
       var actions = '<div class="qi-actions">';
       actions += '<button class="qi-btn" data-action="up"   data-idx="' + i + '"' + (canUp   ? '' : ' disabled') + '>↑</button>';
       actions += '<button class="qi-btn" data-action="down" data-idx="' + i + '"' + (canDown ? '' : ' disabled') + '>↓</button>';
@@ -839,8 +844,9 @@
       actions += '</div>';
 
       return '<div class="' + cls + '">' +
-        '<span><span class="qi-name">' + (i + 1) + '. ' + name + '</span>' +
-        (type ? '<span class="qi-type">' + type + '</span>' : '') + '</span>' +
+        '<span class="qi-main" data-action="jump" data-idx="' + i + '" title="Jump to this poll">' +
+        '<span class="qi-name">' + (i + 1) + '. ' + name + '</span>' +
+        (type ? '<span class="qi-type">' + type + '</span>' : '') + roundBadge + '</span>' +
         actions +
         '</div>';
     }).filter(Boolean).join('');
@@ -851,7 +857,9 @@
       if (!btn || btn.disabled) return;
       var action = btn.getAttribute('data-action');
       var idx = parseInt(btn.getAttribute('data-idx'), 10);
-      if (action === 'remove') {
+      if (action === 'jump') {
+        jumpToPoll(idx);
+      } else if (action === 'remove') {
         removePollFromQueue(btn.getAttribute('data-pid'), idx);
       } else if (action === 'up') {
         movePollInQueue(idx, idx - 1);
@@ -859,6 +867,18 @@
         movePollInQueue(idx, idx + 1);
       }
     };
+  }
+
+  // Jump the room to any poll in the queue. A closed one shows Reopen once it
+  // is on screen; an open one left behind stays open, so ask first.
+  function jumpToPoll(idx) {
+    if (!sessionId || idx === currentIndex || idx < 0 || idx >= pollOrder.length) return;
+    var cur = getCurrentPollData();
+    if (cur && cur.status === 'open' &&
+        !confirm('The current poll is still open. Jump anyway? (Close it first if brothers are mid-vote.)')) return;
+    db.ref('sessions/' + sessionId + '/currentPollIndex').set(idx).catch(function(err) {
+      alert('Failed to jump: ' + err.message);
+    });
   }
 
   function removePollFromQueue(pid, idx) {
@@ -881,6 +901,219 @@
     newOrder[toIdx] = tmp;
     db.ref('sessions/' + sessionId + '/pollOrder').set(newOrder).catch(function(err) {
       alert('Failed to reorder: ' + err.message);
+    });
+  }
+
+  // ── Next round ──
+  // After a round closes, Standards builds the next one from the candidates who
+  // made the cut: % Yes for regular votes, total score for ranked ones. Rows
+  // can be kept or dropped by hand before the polls are created.
+
+  var nrCandidates = [];
+  var nrPacing = 'self';
+  var nrKind = 'score';       // 'score' | 'yes' | 'manual'
+  var sessionRoster = null;
+
+  function pollRound(p) { return (p && p.round) ? p.round : 1; }
+
+  function latestRound() {
+    var r = 1;
+    pollOrder.forEach(function(pid) { r = Math.max(r, pollRound(pollsMeta[pid])); });
+    return r;
+  }
+
+  function isCandidatePoll(p) {
+    return !!p && ((p.candidates && p.candidates.length) || typeof p.rosterIndex === 'number');
+  }
+
+  // The polls the next round is judged on: every closed candidate poll in the
+  // latest round. Nothing until that round has at least one closed poll.
+  function sourcePolls() {
+    var round = latestRound();
+    return pollOrder.map(function(pid) { return pollsMeta[pid]; })
+      .filter(function(p) { return isCandidatePoll(p) && pollRound(p) === round && p.status === 'closed'; });
+  }
+
+  function refreshNextRoundPanel() {
+    var panel = $('panel-next-round');
+    if (!panel || !sessionId) return;
+    var src = sourcePolls();
+    panel.classList.toggle('hidden', src.length === 0);
+    if (src.length && !$('nr-builder').classList.contains('hidden')) return;
+    var intro = $('nr-intro');
+    if (intro && src.length) {
+      intro.textContent = 'Round ' + latestRound() + ' has ' + src.length + ' closed poll' + (src.length === 1 ? '' : 's') +
+        '. Build round ' + (latestRound() + 1) + ' from the candidates who made the cut; it is added to this session\'s queue.';
+    }
+  }
+
+  function candidateDisplayName(p) {
+    if (p.candidates && p.candidates.length === 1) return p.candidates[0];
+    if (sessionRoster && typeof p.rosterIndex === 'number' && sessionRoster[p.rosterIndex]) return sessionRoster[p.rosterIndex].name;
+    return String(p.name || '').replace(/^#\d+\s+/, '');
+  }
+
+  function rosterIndexFor(name, fallback) {
+    if (typeof fallback === 'number') return fallback;
+    if (!sessionRoster) return null;
+    for (var i = 0; i < sessionRoster.length; i++) if (sessionRoster[i] && sessionRoster[i].name === name) return i;
+    return null;
+  }
+
+  function collectRoundResults() {
+    var rows = [];
+    var kind = 'manual';
+    sourcePolls().forEach(function(p) {
+      var agg = p.aggregation || PortalDb.computeAggregation(p.type, p.votes || {}, p.candidates);
+      if (p.type === 'ranked' || p.type === 'rush_prelim') {
+        kind = 'score';
+        var cs = PortalDb.decodeAggregation(agg, p.candidates).candidateScores || {};
+        Object.keys(cs).forEach(function(name) {
+          rows.push({ name: name, rosterIndex: rosterIndexFor(name, p.candidates && p.candidates.length === 1 ? p.rosterIndex : undefined),
+            metric: cs[name].total || 0, voters: cs[name].count || 0 });
+        });
+      } else if (p.type === 'regular' && agg.candidateOptions) {
+        var data = PortalDb.candidateOptionRows(agg, p.candidates, p.options);
+        if (data.hasYesNo) kind = 'yes';
+        data.rows.forEach(function(r) {
+          rows.push({ name: r.name, rosterIndex: rosterIndexFor(r.name), metric: data.hasYesNo ? r.yesPct : null, voters: r.voters });
+        });
+      } else if (p.type === 'regular') {
+        var oc = agg.optionCounts || {}, yes = 0, no = 0, total = 0;
+        Object.keys(oc).forEach(function(k) {
+          var l = k.toLowerCase(); total += oc[k];
+          if (l === 'yes') yes = oc[k]; else if (l === 'no') no = oc[k];
+        });
+        var hasYN = Object.keys(oc).some(function(k) { return k.toLowerCase() === 'yes'; }) || Object.keys(oc).some(function(k) { return k.toLowerCase() === 'no'; });
+        if (hasYN) kind = 'yes';
+        var nm = candidateDisplayName(p);
+        rows.push({ name: nm, rosterIndex: rosterIndexFor(nm, p.rosterIndex), metric: hasYN ? ((yes + no) ? Math.round(100 * yes / (yes + no)) : 0) : null, voters: total });
+      }
+    });
+    rows.sort(function(a, b) { return ((b.metric || 0) - (a.metric || 0)) || a.name.localeCompare(b.name); });
+    return { kind: kind, rows: rows };
+  }
+
+  function openRoundBuilder() {
+    var load = sessionRoster ? Promise.resolve(sessionRoster) : PortalDb.getRoster(sessionId).then(function(r) { sessionRoster = r || []; return sessionRoster; });
+    load.catch(function() { sessionRoster = []; }).then(function() {
+      var res = collectRoundResults();
+      nrKind = res.kind;
+      nrCandidates = res.rows;
+      var cutoff = $('nr-cutoff'), label = $('nr-cutoff-label');
+      if (nrKind === 'yes') { label.textContent = 'Advance at % Yes of at least'; cutoff.value = 50; cutoff.disabled = false; }
+      else if (nrKind === 'score') {
+        var src = sourcePolls()[0];
+        label.textContent = 'Advance at a total score of at least'; cutoff.value = (src && src.minimumScore != null) ? src.minimumScore : 0; cutoff.disabled = false;
+      } else { label.textContent = 'No Yes/No or score data — pick by hand'; cutoff.value = ''; cutoff.disabled = true; }
+      applyRoundCutoff();
+      $('nr-builder').classList.remove('hidden');
+      $('btn-build-round').classList.add('hidden');
+    });
+  }
+
+  function applyRoundCutoff() {
+    var cut = parseInt($('nr-cutoff').value, 10);
+    nrCandidates.forEach(function(c) {
+      c.passed = nrKind === 'manual' ? true : (c.metric != null && !isNaN(cut) && c.metric >= cut);
+      if (c.keep === undefined || !c.touched) c.keep = c.passed;
+    });
+    renderRoundList();
+  }
+
+  function renderRoundList() {
+    var list = $('nr-list');
+    list.innerHTML = '';
+    nrCandidates.forEach(function(c, i) {
+      var row = document.createElement('label');
+      row.className = 'nr-row ' + (c.passed ? 'pass' : 'fail');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = !!c.keep;
+      cb.addEventListener('change', function() { c.keep = cb.checked; c.touched = true; updateRoundSummary(); });
+      var nm = document.createElement('span');
+      nm.className = 'nr-name';
+      nm.textContent = (typeof c.rosterIndex === 'number' && sessionRoster && sessionRoster[c.rosterIndex] && sessionRoster[c.rosterIndex].number
+        ? '#' + sessionRoster[c.rosterIndex].number + ' ' : '') + c.name;
+      var m = document.createElement('span');
+      m.className = 'nr-metric';
+      m.textContent = c.metric == null ? '—' : (nrKind === 'yes' ? c.metric + '% yes' : c.metric + ' pts') + ' · ' + c.voters + ' votes';
+      row.appendChild(cb); row.appendChild(nm); row.appendChild(m);
+      list.appendChild(row);
+    });
+    updateRoundSummary();
+  }
+
+  function updateRoundSummary() {
+    var keep = nrCandidates.filter(function(c) { return c.keep; }).length;
+    var s = $('nr-summary');
+    s.textContent = keep + ' of ' + nrCandidates.length + ' advance to round ' + (latestRound() + 1) +
+      ' as ' + (nrPacing === 'self' ? 'one self-paced quiz' : keep + ' polls you open one by one') +
+      ' (' + typeLabel(sessionType) + (sessionType === 'regular' && voteOptions.length ? ', ' + voteOptions.join(' / ') : '') + '). Untick anyone to drop them.';
+    $('btn-create-round').disabled = keep === 0;
+    $('btn-create-round').textContent = 'Create round ' + (latestRound() + 1) + ' (' + keep + ')';
+  }
+
+  function createNextRound() {
+    var keep = nrCandidates.filter(function(c) { return c.keep; });
+    if (!keep.length || !sessionId) return;
+    var round = latestRound() + 1;
+    var type = sessionType === 'ranked' ? 'ranked' : 'regular';
+    var updates = {};
+    var newOrder = pollOrder.slice();
+    var cutoffVal = parseInt($('nr-cutoff').value, 10);
+
+    if (nrPacing === 'self') {
+      var pid = db.ref('sessions/' + sessionId + '/polls').push().key;
+      var quiz = { name: 'Round ' + round, type: type, candidates: keep.map(function(c) { return c.name; }),
+        useRoster: true, round: round, status: 'upcoming' };
+      if (type === 'ranked') quiz.minimumScore = isNaN(cutoffVal) ? 0 : cutoffVal;
+      else quiz.options = voteOptions || [];
+      updates['sessions/' + sessionId + '/polls/' + pid] = quiz;
+      newOrder.push(pid);
+    } else {
+      keep.forEach(function(c) {
+        var pid2 = db.ref('sessions/' + sessionId + '/polls').push().key;
+        var num = (typeof c.rosterIndex === 'number' && sessionRoster && sessionRoster[c.rosterIndex]) ? sessionRoster[c.rosterIndex].number : null;
+        var poll = { name: (num ? '#' + num + ' ' : '') + c.name, type: type, useRoster: true, round: round, status: 'upcoming' };
+        if (typeof c.rosterIndex === 'number') poll.rosterIndex = c.rosterIndex;
+        if (type === 'ranked') { poll.candidates = [c.name]; poll.minimumScore = isNaN(cutoffVal) ? 0 : cutoffVal; }
+        else poll.options = voteOptions || [];
+        updates['sessions/' + sessionId + '/polls/' + pid2] = poll;
+        newOrder.push(pid2);
+      });
+    }
+    updates['sessions/' + sessionId + '/pollOrder'] = newOrder;
+    $('btn-create-round').disabled = true;
+    db.ref().update(updates).then(function() {
+      closeRoundBuilder();
+      alert('Round ' + round + ' added to the queue with ' + keep.length + ' candidate' + (keep.length === 1 ? '' : 's') + '. Use the queue to jump to it.');
+    }).catch(function(err) {
+      $('btn-create-round').disabled = false;
+      alert('Failed to create the round: ' + err.message);
+    });
+  }
+
+  function closeRoundBuilder() {
+    $('nr-builder').classList.add('hidden');
+    $('btn-build-round').classList.remove('hidden');
+    nrCandidates = [];
+    refreshNextRoundPanel();
+  }
+
+  function initNextRound() {
+    if (!$('btn-build-round')) return;
+    $('btn-build-round').addEventListener('click', openRoundBuilder);
+    $('btn-cancel-round').addEventListener('click', closeRoundBuilder);
+    $('btn-create-round').addEventListener('click', createNextRound);
+    $('nr-cutoff').addEventListener('input', applyRoundCutoff);
+    var btns = $('nr-pacing').querySelectorAll('.option-preset-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        nrPacing = btn.getAttribute('data-pacing') || 'self';
+        updateRoundSummary();
+      });
     });
   }
 
@@ -913,8 +1146,10 @@
 
     var hasVotedRef = db.ref('sessions/' + sessionId + '/polls/' + pollId + '/hasVoted');
     var hasVotedCb = hasVotedRef.on('value', function(snap) {
-      cachedVotedCount = Object.keys(snap.val() || {}).length;
+      cachedVotedMap = snap.val() || {};
+      cachedVotedCount = Object.keys(cachedVotedMap).length;
       updateVoteCount();
+      renderConnectedList();
     });
     activePollListeners.push(function() { hasVotedRef.off('value', hasVotedCb); });
 
@@ -984,6 +1219,7 @@
     };
     $('ap-hint').textContent = hints[status] || '';
     $('results-heading').textContent = status === 'open' ? 'Live results' : 'Results';
+    renderWaitingOn();
 
     var type = meta.type;
     if (type === 'ranked' || type === 'rush_prelim') {
@@ -1001,6 +1237,35 @@
     var total = connectedCount;
     $('ap-vote-text').textContent = voted + ' / ' + total + ' voted';
     $('ap-bar-fill').style.width = (total > 0) ? Math.min(100, Math.round(voted / total * 100)) + '%' : '0%';
+    renderWaitingOn();
+  }
+
+  // Who is in the room but has not submitted yet — so Standards knows whether
+  // to hold the poll open. Self-paced quizzes also show how far along each is.
+  function renderWaitingOn() {
+    var el = $('ap-waiting');
+    if (!el) return;
+    var meta = getCurrentPollData();
+    if (!meta || meta.status !== 'open') { el.textContent = ''; return; }
+    var progress = meta.progress || {};
+    var waiting = Object.keys(connectedBrothersData).filter(function(uid) { return !cachedVotedMap[uid]; });
+    if (!waiting.length) {
+      el.textContent = connectedCount ? 'Everyone connected has voted.' : '';
+      return;
+    }
+    var shown = waiting.slice(0, 15);
+    var pending = shown.length;
+    var labels = new Array(shown.length);
+    shown.forEach(function(uid, i) {
+      getName(uid, function(n) {
+        var pr = progress[uid];
+        labels[i] = n + (pr && pr.total ? ' (' + pr.answered + '/' + pr.total + ')' : '');
+        if (--pending === 0) {
+          el.textContent = 'Waiting on ' + waiting.length + ': ' + labels.join(', ') +
+            (waiting.length > shown.length ? ', and ' + (waiting.length - shown.length) + ' more' : '');
+        }
+      });
+    });
   }
 
   // ── Connected brothers list + kick ──
@@ -1008,18 +1273,30 @@
   function renderConnectedList() {
     var list = $('connected-list');
     if (!list) return;
+    var q = (($('connected-search') && $('connected-search').value) || '').trim().toLowerCase();
     var uids = Object.keys(connectedBrothersData);
     if (uids.length === 0) {
       list.innerHTML = '<li style="color:#999;">No brothers connected yet.</li>';
       return;
     }
+    // Alphabetical once names are known; unknown names sink to the bottom.
+    uids.sort(function(a, b) { return (nameCache[a] || '~').localeCompare(nameCache[b] || '~'); });
     list.innerHTML = '';
     uids.forEach(function(uid) {
       var li = document.createElement('li');
       var nameSpan = document.createElement('span');
       nameSpan.className = 'bro-name';
-      nameSpan.textContent = 'Loading...';
-      getName(uid, function(n) { nameSpan.textContent = n; });
+      nameSpan.textContent = nameCache[uid] || 'Loading...';
+
+      function applyFilter() {
+        var n = (nameCache[uid] || '').toLowerCase();
+        li.classList.toggle('hidden', !!q && n.indexOf(q) === -1);
+      }
+      getName(uid, function(n) { nameSpan.textContent = n; applyFilter(); });
+
+      var voted = document.createElement('span');
+      voted.className = 'bro-voted';
+      voted.textContent = cachedVotedMap[uid] ? '✓ voted' : '';
 
       var kickBtn = document.createElement('button');
       kickBtn.className = 'btn-kick';
@@ -1029,8 +1306,10 @@
       });
 
       li.appendChild(nameSpan);
+      li.appendChild(voted);
       li.appendChild(kickBtn);
       list.appendChild(li);
+      applyFilter();
     });
   }
 
@@ -1355,6 +1634,8 @@
 
       initTypePicker();
       initBallotPicker();
+      initNextRound();
+      if ($('connected-search')) $('connected-search').addEventListener('input', renderConnectedList);
       initSlideUpload();
       initPacingPicker();
       refreshSetupSteps();

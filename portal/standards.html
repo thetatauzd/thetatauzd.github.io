@@ -6,7 +6,7 @@
   <title>Standards – Session control</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=16">
+  <link rel="stylesheet" href="css/portal.css?v=17">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -19,7 +19,20 @@
     .poll-status.closed { background: #666; color: #fff; }
     .poll-status.upcoming { background: #1565c0; color: #fff; }
     .queue-item { padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-    .queue-item.past { opacity: 0.45; text-decoration: line-through; }
+    .queue-item.past { opacity: 0.7; }
+    .queue-item .qi-main { cursor: pointer; flex: 1; min-width: 0; }
+    .queue-item .qi-main:hover .qi-name { text-decoration: underline; }
+    .qi-round { display: inline-block; background: #eee; color: #555; border-radius: 10px; padding: 0 0.5rem; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; vertical-align: middle; }
+    .ap-waiting { margin-top: 0.25rem; }
+    .nr-list { border: 1px solid #eee; border-radius: 8px; max-height: 360px; overflow-y: auto; margin: 0.5rem 0 0.75rem; }
+    .nr-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.45rem 0.75rem; border-bottom: 1px solid #f2f2f2; font-size: 0.92rem; }
+    .nr-row:last-child { border-bottom: none; }
+    .nr-row input[type=checkbox] { width: 18px; height: 18px; margin: 0; }
+    .nr-row .nr-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .nr-row .nr-metric { font-family: monospace; font-weight: 700; flex-shrink: 0; }
+    .nr-row.fail { color: #999; }
+    .nr-row.fail .nr-metric { color: #c62828; }
+    .nr-row.pass .nr-metric { color: #2e7d32; }
     .queue-item.current { background: #fffde7; border-left: 4px solid #FFCC33; }
     .queue-item .qi-name { font-weight: 600; }
     .queue-item .qi-type { color: #888; font-size: 0.85rem; margin-left: 0.5rem; }
@@ -143,7 +156,21 @@
     .standards-section .threshold-adjust input { width: 80px; margin: 0; }
     .standards-section .threshold-adjust .btn-small { margin: 0; }
     #panel-connected h3 { margin: 0; }
-    #panel-connected .panel-collapse { border-top: none; margin-top: 0; padding-top: 0; }
+    .connected-head { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .standards-section .connected-head .field { max-width: 240px; padding: 0.45rem 0.7rem; font-size: 0.9rem; }
+    .brother-list { max-height: 520px; overflow-y: auto; }
+    .brother-list li { gap: 0.5rem; }
+    .brother-list li .bro-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bro-voted { font-size: 0.75rem; font-weight: 600; color: #2e7d32; flex-shrink: 0; }
+    .brother-list li.hidden { display: none; }
+    .standards-section .btn-kick { margin: 0; }
+
+    /* Desktop: two columns so the whole room fits on one screen. */
+    .standards-main { max-width: 1500px; }
+    @media (min-width: 1024px) {
+      .live-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr); gap: 0 1.5rem; align-items: start; }
+      .live-grid .portal-card { margin-bottom: 1.5rem; }
+    }
 
     @media (max-width: 640px) {
       .session-bar { gap: 0.75rem 1rem; }
@@ -185,7 +212,7 @@
     </div>
   </header>
 
-  <main class="portal-container">
+  <main class="portal-container standards-main">
     <div id="reconnect-banner" class="reconnect-banner hidden">Reconnecting…</div>
 
     <!-- ── Setup: hidden while a session is live ── -->
@@ -291,6 +318,8 @@
       </div>
     </div>
 
+    <div class="live-grid">
+    <div class="live-main">
     <div class="portal-card standards-section active-poll-card hidden" id="panel-active-poll">
       <div class="now-head">
         <span class="now-label">Now</span>
@@ -302,6 +331,7 @@
         <span id="ap-vote-text">0 / 0 voted</span>
         <div class="bar"><div class="bar-fill" id="ap-bar-fill" style="width:0%;"></div></div>
       </div>
+      <p class="step-hint ap-waiting" id="ap-waiting"></p>
       <div class="now-actions">
         <button type="button" class="btn secondary now-side hidden" id="btn-prev-poll">← Previous</button>
         <button type="button" class="btn btn-primary now-main hidden" id="btn-open-poll">Open poll</button>
@@ -330,6 +360,8 @@
       <button type="button" class="btn secondary btn-small" id="btn-export-excel">Export session to Excel</button>
     </div>
 
+    </div>
+    <div class="live-side">
     <div class="portal-card standards-section hidden" id="panel-queue">
       <h3>Queue <span class="count-pill" id="queue-count"></span></h3>
       <div id="poll-queue-list"></div>
@@ -368,11 +400,41 @@
       </details>
     </div>
 
+    <div class="portal-card standards-section hidden" id="panel-next-round">
+      <h3>Next round</h3>
+      <p class="step-hint" id="nr-intro">Build the next round from the candidates who made the cut in the last one. It is added to this session's queue.</p>
+      <button type="button" class="btn btn-primary btn-small" id="btn-build-round">Build next round</button>
+      <div id="nr-builder" class="hidden">
+        <div class="add-row">
+          <div style="flex:0 0 auto;">
+            <label class="field-label" id="nr-cutoff-label" for="nr-cutoff">Cutoff</label>
+            <input type="number" id="nr-cutoff" class="field" style="width:110px;">
+          </div>
+          <div>
+            <label class="field-label">How brothers move through the next round</label>
+            <div class="option-presets" id="nr-pacing">
+              <button type="button" class="option-preset-btn selected" data-pacing="self">Self-paced quiz</button>
+              <button type="button" class="option-preset-btn" data-pacing="standards">Standards opens each one</button>
+            </div>
+          </div>
+        </div>
+        <p class="step-hint" id="nr-summary"></p>
+        <div id="nr-list" class="nr-list"></div>
+        <div class="add-row">
+          <button type="button" class="btn btn-primary btn-small" id="btn-create-round">Create round</button>
+          <button type="button" class="btn secondary btn-small" id="btn-cancel-round">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <div class="portal-card standards-section hidden" id="panel-connected">
-      <details class="panel-collapse" id="connected-details">
-        <summary>Connected brothers <span class="count-pill" id="connected-count">0</span></summary>
-        <ul class="brother-list" id="connected-list"></ul>
-      </details>
+      <div class="connected-head">
+        <h3>Connected <span class="count-pill" id="connected-count">0</span></h3>
+        <input type="search" id="connected-search" class="field" placeholder="Search a brother…" autocomplete="off">
+      </div>
+      <ul class="brother-list" id="connected-list"></ul>
+    </div>
+    </div>
     </div>
   </main>
 
@@ -381,10 +443,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="js/firebase-config.js?v=16"></script>
-  <script src="js/auth.js?v=16"></script>
-  <script src="js/db.js?v=16"></script>
-  <script src="js/slides.js?v=16"></script>
-  <script src="js/standards.js?v=16"></script>
+  <script src="js/firebase-config.js?v=17"></script>
+  <script src="js/auth.js?v=17"></script>
+  <script src="js/db.js?v=17"></script>
+  <script src="js/slides.js?v=17"></script>
+  <script src="js/standards.js?v=17"></script>
 </body>
 </html>
