@@ -154,61 +154,157 @@
       }
 
       // Polls built from a slide deck show that candidate's card above the
-      // options, with the options in one evenly split row beneath it.
+      // picker. Either way the vote is two-step: pick, then lock in.
       if (poll.rosterIndex !== null && roster[poll.rosterIndex]) {
         var cand = roster[poll.rosterIndex];
         container.appendChild(buildCandidateCard(cand, poll.name));
-        quizKind = 'option';
-        quizChoices = choices;
-        scorecardState = {};
-        container.appendChild(buildChoiceButtons(cand.name, function(v, btn, group) {
-          if (hasVoted) return;
-          group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
-          btn.classList.add('voted');
-          submitVote(v, function(success) {
-            if (!success) {
-              group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
-              btn.classList.remove('voted');
-            }
-          });
-        }));
+        renderLockIn(container, poll, { candidateName: cand.name });
         return;
       }
-      choices.forEach(function(v) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'vote-btn';
-        if (myVote === v) btn.classList.add('voted');
-        btn.textContent = v;
-        btn.addEventListener('click', function() {
-          if (hasVoted) return;
-          submitVote(v);
-        });
-        container.appendChild(btn);
-      });
+      renderLockIn(container, poll, {});
       return;
     }
 
-    // Yes/No/Abstain types
-    var ynaChoices = [];
-    if (type === 'rush_bid' || type === 'motion' || type === 'pnm_vote') {
-      ynaChoices = ['yes', 'no', 'abstain'];
-    } else if (type === 'pnm_depledge') {
-      ynaChoices = ['yes', 'no'];
+    // Yes/No/Abstain types: same two-step picker.
+    renderLockIn(container, poll, {});
+  }
+
+  // ── Pick, then lock in ──
+  // Every single-choice poll (one candidate, a motion, a bid) is two-step:
+  // pick, see "You're submitting: X", then Lock in — so a stray tap can't
+  // cast a vote. While the poll is still upcoming the same picker preloads
+  // the choice (kept on the phone, clearly labelled) and the lock-in button
+  // only arms once Standards opens the poll.
+
+  function pendingKey(pollId) { return (sessionId && pollId) ? 'pending_' + sessionId + '_' + pollId : null; }
+  function loadPending(pollId) {
+    try { var raw = store().getItem(pendingKey(pollId)); return raw ? JSON.parse(raw).choice : null; } catch (e) { return null; }
+  }
+  function savePending(pollId, choice) { try { store().setItem(pendingKey(pollId), JSON.stringify({ choice: choice })); } catch (e) {} }
+  function clearPending(pollId) { try { store().removeItem(pendingKey(pollId)); } catch (e) {} }
+
+  function capitalize(v) { return String(v).charAt(0).toUpperCase() + String(v).slice(1); }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  /** What a single-choice poll offers, how to label it, and how to colour it. */
+  function choiceSpec(poll) {
+    var t = poll.type;
+    if (t === 'ranked' || t === 'rush_prelim') {
+      return { kind: 'score', values: SCORE_CHOICES, label: function(v) { return v; },
+        tone: function(v) { return v.charAt(0) === '+' ? 'good' : (v.charAt(0) === '-' ? 'bad' : ''); } };
+    }
+    var yn = function(v) { var l = String(v).toLowerCase(); return l === 'yes' ? 'good' : (l === 'no' ? 'bad' : ''); };
+    if (t === 'regular') {
+      var opts = (poll.options && poll.options.length) ? poll.options : ((sessionMeta && sessionMeta.voteOptions) || []);
+      return { kind: 'option', values: opts, label: function(v) { return v; }, tone: yn };
+    }
+    if (t === 'pnm_depledge') return { kind: 'option', values: ['yes', 'no'], label: capitalize, tone: yn };
+    return { kind: 'option', values: ['yes', 'no', 'abstain'], label: capitalize, tone: yn };
+  }
+
+  function renderLockIn(container, poll, opts) {
+    opts = opts || {};
+    var spec = choiceSpec(poll);
+    if (!spec.values.length) {
+      container.innerHTML = '<p style="color:#c62828;">No vote options configured for this session.</p>';
+      return;
+    }
+    var preload = opts.mode === 'preload';
+    var name = opts.candidateName || '__single';
+    var pending = loadPending(poll.pollId);
+    if (pending !== null && spec.values.indexOf(pending) === -1) pending = null;
+    var picking = pending === null;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'lockin-wrap';
+
+    function submitValue() {
+      if (spec.kind === 'score') {
+        if (opts.candidateName) { var b = {}; b[PortalDb.ballotKey(opts.candidateName)] = parseInt(pending, 10); return b; }
+        return parseInt(pending, 10);
+      }
+      return pending;
     }
 
-    ynaChoices.forEach(function(v) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'vote-btn';
-      if (myVote === v) btn.classList.add('voted');
-      btn.textContent = v.charAt(0).toUpperCase() + v.slice(1);
-      btn.addEventListener('click', function() {
-        if (hasVoted) return;
-        submitVote(v);
+    function render() {
+      wrap.innerHTML = '';
+      if (preload) {
+        var pre = document.createElement('div');
+        pre.className = 'lockin-preload';
+        pre.innerHTML = '<strong>Preloading.</strong> Pick now if you like — nothing is submitted until you lock it in after Standards opens the poll.';
+        wrap.appendChild(pre);
+      }
+
+      if (picking) {
+        quizKind = spec.kind;
+        quizChoices = spec.values;
+        scorecardState = {};
+        if (pending !== null) scorecardState[name] = pending;
+        var group = buildChoiceButtons(name, function(v) {
+          pending = v;
+          savePending(poll.pollId, v);
+          picking = false;
+          render();
+        });
+        group.querySelectorAll('.quiz-score').forEach(function(b) { b.textContent = spec.label(b.textContent); });
+        wrap.appendChild(group);
+
+        var hint = document.createElement('p');
+        hint.className = 'lockin-hint';
+        hint.textContent = pending === null ? 'Pick one. You lock it in on the next step.' : 'Pick a different one, or keep ' + spec.label(pending) + '.';
+        wrap.appendChild(hint);
+        if (pending !== null) {
+          var keep = document.createElement('button');
+          keep.type = 'button';
+          keep.className = 'btn btn-change lockin-keep';
+          keep.textContent = 'Keep ' + spec.label(pending);
+          keep.addEventListener('click', function() { picking = false; render(); });
+          wrap.appendChild(keep);
+        }
+        return;
+      }
+
+      var box = document.createElement('div');
+      box.className = 'lockin-box';
+      box.innerHTML = '<div class="lockin-label">' + (preload ? 'Preloaded — you\'ll be submitting' : 'You\'re submitting') + '</div>' +
+        '<div class="lockin-choice ' + spec.tone(pending) + '">' + escapeHtml(spec.label(pending)) + '</div>';
+      var actions = document.createElement('div');
+      actions.className = 'lockin-actions';
+
+      var lock = document.createElement('button');
+      lock.type = 'button';
+      lock.className = 'btn btn-primary btn-lock';
+      lock.textContent = preload ? 'Locks in once the poll opens' : 'Lock in vote';
+      lock.disabled = preload;
+      lock.addEventListener('click', function() {
+        if (preload) return;
+        lock.disabled = true;
+        lock.textContent = 'Submitting…';
+        submitVote(submitValue(), function(ok) {
+          if (ok) { clearPending(poll.pollId); return; }
+          lock.disabled = false;
+          lock.textContent = 'Lock in vote';
+        });
       });
-      container.appendChild(btn);
-    });
+
+      var change = document.createElement('button');
+      change.type = 'button';
+      change.className = 'btn btn-change';
+      change.textContent = 'Change vote';
+      change.addEventListener('click', function() { picking = true; render(); });
+
+      actions.appendChild(lock);
+      actions.appendChild(change);
+      box.appendChild(actions);
+      wrap.appendChild(box);
+    }
+
+    render();
+    container.appendChild(wrap);
   }
 
   /**
@@ -405,6 +501,7 @@
       return;
     }
     box.appendChild(buildCandidateCard(cand, poll.name));
+    if (status !== 'closed') renderLockIn(box, poll, { mode: 'preload', candidateName: cand.name });
     box.classList.remove('hidden');
     // "Up next" would just repeat the card while this poll is upcoming; after a
     // close it points at the following candidate, which is worth keeping.
@@ -464,19 +561,7 @@
       : candidateByName(name);
 
     container.appendChild(buildCandidateCard(cand, name));
-
-    container.appendChild(buildChoiceButtons(name, function(s, btn, group) {
-      group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
-      btn.classList.add('voted');
-      var ballot = {};
-      ballot[PortalDb.ballotKey(name)] = ballotValue(s);
-      submitVote(ballot, function(success) {
-        if (!success) {
-          group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
-          btn.classList.remove('voted');
-        }
-      });
-    }));
+    renderLockIn(container, poll, { candidateName: name });
   }
 
   function ratedCount() {
