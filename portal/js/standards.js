@@ -578,6 +578,9 @@
               threshold: p.threshold != null ? p.threshold : null,
               minimumScore: p.minimumScore != null ? p.minimumScore : null,
               candidates: p.candidates || null,
+              options: p.options || null,
+              rosterIndex: (typeof p.rosterIndex === 'number') ? p.rosterIndex : null,
+              round: p.round || 1,
               aggregation: agg, result: computeResult(p, agg), voters: {}
             };
 
