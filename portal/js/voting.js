@@ -169,18 +169,19 @@
     renderLockIn(container, poll, {});
   }
 
-  // ── Pick, then lock in ──
-  // Every single-choice poll (one candidate, a motion, a bid) is two-step:
-  // pick, see "You're submitting: X", then Lock in — so a stray tap can't
-  // cast a vote. While the poll is still upcoming the same picker preloads
-  // the choice (kept on the phone, clearly labelled) and the lock-in button
-  // only arms once Standards opens the poll.
+  // ── Tap to vote, or lock in ahead of time ──
+  // While a poll is OPEN, one tap casts the vote. While the next candidate is
+  // still UPCOMING, the same buttons let a brother pick and lock in a choice
+  // (kept on the phone, clearly labelled); when Standards opens the poll the
+  // locked-in choice is cast automatically. Change vote reopens the picker.
 
   function pendingKey(pollId) { return (sessionId && pollId) ? 'pending_' + sessionId + '_' + pollId : null; }
   function loadPending(pollId) {
-    try { var raw = store().getItem(pendingKey(pollId)); return raw ? JSON.parse(raw).choice : null; } catch (e) { return null; }
+    try { var raw = store().getItem(pendingKey(pollId)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
   }
-  function savePending(pollId, choice) { try { store().setItem(pendingKey(pollId), JSON.stringify({ choice: choice })); } catch (e) {} }
+  function savePending(pollId, choice, locked) {
+    try { store().setItem(pendingKey(pollId), JSON.stringify({ choice: choice, locked: !!locked })); } catch (e) {}
+  }
   function clearPending(pollId) { try { store().removeItem(pendingKey(pollId)); } catch (e) {} }
 
   function capitalize(v) { return String(v).charAt(0).toUpperCase() + String(v).slice(1); }
@@ -215,96 +216,118 @@
     }
     var preload = opts.mode === 'preload';
     var name = opts.candidateName || '__single';
-    var pending = loadPending(poll.pollId);
-    if (pending !== null && spec.values.indexOf(pending) === -1) pending = null;
-    var picking = pending === null;
+    var saved = loadPending(poll.pollId);
+    var choice = (saved && spec.values.indexOf(saved.choice) !== -1) ? saved.choice : null;
+    var locked = !!(saved && saved.locked && choice !== null);
+    var picking = preload ? (choice === null || !locked && !saved) : true;
 
     var wrap = document.createElement('div');
     wrap.className = 'lockin-wrap';
+    container.appendChild(wrap);
 
-    function submitValue() {
+    function valueFor(v) {
       if (spec.kind === 'score') {
-        if (opts.candidateName) { var b = {}; b[PortalDb.ballotKey(opts.candidateName)] = parseInt(pending, 10); return b; }
-        return parseInt(pending, 10);
+        if (opts.candidateName) { var b = {}; b[PortalDb.ballotKey(opts.candidateName)] = parseInt(v, 10); return b; }
+        return parseInt(v, 10);
       }
-      return pending;
+      return v;
     }
 
-    function render() {
-      wrap.innerHTML = '';
-      if (preload) {
-        var pre = document.createElement('div');
-        pre.className = 'lockin-preload';
-        pre.innerHTML = '<strong>Preloading.</strong> Pick now if you like — nothing is submitted until you lock it in after Standards opens the poll.';
-        wrap.appendChild(pre);
-      }
+    function cast(v, group, btn) {
+      if (group) group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = true; });
+      if (btn) btn.classList.add('voted');
+      submitVote(valueFor(v), function(ok) {
+        if (ok) { clearPending(poll.pollId); return; }
+        if (group) group.querySelectorAll('.quiz-score').forEach(function(b) { b.disabled = false; });
+        if (btn) btn.classList.remove('voted');
+      });
+    }
 
-      if (picking) {
-        quizKind = spec.kind;
-        quizChoices = spec.values;
-        scorecardState = {};
-        if (pending !== null) scorecardState[name] = pending;
-        var group = buildChoiceButtons(name, function(v) {
-          pending = v;
-          savePending(poll.pollId, v);
-          picking = false;
-          render();
-        });
-        group.querySelectorAll('.quiz-score').forEach(function(b) { b.textContent = spec.label(b.textContent); });
-        wrap.appendChild(group);
+    function buttons(onPick) {
+      quizKind = spec.kind;
+      quizChoices = spec.values;
+      scorecardState = {};
+      if (choice !== null) scorecardState[name] = choice;
+      var group = buildChoiceButtons(name, onPick);
+      group.querySelectorAll('.quiz-score').forEach(function(b) { b.textContent = spec.label(b.textContent); });
+      return group;
+    }
 
-        var hint = document.createElement('p');
-        hint.className = 'lockin-hint';
-        hint.textContent = pending === null ? 'Pick one. You lock it in on the next step.' : 'Pick a different one, or keep ' + spec.label(pending) + '.';
-        wrap.appendChild(hint);
-        if (pending !== null) {
-          var keep = document.createElement('button');
-          keep.type = 'button';
-          keep.className = 'btn btn-change lockin-keep';
-          keep.textContent = 'Keep ' + spec.label(pending);
-          keep.addEventListener('click', function() { picking = false; render(); });
-          wrap.appendChild(keep);
-        }
+    function note(cls, html) {
+      var el = document.createElement('div');
+      el.className = cls;
+      el.innerHTML = html;
+      wrap.appendChild(el);
+    }
+
+    // ── OPEN: one tap casts. A locked-in choice casts itself right away. ──
+    if (!preload) {
+      if (locked) {
+        note('lockin-preload lockin-casting', '<strong>Casting your locked-in vote:</strong> ' + escapeHtml(spec.label(choice)) + '…');
+        cast(choice, null, null);
         return;
       }
-
-      var box = document.createElement('div');
-      box.className = 'lockin-box';
-      box.innerHTML = '<div class="lockin-label">' + (preload ? 'Preloaded — you\'ll be submitting' : 'You\'re submitting') + '</div>' +
-        '<div class="lockin-choice ' + spec.tone(pending) + '">' + escapeHtml(spec.label(pending)) + '</div>';
-      var actions = document.createElement('div');
-      actions.className = 'lockin-actions';
-
-      var lock = document.createElement('button');
-      lock.type = 'button';
-      lock.className = 'btn btn-primary btn-lock';
-      lock.textContent = preload ? 'Locks in once the poll opens' : 'Lock in vote';
-      lock.disabled = preload;
-      lock.addEventListener('click', function() {
-        if (preload) return;
-        lock.disabled = true;
-        lock.textContent = 'Submitting…';
-        submitVote(submitValue(), function(ok) {
-          if (ok) { clearPending(poll.pollId); return; }
-          lock.disabled = false;
-          lock.textContent = 'Lock in vote';
-        });
-      });
-
-      var change = document.createElement('button');
-      change.type = 'button';
-      change.className = 'btn btn-change';
-      change.textContent = 'Change vote';
-      change.addEventListener('click', function() { picking = true; render(); });
-
-      actions.appendChild(lock);
-      actions.appendChild(change);
-      box.appendChild(actions);
-      wrap.appendChild(box);
+      wrap.appendChild(buttons(function(v, btn, group) { cast(v, group, btn); }));
+      var hint = document.createElement('p');
+      hint.className = 'lockin-hint';
+      hint.textContent = choice !== null ? 'You picked ' + spec.label(choice) + ' earlier but did not lock it in. Tap to cast your vote.' : 'Tap to cast your vote.';
+      wrap.appendChild(hint);
+      return;
     }
 
+    // ── UPCOMING: pick, lock in, then it casts itself when the poll opens. ──
+    function render() {
+      wrap.innerHTML = '';
+      if (picking) {
+        note('lockin-preload', '<strong>Voting has not opened yet.</strong> Pick now and lock it in — it will be cast for you the moment Standards opens the poll.');
+        wrap.appendChild(buttons(function(v) {
+          choice = v; locked = false;
+          savePending(poll.pollId, v, false);
+          picking = false;
+          render();
+        }));
+        return;
+      }
+      if (!locked) {
+        var box = document.createElement('div');
+        box.className = 'lockin-box';
+        box.innerHTML = '<div class="lockin-label">You picked</div>' +
+          '<div class="lockin-choice ' + spec.tone(choice) + '">' + escapeHtml(spec.label(choice)) + '</div>' +
+          '<p class="lockin-hint">Not locked in yet — nothing happens when the poll opens until you lock it in.</p>';
+        var actions = document.createElement('div');
+        actions.className = 'lockin-actions';
+        var lock = document.createElement('button');
+        lock.type = 'button';
+        lock.className = 'btn btn-primary btn-lock';
+        lock.textContent = 'Lock in ' + spec.label(choice);
+        lock.addEventListener('click', function() { locked = true; savePending(poll.pollId, choice, true); render(); });
+        var change = document.createElement('button');
+        change.type = 'button';
+        change.className = 'btn btn-change';
+        change.textContent = 'Change';
+        change.addEventListener('click', function() { picking = true; render(); });
+        actions.appendChild(lock); actions.appendChild(change);
+        box.appendChild(actions);
+        wrap.appendChild(box);
+        return;
+      }
+      var done = document.createElement('div');
+      done.className = 'lockin-box locked';
+      done.innerHTML = '<div class="lockin-label">Locked in</div>' +
+        '<div class="lockin-choice ' + spec.tone(choice) + '">' + escapeHtml(spec.label(choice)) + '</div>' +
+        '<p class="lockin-hint">This casts automatically the moment Standards opens the poll.</p>';
+      var actions2 = document.createElement('div');
+      actions2.className = 'lockin-actions';
+      var change2 = document.createElement('button');
+      change2.type = 'button';
+      change2.className = 'btn btn-change';
+      change2.textContent = 'Change vote';
+      change2.addEventListener('click', function() { locked = false; savePending(poll.pollId, choice, false); picking = true; render(); });
+      actions2.appendChild(change2);
+      done.appendChild(actions2);
+      wrap.appendChild(done);
+    }
     render();
-    container.appendChild(wrap);
   }
 
   /**

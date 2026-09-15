@@ -593,7 +593,10 @@ body {
 .btn-lock:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-change { background: #eee; color: #444; }
 .btn-change:hover { background: #e0e0e0; }
-.lockin-keep { display: block; margin: 0.5rem auto 0; }
+.lockin-box.locked { border-color: #2e7d32; background: #f1f8e9; }
+.lockin-box.locked .lockin-label { color: #2e7d32; }
+.lockin-casting { border-color: #2e7d32; color: #1b5e20; background: #f1f8e9; text-align: center; }
+.lockin-box .lockin-hint { margin: 0 0 0.75rem; }
 
 .quiz-review-list {
   max-height: 55vh;
