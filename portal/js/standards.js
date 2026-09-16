@@ -1242,11 +1242,16 @@
   }
 
   function updateVoteCount() {
-    var voted = cachedVotedCount;
     var total = connectedCount;
-    $('ap-vote-text').textContent = voted + ' / ' + total + ' voted' +
-      (total && onlineCount < total ? ' · ' + (total - onlineCount) + ' offline' : '');
-    $('ap-bar-fill').style.width = (total > 0) ? Math.min(100, Math.round(voted / total * 100)) + '%' : '0%';
+    // Count votes from people still in the session against the session size;
+    // votes from brothers removed since are still counted in the result, and
+    // are called out separately so the bar never reads 50 / 45.
+    var votedIn = Object.keys(cachedVotedMap).filter(function(uid) { return !!connectedBrothersData[uid]; }).length;
+    var extra = cachedVotedCount - votedIn;
+    $('ap-vote-text').textContent = votedIn + ' / ' + total + ' voted' +
+      (total && onlineCount < total ? ' · ' + (total - onlineCount) + ' offline' : '') +
+      (extra > 0 ? ' · +' + extra + ' from removed' : '');
+    $('ap-bar-fill').style.width = (total > 0) ? Math.min(100, Math.round(votedIn / total * 100)) + '%' : '0%';
     renderWaitingOn();
   }
 
