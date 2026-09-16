@@ -596,6 +596,9 @@ body {
 .lockin-box.locked { border-color: #2e7d32; background: #f1f8e9; }
 .lockin-box.locked .lockin-label { color: #2e7d32; }
 .lockin-casting { border-color: #2e7d32; color: #1b5e20; background: #f1f8e9; text-align: center; }
+.lockin-selected { border-color: #2e7d32; color: #1b5e20; background: #f1f8e9; }
+#vote-confirm strong.good { color: #2e7d32; }
+#vote-confirm strong.bad { color: #c62828; }
 .lockin-box .lockin-hint { margin: 0 0 0.75rem; }
 
 .quiz-review-list {

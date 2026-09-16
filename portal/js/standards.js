@@ -17,7 +17,13 @@
   var currentIndex = 0;
   var voterDebounce = null;
   var nameCache = {};
-  var connectedCount = 0;
+  var connectedCount = 0;      // everyone who joined (participants)
+  var onlineCount = 0;         // of those, connected right now
+
+  function isOnline(uid) {
+    var v = connectedBrothersData[uid];
+    return !(v && typeof v === 'object' && v.online === false);
+  }
   var connectedBrothersData = {};
   var cachedVotedCount = 0;
   var cachedVotedMap = {};
@@ -1238,7 +1244,8 @@
   function updateVoteCount() {
     var voted = cachedVotedCount;
     var total = connectedCount;
-    $('ap-vote-text').textContent = voted + ' / ' + total + ' voted';
+    $('ap-vote-text').textContent = voted + ' / ' + total + ' voted' +
+      (total && onlineCount < total ? ' · ' + (total - onlineCount) + ' offline' : '');
     $('ap-bar-fill').style.width = (total > 0) ? Math.min(100, Math.round(voted / total * 100)) + '%' : '0%';
     renderWaitingOn();
   }
@@ -1262,7 +1269,7 @@
     shown.forEach(function(uid, i) {
       getName(uid, function(n) {
         var pr = progress[uid];
-        labels[i] = n + (pr && pr.total ? ' (' + pr.answered + '/' + pr.total + ')' : '');
+        labels[i] = n + (pr && pr.total ? ' (' + pr.answered + '/' + pr.total + ')' : '') + (isOnline(uid) ? '' : ' · offline');
         if (--pending === 0) {
           el.textContent = 'Waiting on ' + waiting.length + ': ' + labels.join(', ') +
             (waiting.length > shown.length ? ', and ' + (waiting.length - shown.length) + ' more' : '');
@@ -1297,9 +1304,15 @@
       }
       getName(uid, function(n) { nameSpan.textContent = n; applyFilter(); });
 
+      var dot = document.createElement('span');
+      dot.className = 'bro-status ' + (isOnline(uid) ? 'online' : 'offline');
+      dot.title = isOnline(uid) ? 'Online' : 'Offline (phone asleep, closed, or no signal)';
+      li.appendChild(dot);
+
       var voted = document.createElement('span');
       voted.className = 'bro-voted';
-      voted.textContent = cachedVotedMap[uid] ? '✓ voted' : '';
+      voted.textContent = cachedVotedMap[uid] ? '✓ voted' : (isOnline(uid) ? '' : 'offline');
+      if (!isOnline(uid) && !cachedVotedMap[uid]) voted.classList.add('is-off');
 
       var kickBtn = document.createElement('button');
       kickBtn.className = 'btn-kick';
@@ -1314,6 +1327,18 @@
       list.appendChild(li);
       applyFilter();
     });
+  }
+
+  // Drop everyone whose phone is not connected right now. Standards uses this
+  // after a break, so the voted/total count only counts people in the room.
+  function removeOffline() {
+    if (!sessionId) return;
+    var offline = Object.keys(connectedBrothersData).filter(function(uid) { return !isOnline(uid); });
+    if (!offline.length) return;
+    if (!confirm('Remove ' + offline.length + ' offline brother' + (offline.length === 1 ? '' : 's') + ' from the session? Anyone who comes back can rejoin with the code.')) return;
+    var updates = {};
+    offline.forEach(function(uid) { updates['sessions/' + sessionId + '/connectedBrothers/' + uid] = null; });
+    db.ref().update(updates).catch(function(err) { alert('Failed to remove: ' + err.message); });
   }
 
   function kickBrother(uid, name) {
@@ -1614,8 +1639,15 @@
     var connCb = connRef.on('value', function(s) {
       connectedBrothersData = s.val() || {};
       connectedCount = Object.keys(connectedBrothersData).length;
+      onlineCount = Object.keys(connectedBrothersData).filter(isOnline).length;
       $('connected-count').textContent = connectedCount;
-      $('bar-connected').textContent = connectedCount + ' connected';
+      $('bar-connected').textContent = connectedCount + ' in session · ' + onlineCount + ' online';
+      var offBtn = $('btn-remove-offline');
+      if (offBtn) {
+        var off = connectedCount - onlineCount;
+        offBtn.textContent = 'Remove offline' + (off ? ' (' + off + ')' : '');
+        offBtn.disabled = off === 0;
+      }
       renderConnectedList();
       updateVoteCount();
     }, onErr('connectedBrothers'));
@@ -1639,6 +1671,7 @@
       initBallotPicker();
       initNextRound();
       if ($('connected-search')) $('connected-search').addEventListener('input', renderConnectedList);
+      if ($('btn-remove-offline')) $('btn-remove-offline').addEventListener('click', removeOffline);
       initSlideUpload();
       initPacingPicker();
       refreshSetupSteps();

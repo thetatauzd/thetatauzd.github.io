@@ -50,8 +50,10 @@
     if (l) l.classList.add('hidden');
   }
 
-  function renderBoard(connectedUids, hasVotedMap) {
+  function renderBoard(connectedUids, hasVotedMap, connMap) {
     showLiveBoard();
+    connMap = connMap || {};
+    function offline(uid) { var v = connMap[uid]; return v && typeof v === 'object' && v.online === false; }
     var votedCount = Object.keys(hasVotedMap || {}).length;
     var total = (connectedUids || []).length;
     var notVoted = (connectedUids || []).filter(function(uid) {
@@ -66,7 +68,7 @@
       if (headingEl) headingEl.textContent = notVoted.length > 0 ? 'Still need to vote (' + notVoted.length + '):' : '';
       if (listEl) {
         listEl.innerHTML = notVoted.map(function(uid) {
-          return '<li>' + (userNames[uid] || uid) + '</li>';
+          return '<li>' + (userNames[uid] || uid) + (offline(uid) ? ' <span style="color:#999; font-size:0.8em;">offline</span>' : '') + '</li>';
         }).join('');
       }
       if (bannerEl) {
@@ -161,7 +163,7 @@
       if (!connectedRef) return renderBoard([], voted);
       connectedRef.once('value', function(cSnap) {
         var conn = cSnap.val() || {};
-        renderBoard(Object.keys(conn), voted);
+        renderBoard(Object.keys(conn), voted, conn);
       });
     });
     unsubHasVoted = function() { hasVotedRef.off('value', cb); };
@@ -264,7 +266,7 @@
           var voted = snap.val() || {};
           PortalDb.connectedBrothersRef(sid).once('value', function(cSnap) {
             var conn = cSnap.val() || {};
-            renderBoard(Object.keys(conn), voted);
+            renderBoard(Object.keys(conn), voted, conn);
           });
         });
       }

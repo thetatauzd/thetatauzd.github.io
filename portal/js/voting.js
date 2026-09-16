@@ -122,6 +122,8 @@
     if (hasVoted) {
       if (confirmEl) confirmEl.classList.remove('hidden');
       showNextUp(document.getElementById('vote-next'));
+      if (poll.status === 'open') renderChangeVote(poll, myVote, container);
+      else renderChangeVote(poll, myVote, document.createElement('div'));
       return;
     }
     if (confirmEl) confirmEl.classList.add('hidden');
@@ -169,19 +171,19 @@
     renderLockIn(container, poll, {});
   }
 
-  // ── Tap to vote, or lock in ahead of time ──
-  // While a poll is OPEN, one tap casts the vote. While the next candidate is
-  // still UPCOMING, the same buttons let a brother pick and lock in a choice
-  // (kept on the phone, clearly labelled); when Standards opens the poll the
-  // locked-in choice is cast automatically. Change vote reopens the picker.
+  // ── Tap to vote, pre-select while up next, change while open ──
+  // OPEN poll: one tap casts. UPCOMING candidate: tapping just highlights a
+  // pick (kept on the phone); the moment Standards opens the poll it is sent
+  // automatically. After any vote on a single-choice poll a Change vote
+  // button lets the brother resubmit while the poll is still open.
+
+  var changingVote = false;
 
   function pendingKey(pollId) { return (sessionId && pollId) ? 'pending_' + sessionId + '_' + pollId : null; }
   function loadPending(pollId) {
-    try { var raw = store().getItem(pendingKey(pollId)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+    try { var raw = store().getItem(pendingKey(pollId)); return raw ? JSON.parse(raw).choice : null; } catch (e) { return null; }
   }
-  function savePending(pollId, choice, locked) {
-    try { store().setItem(pendingKey(pollId), JSON.stringify({ choice: choice, locked: !!locked })); } catch (e) {}
-  }
+  function savePending(pollId, choice) { try { store().setItem(pendingKey(pollId), JSON.stringify({ choice: choice })); } catch (e) {} }
   function clearPending(pollId) { try { store().removeItem(pendingKey(pollId)); } catch (e) {} }
 
   function capitalize(v) { return String(v).charAt(0).toUpperCase() + String(v).slice(1); }
@@ -189,6 +191,10 @@
     return String(s == null ? '' : s).replace(/[&<>"]/g, function(c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
     });
+  }
+
+  function isSingleChoice(poll) {
+    return !(poll && poll.candidates && poll.candidates.length > 1);
   }
 
   /** What a single-choice poll offers, how to label it, and how to colour it. */
@@ -207,6 +213,44 @@
     return { kind: 'option', values: ['yes', 'no', 'abstain'], label: capitalize, tone: yn };
   }
 
+  /** The button label that corresponds to a stored vote value. */
+  function choiceFromVote(spec, vote) {
+    var v = vote;
+    if (v && typeof v === 'object') { var ks = Object.keys(v); v = ks.length ? v[ks[0]] : null; }
+    if (v === null || v === undefined) return null;
+    if (spec.kind === 'score') { var n = Number(v); return n > 0 ? '+' + n : String(n); }
+    return String(v);
+  }
+
+  /** After a vote on a single-choice poll: say what went in and offer Change vote. */
+  function renderChangeVote(poll, myVote, container) {
+    var confirmEl = document.getElementById('vote-confirm');
+    if (!isSingleChoice(poll)) {
+      if (confirmEl) confirmEl.textContent = 'Your vote has been recorded. You cannot change it.';
+      return;
+    }
+    var spec = choiceSpec(poll);
+    var label = choiceFromVote(spec, myVote);
+    if (confirmEl) {
+      confirmEl.innerHTML = label !== null
+        ? 'Your vote is in: <strong class="' + spec.tone(label) + '">' + escapeHtml(spec.label(label)) + '</strong>. You can change it while the poll is open.'
+        : 'Your vote has been recorded. You can change it while the poll is open.';
+    }
+    var change = document.createElement('button');
+    change.type = 'button';
+    change.className = 'btn btn-change lockin-keep';
+    change.textContent = 'Change vote';
+    change.addEventListener('click', function() {
+      if (label !== null) savePending(poll.pollId, label);
+      changingVote = true;
+      if (confirmEl) confirmEl.classList.add('hidden');
+      voteUIRendered = false;
+      renderVoteOptions(poll, false, null);
+      voteUIRendered = true;
+    });
+    container.appendChild(change);
+  }
+
   function renderLockIn(container, poll, opts) {
     opts = opts || {};
     var spec = choiceSpec(poll);
@@ -217,9 +261,7 @@
     var preload = opts.mode === 'preload';
     var name = opts.candidateName || '__single';
     var saved = loadPending(poll.pollId);
-    var choice = (saved && spec.values.indexOf(saved.choice) !== -1) ? saved.choice : null;
-    var locked = !!(saved && saved.locked && choice !== null);
-    var picking = preload ? (choice === null || !locked && !saved) : true;
+    var choice = (saved !== null && spec.values.indexOf(saved) !== -1) ? saved : null;
 
     var wrap = document.createElement('div');
     wrap.className = 'lockin-wrap';
@@ -260,72 +302,36 @@
       wrap.appendChild(el);
     }
 
-    // ── OPEN: one tap casts. A locked-in choice casts itself right away. ──
+    // ── OPEN: a pre-selected pick sends itself; otherwise one tap casts. ──
     if (!preload) {
-      if (locked) {
-        note('lockin-preload lockin-casting', '<strong>Casting your locked-in vote:</strong> ' + escapeHtml(spec.label(choice)) + '…');
+      var wasChanging = changingVote;
+      changingVote = false;
+      if (choice !== null && !wasChanging) {
+        note('lockin-preload lockin-casting', '<strong>Sending your vote:</strong> ' + escapeHtml(spec.label(choice)) + '…');
         cast(choice, null, null);
         return;
       }
       wrap.appendChild(buttons(function(v, btn, group) { cast(v, group, btn); }));
       var hint = document.createElement('p');
       hint.className = 'lockin-hint';
-      hint.textContent = choice !== null ? 'You picked ' + spec.label(choice) + ' earlier but did not lock it in. Tap to cast your vote.' : 'Tap to cast your vote.';
+      hint.textContent = wasChanging ? 'Tap your new vote. It replaces the one you sent.' : 'Tap to cast your vote.';
       wrap.appendChild(hint);
       return;
     }
 
-    // ── UPCOMING: pick, lock in, then it casts itself when the poll opens. ──
+    // ── UPCOMING: tap to pre-select; it is sent when the poll opens. ──
     function render() {
       wrap.innerHTML = '';
-      if (picking) {
-        note('lockin-preload', '<strong>Voting has not opened yet.</strong> Pick now and lock it in — it will be cast for you the moment Standards opens the poll.');
-        wrap.appendChild(buttons(function(v) {
-          choice = v; locked = false;
-          savePending(poll.pollId, v, false);
-          picking = false;
-          render();
-        }));
-        return;
+      if (choice === null) {
+        note('lockin-preload', '<strong>Voting has not opened yet.</strong> Tap your pick now and it will be sent for you the moment Standards opens the poll.');
+      } else {
+        note('lockin-preload lockin-selected', '<strong>Selected: ' + escapeHtml(spec.label(choice)) + '.</strong> It will be sent automatically when the poll opens. Tap another to change.');
       }
-      if (!locked) {
-        var box = document.createElement('div');
-        box.className = 'lockin-box';
-        box.innerHTML = '<div class="lockin-label">You picked</div>' +
-          '<div class="lockin-choice ' + spec.tone(choice) + '">' + escapeHtml(spec.label(choice)) + '</div>' +
-          '<p class="lockin-hint">Not locked in yet — nothing happens when the poll opens until you lock it in.</p>';
-        var actions = document.createElement('div');
-        actions.className = 'lockin-actions';
-        var lock = document.createElement('button');
-        lock.type = 'button';
-        lock.className = 'btn btn-primary btn-lock';
-        lock.textContent = 'Lock in ' + spec.label(choice);
-        lock.addEventListener('click', function() { locked = true; savePending(poll.pollId, choice, true); render(); });
-        var change = document.createElement('button');
-        change.type = 'button';
-        change.className = 'btn btn-change';
-        change.textContent = 'Change';
-        change.addEventListener('click', function() { picking = true; render(); });
-        actions.appendChild(lock); actions.appendChild(change);
-        box.appendChild(actions);
-        wrap.appendChild(box);
-        return;
-      }
-      var done = document.createElement('div');
-      done.className = 'lockin-box locked';
-      done.innerHTML = '<div class="lockin-label">Locked in</div>' +
-        '<div class="lockin-choice ' + spec.tone(choice) + '">' + escapeHtml(spec.label(choice)) + '</div>' +
-        '<p class="lockin-hint">This casts automatically the moment Standards opens the poll.</p>';
-      var actions2 = document.createElement('div');
-      actions2.className = 'lockin-actions';
-      var change2 = document.createElement('button');
-      change2.type = 'button';
-      change2.className = 'btn btn-change';
-      change2.textContent = 'Change vote';
-      change2.addEventListener('click', function() { locked = false; savePending(poll.pollId, choice, false); picking = true; render(); });
-      actions2.appendChild(change2);
-      done.appendChild(actions2);
-      wrap.appendChild(done);
+      wrap.appendChild(buttons(function(v) {
+        choice = v;
+        savePending(poll.pollId, v);
+        render();
+      }));
     }
     render();
   }
@@ -859,9 +865,11 @@
   }
 
   // ── Presence ──
-  // The server removes our entry the moment the connection drops (onDisconnect)
-  // and we re-add it whenever the connection returns, so the connected count on
-  // the Standards and Regent screens tracks who is actually in the room.
+  // Joining adds the brother to the session's participant list and they stay
+  // there — a sleeping phone or a dropped signal only flips their `online`
+  // flag (server-side, via onDisconnect), it never removes them. So the
+  // voted/total count on Standards and Regent is stable, and Standards
+  // decides who has actually left (Kick, or Remove offline).
   var presenceOff = null;
 
   function setupPresence(sid, uid) {
@@ -869,10 +877,15 @@
     var meRef = db.ref('sessions/' + sid + '/connectedBrothers/' + uid);
     var infoRef = db.ref('.info/connected');
     var kickAttached = false;
+    var TS = firebase.database.ServerValue.TIMESTAMP;
     var cb = infoRef.on('value', function(snap) {
       if (!snap.val() || disconnected) return;
-      meRef.onDisconnect().remove().then(function() {
-        return meRef.set(firebase.database.ServerValue.TIMESTAMP);
+      meRef.onDisconnect().update({ online: false, lastSeen: TS }).then(function() {
+        return meRef.once('value');
+      }).then(function(cur) {
+        var v = cur.val();
+        if (v && typeof v === 'object') return meRef.update({ online: true, lastSeen: TS });
+        return meRef.set({ joinedAt: TS, online: true, lastSeen: TS });
       }).then(function() {
         if (!kickAttached) { kickAttached = true; listenForKick(sid, uid); }
       }).catch(function(err) {
@@ -1118,8 +1131,10 @@
         window.addEventListener('beforeunload', function() {
           var curSid = sessionId;
           var curUid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
-          if (curSid && curUid) {
-            db.ref('sessions/' + curSid + '/connectedBrothers/' + curUid).remove();
+          if (curSid && curUid && !disconnected) {
+            // Closing or reloading the tab: mark offline, never remove — a
+            // reload comes straight back and Standards decides who has left.
+            db.ref('sessions/' + curSid + '/connectedBrothers/' + curUid).update({ online: false });
           }
         });
       }

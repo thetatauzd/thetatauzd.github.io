@@ -6,7 +6,7 @@
   <title>Standards – Session control</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=20">
+  <link rel="stylesheet" href="css/portal.css?v=21">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -162,6 +162,12 @@
     .brother-list li { gap: 0.5rem; }
     .brother-list li .bro-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .bro-voted { font-size: 0.75rem; font-weight: 600; color: #2e7d32; flex-shrink: 0; }
+    .bro-voted.is-off { color: #999; font-weight: 500; }
+    .bro-status { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: #2e7d32; }
+    .bro-status.offline { background: #bbb; }
+    .brother-list li { display: flex; align-items: center; }
+    .standards-section .btn-remove-offline { margin: 0; }
+    .standards-section .btn-remove-offline:disabled { opacity: 0.5; cursor: default; }
     .brother-list li.hidden { display: none; }
     .standards-section .btn-kick { margin: 0; }
 
@@ -429,9 +435,11 @@
 
     <div class="portal-card standards-section hidden" id="panel-connected">
       <div class="connected-head">
-        <h3>Connected <span class="count-pill" id="connected-count">0</span></h3>
+        <h3>In session <span class="count-pill" id="connected-count">0</span></h3>
         <input type="search" id="connected-search" class="field" placeholder="Search a brother…" autocomplete="off">
+        <button type="button" class="btn secondary btn-small btn-remove-offline" id="btn-remove-offline" disabled>Remove offline</button>
       </div>
+      <p class="step-hint" style="margin:0 0 0.5rem;">Everyone who joined stays counted until removed. A grey dot means their phone is asleep, closed, or has no signal.</p>
       <ul class="brother-list" id="connected-list"></ul>
     </div>
     </div>
@@ -443,10 +451,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="js/firebase-config.js?v=20"></script>
-  <script src="js/auth.js?v=20"></script>
-  <script src="js/db.js?v=20"></script>
-  <script src="js/slides.js?v=20"></script>
-  <script src="js/standards.js?v=20"></script>
+  <script src="js/firebase-config.js?v=21"></script>
+  <script src="js/auth.js?v=21"></script>
+  <script src="js/db.js?v=21"></script>
+  <script src="js/slides.js?v=21"></script>
+  <script src="js/standards.js?v=21"></script>
 </body>
 </html>
