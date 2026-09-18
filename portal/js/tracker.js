@@ -1,235 +1,207 @@
 /**
- * Theta Tau Tracker client.
- *
- * Talks to the Apps Script gateway (portal/apps-script/Code.gs), which reads the
- * Tracker spreadsheet and returns ONLY the signed-in brother's own row. The
- * brother's Firebase ID token is what proves who they are; the gateway hands it
- * to the Realtime Database, so the database rules do the verifying.
- *
- * Set GATEWAY_URL below to the /exec URL from the Apps Script deployment.
+ * My Tracker — a brother's own standing, attendance, dues, service hours and
+ * (for PNMs) pledge progress, computed from the portal database. Also fills
+ * the three tiles on the portal home page. Nothing here talks to Google Sheets.
  */
 (function (global) {
   'use strict';
 
-  // Apps Script web-app /exec URL. Re-deploy the script (Deploy > Manage
-  // deployments > edit > Deploy) after changing Gateway.gs, or the old version
-  // keeps serving. Replace this if you ever create a new deployment.
-  var GATEWAY_URL = 'https://script.google.com/macros/s/AKfycbzEprjKfxyqZkDCxMvUEEXkkBKaarDWQlCd1YLeTKjdm-djAxnE5dlrlpwMRfdxRWNR/exec';
+  var C = global.OpsCore;
+  var esc = C.esc, money = C.money, fmtDate = C.fmtDate;
+  var me = null, term = null, facts = null;
 
-  var cached = null;
+  function $(id) { return document.getElementById(id); }
+  function setStatus(id, msg, kind) { var el = $(id); if (!el) return; el.textContent = msg || ''; el.className = 'status-line' + (kind ? ' ' + kind : ''); }
+  function pill(text, cls) { return '<span class="count-pill ' + (cls || '') + '">' + esc(text) + '</span>'; }
+  function standingLabel(s) { return s === 'bad' ? 'Bad standing' : (s === 'warning' ? 'Warning' : 'Good'); }
+  function standingClass(s) { return s === 'bad' ? 'bad' : (s === 'warning' ? 'warn' : 'good'); }
 
-  function isConfigured() {
-    return !!GATEWAY_URL;
+  function load() {
+    return PortalOps.loadSettings().then(function () {
+      term = PortalOps.currentTerm();
+      return PortalOps.loadMyFacts(term, me.uid);
+    }).then(function (f) { facts = f; return f; });
   }
 
-  function money(n) {
-    var v = Number(n) || 0;
-    return '$' + v.toFixed(2).replace(/\.00$/, '');
-  }
+  // ── Home tiles ──
 
-  /**
-   * Apps Script does not answer CORS preflight requests, so this is sent as a
-   * plain-text body to keep it a "simple" request. The gateway parses it as JSON.
-   */
-  function callGateway(payload) {
-    return firebase.auth().currentUser.getIdToken().then(function (idToken) {
-      var body = JSON.stringify(Object.assign({ idToken: idToken }, payload || {}));
-      return fetch(GATEWAY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: body
-      });
-    }).then(function (res) {
-      return res.json();
-    }).then(function (data) {
-      if (!data || data.ok === false) {
-        throw new Error((data && data.error) || 'Tracker is unavailable.');
-      }
-      return data;
-    });
-  }
-
-  function load(force) {
-    if (cached && !force) return Promise.resolve(cached);
-    if (!isConfigured()) {
-      return Promise.reject(new Error('Tracker is not connected yet.'));
-    }
-    return callGateway({ action: 'me' }).then(function (data) {
-      cached = data;
-      return data;
-    });
-  }
-
-  /** Look up a name from a roll number during sign-up. */
-  function lookupRoll(rollNumber) {
-    if (!isConfigured()) return Promise.resolve({ found: false });
-    return callGateway({ action: 'lookupRoll', rollNumber: rollNumber });
-  }
-
-  // ── Portal home tiles ──────────────────────────────────────────────────────
-
-  function renderHomeStats() {
-    var grid = document.getElementById('stat-grid');
-    var status = document.getElementById('stat-status');
+  function renderHomeStats(profile) {
+    var grid = $('stat-grid'), status = $('stat-status');
     if (!grid || !status) return;
-
-    if (!isConfigured()) {
-      status.textContent = 'Theta Tau Tracker is not connected yet.';
-      return;
-    }
-
+    me = profile || me;
+    if (!me) return;
     status.textContent = 'Loading your tracker…';
-
-    load().then(function (data) {
-      var balance = data.payments.balanceDue;
-      setTile('stat-balance', money(balance), balance > 0 ? 'stat-owing' : 'stat-clear');
-      setTile('stat-demerits', String(data.demerits.summary.total));
-
-      var svc = document.getElementById('stat-service');
-      if (svc) {
-        if (data.serviceHours && data.serviceHours.available) {
-          setTile('stat-service', String(data.serviceHours.confirmed));
-        } else {
-          svc.classList.add('hidden');   // no Service_Hours tab yet
-        }
-      }
-
+    load().then(function (f) {
+      var S = f.settings;
+      var dem = C.computeDemerits(me.uid, f, S, { pnm: me.status === 'pnm' });
+      var led = C.ledgerSummary(f.ledger, S);
+      var svc = C.serviceSummary(f.service, S, { pnm: me.status === 'pnm' });
+      setTile('stat-balance', money(led.balance), led.balance > 0 ? 'stat-owing' : 'stat-clear');
+      setTile('stat-demerits', String(dem.total), dem.standing === 'bad' ? 'stat-owing' : (dem.standing === 'warning' ? '' : 'stat-clear'));
+      setTile('stat-service', svc.approvedHours + ' / ' + svc.hoursRequired, svc.met ? 'stat-clear' : '');
       grid.classList.remove('hidden');
-      status.innerHTML = '<a href="tracker">See full tracker →</a>';
-    }).catch(function (err) {
-      status.textContent = err.message || 'Could not load your tracker.';
-    });
+      status.innerHTML = '<a href="tracker">See your full tracker →</a>';
+    }).catch(function (err) { status.textContent = err.message || 'Could not load your tracker.'; });
   }
-
   function setTile(id, value, cls) {
-    var tile = document.getElementById(id);
-    if (!tile) return;
-    var el = tile.querySelector('.stat-value');
-    if (el) el.textContent = value;
-    tile.classList.remove('stat-owing', 'stat-clear');
-    if (cls) tile.classList.add(cls);
+    var tile = $(id); if (!tile) return;
+    var v = tile.querySelector('.stat-value'); if (v) v.textContent = value;
+    tile.classList.remove('stat-owing', 'stat-clear'); if (cls) tile.classList.add(cls);
   }
 
-  // ── Tracker page ───────────────────────────────────────────────────────────
+  // ── Full page ──
 
-  function esc(s) {
-    var d = document.createElement('div');
-    d.textContent = s == null ? '' : String(s);
-    return d.innerHTML;
+  function renderTrackerPage(profile) {
+    me = profile;
+    load().then(function () {
+      $('tracker-status').classList.add('hidden');
+      $('tracker-body').classList.remove('hidden');
+      renderAll();
+      wireForms();
+    }).catch(function (err) { $('tracker-status').textContent = err.message || 'Could not load your tracker.'; });
   }
 
-  function renderTrackerPage() {
-    var status = document.getElementById('tracker-status');
-    var body = document.getElementById('tracker-body');
-    if (!status || !body) return;
+  function renderAll() {
+    var S = facts.settings, isPnm = me.status === 'pnm';
+    var dem = C.computeDemerits(me.uid, facts, S, { pnm: isPnm });
+    var led = C.ledgerSummary(facts.ledger, S);
+    var svc = dem.service;
 
-    if (!isConfigured()) {
-      status.textContent = 'The Theta Tau Tracker has not been connected yet. ' +
-        'An admin needs to deploy the Apps Script gateway and paste its URL into portal/js/tracker.js.';
-      return;
+    // Standing
+    $('standing-term').textContent = term;
+    $('st-total').textContent = dem.total;
+    $('st-standing').innerHTML = '<span class="standing-' + dem.standing + '">' + standingLabel(dem.standing) + '</span>';
+    $('st-buyout').textContent = dem.buyout ? money(dem.buyout) : '—';
+    $('st-next').textContent = dem.serviceShortfallNext ? '+' + dem.serviceShortfallNext : '0';
+    var p = S.policy;
+    $('st-explain').textContent = 'Warning at ' + p.warningThreshold + ', bad standing at ' + p.badStandingThreshold + '. Extra service hours past ' + svc.hoursRequired + ' erase demerits one for one; a buy-out fine resets you to 0. Service shortfalls are added next term.';
+    var kv = [['Carried in from last term', dem.rolloverPoints]];
+    Object.keys(dem.perType).forEach(function (t) {
+      var x = dem.perType[t];
+      kv.push([x.label + ' (' + x.unexcused + ' unexcused' + (x.free ? ', ' + x.free + ' free' : '') + (x.excused ? ', ' + x.excused + ' excused' : '') + ')', x.demerits]);
+    });
+    kv.push(['Unpaid fees past due', dem.paymentDemerits]);
+    kv.push(['Standards adjustments', dem.adjustmentsTotal]);
+    if (dem.serviceCredit) kv.push(['Extra service hours', dem.serviceCredit]);
+    kv.push(['Total', dem.total]);
+    $('st-breakdown').innerHTML = kv.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
+    var adj = C.values(facts.adjustments).sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+    $('adj-tbody').innerHTML = adj.length ? adj.map(function (a) {
+      return '<tr><td>' + esc(fmtDate(a.date)) + '</td><td>' + esc(a.reason || '') + '</td><td>' + esc((a.points > 0 ? '+' : '') + a.points) + '</td><td>' + esc(a.enteredBy || a.createdByName || '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="section-empty">None this term.</td></tr>';
+
+    // Attendance
+    var ch = dem.perType.chapter;
+    var freeUsed = ch ? Math.min(ch.unexcused, ch.free) : 0;
+    var chapterDef = S.eventTypes.chapter || { freePerTerm: 2 };
+    $('att-free').textContent = freeUsed + ' of ' + chapterDef.freePerTerm + ' free chapter absences used';
+    var excusesByEvent = {};
+    C.values(facts.excuses).forEach(function (x) { excusesByEvent[x.eventId] = x; });
+    var events = C.values(facts.events).sort(function (a, b) { return String(a.date || '').localeCompare(String(b.date || '')); });
+    var rowsHtml = events.map(function (ev) {
+      var mark = facts.attendance[ev.key] && facts.attendance[ev.key][me.uid];
+      var x = excusesByEvent[ev.key];
+      var cell;
+      if (!ev.recorded) cell = x ? pill('Excuse ' + x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) : '<span style="color:#999;">upcoming</span>';
+      else if (mark && mark.present) cell = pill('Present', 'good');
+      else if (x && x.status === 'approved') cell = pill('Excused', 'good');
+      else if (x && x.status === 'pending') cell = pill('Absent · excuse pending', 'warn');
+      else cell = pill('Absent', 'bad');
+      var typeDef = S.eventTypes[ev.type] || S.eventTypes.other;
+      return '<tr><td>' + esc(ev.title) + '</td><td>' + esc(fmtDate(ev.date)) + '</td><td>' + esc(typeDef.label) + '</td><td>' + cell + '</td></tr>';
+    });
+    $('att-tbody').innerHTML = rowsHtml.length ? rowsHtml.join('') : '<tr><td colspan="4" class="section-empty">No events recorded yet this term.</td></tr>';
+    $('excuse-hours').textContent = p.attendance.excuseHoursBefore;
+    var sel = $('exc-event');
+    sel.innerHTML = events.filter(function (ev) { return !excusesByEvent[ev.key] || excusesByEvent[ev.key].status === 'denied'; })
+      .map(function (ev) { return '<option value="' + esc(ev.key) + '">' + esc(ev.title) + (ev.date ? ' · ' + fmtDate(ev.date) : '') + '</option>'; }).join('') || '<option value="">No events to excuse</option>';
+    var mine = C.values(facts.excuses).sort(function (a, b) { return (b.submittedAt || 0) - (a.submittedAt || 0); });
+    $('exc-list').innerHTML = mine.length ? '<div class="vgroups">' + mine.map(function (x) {
+      var ev = facts.events[x.eventId] || {};
+      return '<div class="vgroup"><span class="vg-label">' + pill(x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) + '</span><span class="vg-names"><strong>' + esc(ev.title || x.eventId) + '</strong> — ' + esc(x.reason || '') + (x.reviewNote ? ' <em>(' + esc(x.reviewNote) + ')</em>' : '') + '</span></div>';
+    }).join('') + '</div>' : '';
+
+    // Dues
+    $('pay-balance').textContent = money(led.balance);
+    $('tile-balance').classList.toggle('stat-owing', led.balance > 0);
+    $('tile-balance').classList.toggle('stat-clear', led.balance <= 0);
+    $('pay-late').textContent = money(led.lateFees);
+    $('pay-tbody').innerHTML = led.charges.length ? led.charges.map(function (c) {
+      var cls = c.status === 'paid' ? 'is-paid' : (c.status === 'waived' ? 'is-waived' : 'is-unpaid');
+      var label = c.status === 'plan' ? 'Payment plan' : c.status.charAt(0).toUpperCase() + c.status.slice(1);
+      return '<tr class="' + (c.settled ? 'row-paid' : '') + '"><td>' + esc(c.item) + '</td><td>' + money(c.amount) + '</td><td>' + esc(fmtDate(c.dueDate)) + '</td>' +
+        '<td><span class="pay-status ' + cls + '">' + esc(label) + '</span>' + (c.lateFee && !c.settled ? ' <span style="font-size:0.78rem; color:#c62828;">+' + money(c.lateFee) + ' late</span>' : '') + '</td>' +
+        '<td>' + (c.settled ? '—' : money(c.remaining + c.lateFee)) + '</td></tr>';
+    }).join('') : '<tr><td colspan="5" class="section-empty">Nothing charged yet this term.</td></tr>';
+    var d = p.dues;
+    $('pay-explain').textContent = 'Fees are late one day after the due date: $' + (d.lateLadder || []).join(', then $') + ' per week, then $' + d.lateAfterLadder + ' per week. Talk to the Treasurer for a payment plan.';
+
+    // Service
+    $('svc-approved').textContent = svc.approvedHours + (svc.pendingHours ? ' (+' + svc.pendingHours + ' pending)' : '');
+    $('svc-required').textContent = svc.hoursRequired;
+    $('svc-events').textContent = svc.distinctEvents + ' / ' + svc.eventsRequired;
+    $('svc-explain').textContent = svc.met ? 'Requirement met. Extra approved hours erase demerits one for one.' :
+      'Still need ' + svc.hoursShort + ' hour' + (svc.hoursShort === 1 ? '' : 's') + (svc.eventsShort ? ' and ' + svc.eventsShort + ' more event' + (svc.eventsShort === 1 ? '' : 's') : '') + '. Falling short adds ' + svc.shortfallDemerits + ' demerits next term.';
+    var entries = svc.entries.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+    $('svc-tbody').innerHTML = entries.length ? entries.map(function (e) {
+      return '<tr><td>' + esc(e.eventName || '') + '</td><td>' + esc(fmtDate(e.date)) + '</td><td>' + esc(e.hours) + '</td><td>' + pill(e.status, e.status === 'approved' ? 'good' : (e.status === 'denied' ? 'bad' : 'warn')) + (e.reviewNote ? ' <span style="font-size:0.78rem; color:#666;">' + esc(e.reviewNote) + '</span>' : '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="section-empty">Nothing logged yet.</td></tr>';
+
+    // Pledge
+    if (isPnm) {
+      $('card-pledge').classList.remove('hidden');
+      PortalOps.db.ref('pledges/' + me.uid).once('value').then(function (s) {
+        var pr = C.pledgeReadiness(s.val() || {}, facts.service, S);
+        $('pledge-checks').innerHTML = pr.checks.map(function (c) {
+          return '<li style="display:flex; gap:0.5rem; align-items:center; padding:0.25rem 0;">' + pill(c.ok ? '✓' : '·', c.ok ? 'good' : 'warn') + '<span>' + esc(c.label) + (c.value ? ' <span style="color:#777;">' + esc(c.value) + '</span>' : '') + '</span></li>';
+        }).join('') + '<li style="margin-top:0.5rem; font-weight:600;" class="standing-' + (pr.ready ? 'good' : 'warning') + '">' + (pr.ready ? 'All requirements met.' : 'Not yet ready for initiation.') + '</li>';
+      }).catch(function () {});
     }
+  }
 
-    status.textContent = 'Loading…';
+  // ── Forms ──
 
-    load(true).then(function (data) {
-      status.textContent = '';
-      body.classList.remove('hidden');
-      renderPayments(data.payments);
-      renderDemerits(data.demerits);
-      renderService(data.serviceHours);
-    }).catch(function (err) {
-      status.textContent = err.message || 'Could not load your tracker.';
+  function wireForms() {
+    var svcDate = $('svc-date'); if (svcDate && !svcDate.value) svcDate.value = C.ymd(new Date());
+    PortalOps.db.ref('serviceEvents/' + term).once('value').then(function (s) {
+      var list = $('svc-event-list'); if (!list) return;
+      list.innerHTML = C.values(s.val() || {}).map(function (e) { return '<option value="' + esc(e.name) + '">'; }).join('');
+    }).catch(function () {});
+
+    $('btn-excuse').addEventListener('click', function () {
+      var eventId = $('exc-event').value, reason = $('exc-reason').value.trim();
+      if (!eventId) return setStatus('exc-status', 'Pick an event.', 'error');
+      if (!reason) return setStatus('exc-status', 'Say what is keeping you from it.', 'error');
+      var ev = facts.events[eventId] || {};
+      var hoursBefore = facts.settings.policy.attendance.excuseHoursBefore || 24;
+      var late = ev.date ? (C.toDate(ev.date).getTime() - Date.now()) < hoursBefore * 3600000 : false;
+      var entry = { eventId: eventId, category: $('exc-category').value, reason: reason, hasDoctorNote: $('exc-note').checked,
+        submittedAt: firebase.database.ServerValue.TIMESTAMP, lateSubmission: late, status: 'pending' };
+      var btn = this; btn.disabled = true; setStatus('exc-status', 'Sending…');
+      PortalOps.db.ref('excuses/' + term + '/' + me.uid).push(entry).then(function () {
+        setStatus('exc-status', late ? 'Sent. Note: this is inside the ' + hoursBefore + '-hour window, so Standards decides case by case.' : 'Sent to Standards.', 'success');
+        $('exc-reason').value = ''; $('exc-note').checked = false;
+        return PortalOps.loadMyFacts(term, me.uid).then(function (f) { facts = f; renderAll(); });
+      }).catch(function (err) { setStatus('exc-status', err.message || 'Could not send.', 'error'); }).finally(function () { btn.disabled = false; });
+    });
+
+    $('btn-service').addEventListener('click', function () {
+      var name = $('svc-event').value.trim(), hours = parseFloat($('svc-hours').value), date = $('svc-date').value;
+      if (!name) return setStatus('svc-status', 'Name the event.', 'error');
+      if (!(hours > 0)) return setStatus('svc-status', 'Enter the hours.', 'error');
+      if (!date) return setStatus('svc-status', 'Pick the date.', 'error');
+      var photo = $('svc-photo').value.trim(), vouch = $('svc-vouch').value.trim();
+      if (!photo && !vouch) return setStatus('svc-status', 'Add a photo link or the chair who can vouch for you.', 'error');
+      var entry = { hours: hours, eventName: name, eventId: C.nameKey(name), date: date, photoUrl: photo, vouchedBy: vouch, description: '',
+        status: 'pending', submittedAt: firebase.database.ServerValue.TIMESTAMP };
+      var btn = this; btn.disabled = true; setStatus('svc-status', 'Submitting…');
+      PortalOps.db.ref('service/' + term + '/' + me.uid).push(entry).then(function () {
+        setStatus('svc-status', 'Submitted. The Community Service Chair will approve it.', 'success');
+        $('svc-event').value = ''; $('svc-hours').value = ''; $('svc-photo').value = ''; $('svc-vouch').value = '';
+        return PortalOps.loadMyFacts(term, me.uid).then(function (f) { facts = f; renderAll(); });
+      }).catch(function (err) { setStatus('svc-status', err.message || 'Could not submit.', 'error'); }).finally(function () { btn.disabled = false; });
     });
   }
 
-  function renderPayments(p) {
-    var el = document.getElementById('pay-summary');
-    if (el) {
-      el.innerHTML =
-        '<div class="stat-tile ' + (p.balanceDue > 0 ? 'stat-owing' : 'stat-clear') + '">' +
-          '<span class="stat-label">Balance due</span>' +
-          '<span class="stat-value">' + money(p.balanceDue) + '</span></div>' +
-        '<div class="stat-tile"><span class="stat-label">Paid to date</span>' +
-          '<span class="stat-value">' + money(p.totalPaid) + '</span></div>';
-    }
-
-    var tbody = document.getElementById('pay-tbody');
-    if (!tbody) return;
-    if (!p.items.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="section-empty">Nothing charged to you yet.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = p.items.map(function (i) {
-      var waived = /^waived$/i.test(i.status || '');
-      var cls = i.paid ? 'is-paid' : (waived ? 'is-waived' : 'is-unpaid');
-      return '<tr class="' + (i.paid || waived ? 'row-paid' : 'row-owing') + '">' +
-        '<td>' + esc(i.item || '—') + '</td>' +
-        '<td>' + money(i.amount) + '</td>' +
-        '<td><span class="pay-status ' + cls + '">' + esc(i.status) + '</span></td>' +
-        '<td>' + esc(i.dueDate || '—') + '</td>' +
-        '<td>' + esc(i.datePaid || '—') + '</td>' +
-      '</tr>';
-    }).join('');
-  }
-
-  function renderDemerits(d) {
-    var s = d.summary;
-    var el = document.getElementById('dem-summary');
-    if (el) {
-      var parts = [
-        ['Total', s.total],
-        ['Rollover', s.rollover],
-        ['Attendance', s.attendance],
-        ['Payments', s.payment],
-        ['Standards', s.standards]
-      ];
-      el.innerHTML = parts.map(function (p) {
-        return '<div class="stat-tile"><span class="stat-label">' + esc(p[0]) + '</span>' +
-               '<span class="stat-value">' + (Number(p[1]) || 0) + '</span></div>';
-      }).join('');
-    }
-
-    var tbody = document.getElementById('dem-tbody');
-    if (!tbody) return;
-    if (!d.adjustments.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="section-empty">No standards adjustments on record.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = d.adjustments.map(function (a) {
-      return '<tr>' +
-        '<td>' + esc(a.date || '—') + '</td>' +
-        '<td>' + esc(a.reason || '—') + '</td>' +
-        '<td>' + (a.change > 0 ? '+' : '') + (Number(a.change) || 0) + '</td>' +
-        '<td>' + esc(a.enteredBy || '—') + '</td>' +
-      '</tr>';
-    }).join('');
-  }
-
-  function renderService(sv) {
-    var card = document.getElementById('card-service');
-    if (!card) return;
-    if (!sv || !sv.available) { card.classList.add('hidden'); return; }
-    card.classList.remove('hidden');
-
-    var total = document.getElementById('svc-total');
-    if (total) total.textContent = sv.confirmed;
-
-    var tbody = document.getElementById('svc-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = sv.entries.length
-      ? sv.entries.map(function (e) {
-          return '<tr><td>' + esc(e.event || '—') + '</td><td>' + esc(e.date || '—') +
-                 '</td><td>' + (Number(e.hours) || 0) + '</td><td>' +
-                 (e.confirmed ? 'Confirmed' : 'Pending') + '</td></tr>';
-        }).join('')
-      : '<tr><td colspan="4" class="section-empty">No service hours logged yet.</td></tr>';
-  }
-
-  global.PortalTracker = {
-    isConfigured: isConfigured,
-    load: load,
-    lookupRoll: lookupRoll,
-    renderHomeStats: renderHomeStats,
-    renderTrackerPage: renderTrackerPage
-  };
+  global.PortalTracker = { renderHomeStats: renderHomeStats, renderTrackerPage: renderTrackerPage, load: load };
 })(typeof window !== 'undefined' ? window : this);

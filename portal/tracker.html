@@ -55,53 +55,92 @@
     </div>
   </header>
 
-  <main class="portal-container">
-    <p id="tracker-status" style="color:#666;">Loading…</p>
+  <main class="portal-container ops-section">
+    <p id="tracker-status" class="step-hint">Loading…</p>
 
     <div id="tracker-body" class="hidden">
-      <div class="portal-card">
-        <h2>Payments</h2>
-        <div class="stat-grid" id="pay-summary"></div>
-        <div class="table-scroll">
-          <table class="admin-table" style="margin-top:1rem;">
-            <thead>
-              <tr><th>Item</th><th>Amount</th><th>Status</th><th>Due</th><th>Paid</th></tr>
-            </thead>
-            <tbody id="pay-tbody"></tbody>
-          </table>
+      <div class="live-grid">
+      <div class="live-main">
+
+      <div class="portal-card" id="card-standing">
+        <h2>Standing <span class="count-pill" id="standing-term"></span></h2>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="stat-label">Demerits</div><div class="stat-value" id="st-total">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Standing</div><div class="stat-value" id="st-standing">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Buy-out</div><div class="stat-value" id="st-buyout">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Carry to next term</div><div class="stat-value" id="st-next">—</div></div>
         </div>
+        <p class="step-hint" id="st-explain"></p>
+        <details class="panel-collapse"><summary>How this adds up</summary>
+          <dl class="kv" id="st-breakdown"></dl>
+          <h3 style="font-size:0.95rem; margin:0.9rem 0 0.35rem;">Standards adjustments</h3>
+          <div class="table-scroll"><table class="admin-table"><thead><tr><th>Date</th><th>Reason</th><th>Change</th><th>Entered by</th></tr></thead><tbody id="adj-tbody"></tbody></table></div>
+        </details>
       </div>
 
-      <div class="portal-card">
-        <h2>Demerits</h2>
-        <div class="stat-grid" id="dem-summary"></div>
-        <h3 style="font-size:1rem; margin:1.25rem 0 0.5rem; color:#666;">Standards adjustments</h3>
-        <div class="table-scroll">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Date</th><th>Reason</th><th>Change</th><th>Entered by</th></tr>
-            </thead>
-            <tbody id="dem-tbody"></tbody>
-          </table>
-        </div>
+      <div class="portal-card" id="card-attendance">
+        <h2>Attendance <span class="count-pill" id="att-free"></span></h2>
+        <div class="table-scroll"><table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Type</th><th>You</th></tr></thead><tbody id="att-tbody"></tbody></table></div>
+        <details class="panel-collapse" id="excuse-details"><summary>Request an excused absence</summary>
+          <p class="step-hint">Excuses should reach Standards at least <span id="excuse-hours">24</span> hours before the event. Sickness needs a doctor's note. Standards reviews every request.</p>
+          <div class="add-row">
+            <div><label class="field-label" for="exc-event">Event</label><select id="exc-event" class="field"></select></div>
+            <div><label class="field-label" for="exc-category">Reason type</label><select id="exc-category" class="field"><option value="class">Class</option><option value="work">Work</option><option value="sick">Sick</option><option value="family">Family</option><option value="other">Other</option></select></div>
+          </div>
+          <label class="field-label" for="exc-reason">Details</label>
+          <textarea id="exc-reason" class="field" rows="3" placeholder="What is keeping you from this event?"></textarea>
+          <label style="display:flex; gap:0.4rem; align-items:center; font-size:0.9rem; margin:0.5rem 0;"><input type="checkbox" id="exc-note"> I have a doctor's note (bring it to Standards)</label>
+          <button type="button" class="btn btn-primary btn-small" id="btn-excuse">Send request</button>
+          <p class="status-line" id="exc-status"></p>
+        </details>
+        <div id="exc-list" style="margin-top:0.75rem;"></div>
       </div>
 
-      <div class="portal-card hidden" id="card-service">
-        <h2>Service hours <span class="sec-count">(<span id="svc-total">0</span> confirmed)</span></h2>
-        <div class="table-scroll">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Event</th><th>Date</th><th>Hours</th><th>Status</th></tr>
-            </thead>
-            <tbody id="svc-tbody"></tbody>
-          </table>
+      </div>
+      <div class="live-side">
+
+      <div class="portal-card" id="card-dues">
+        <h2>Dues &amp; fees</h2>
+        <div class="stat-grid">
+          <div class="stat-tile" id="tile-balance"><div class="stat-label">Balance due</div><div class="stat-value" id="pay-balance">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Late fees</div><div class="stat-value" id="pay-late">—</div></div>
         </div>
+        <div class="table-scroll"><table class="admin-table" style="margin-top:0.75rem;"><thead><tr><th>Item</th><th>Amount</th><th>Due</th><th>Status</th><th>Left</th></tr></thead><tbody id="pay-tbody"></tbody></table></div>
+        <p class="step-hint" id="pay-explain"></p>
       </div>
 
-      <p style="color:#999; font-size:0.85rem;">
-        Figures come straight from the chapter Tracker sheet. If something looks wrong,
-        contact the Treasurer for payments or the Standards chair for demerits.
-      </p>
+      <div class="portal-card" id="card-service">
+        <h2>Service hours</h2>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="stat-label">Approved</div><div class="stat-value" id="svc-approved">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Required</div><div class="stat-value" id="svc-required">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Events</div><div class="stat-value" id="svc-events">—</div></div>
+        </div>
+        <p class="step-hint" id="svc-explain"></p>
+        <details class="panel-collapse" open><summary>Log service hours</summary>
+          <div class="add-row">
+            <div><label class="field-label" for="svc-event">Event</label><input id="svc-event" class="field" list="svc-event-list" placeholder="e.g. Harvest Hope"><datalist id="svc-event-list"></datalist></div>
+            <div style="flex:0 0 110px;"><label class="field-label" for="svc-hours">Hours</label><input id="svc-hours" class="field" type="number" min="0.25" step="0.25" placeholder="2"></div>
+            <div style="flex:0 0 170px;"><label class="field-label" for="svc-date">Date</label><input id="svc-date" class="field" type="date"></div>
+          </div>
+          <div class="add-row">
+            <div><label class="field-label" for="svc-photo">Photo link (optional)</label><input id="svc-photo" class="field" placeholder="Google Drive / Photos link"></div>
+            <div><label class="field-label" for="svc-vouch">Chair who can vouch (if no photo)</label><input id="svc-vouch" class="field" placeholder="Name"></div>
+          </div>
+          <button type="button" class="btn btn-primary btn-small" id="btn-service" style="margin-top:0.5rem;">Submit for approval</button>
+          <p class="status-line" id="svc-status"></p>
+        </details>
+        <div class="table-scroll"><table class="admin-table" style="margin-top:0.75rem;"><thead><tr><th>Event</th><th>Date</th><th>Hours</th><th>Status</th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
+      </div>
+
+      <div class="portal-card hidden" id="card-pledge">
+        <h2>Pledge progress</h2>
+        <ul id="pledge-checks" style="list-style:none; padding:0; margin:0;"></ul>
+      </div>
+
+      </div>
+      </div>
+      <p class="step-hint">Something look wrong? Dues and fees: Treasurer. Attendance and demerits: Standards Chair. Service hours: Community Service Chair.</p>
     </div>
   </main>
 
@@ -110,13 +149,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js?v=23"></script>
   <script src="js/auth.js?v=23"></script>
+  <script src="js/ops-core.js?v=23"></script>
+  <script src="js/ops-db.js?v=23"></script>
   <script src="js/tracker.js?v=23"></script>
   <script>
     (function() {
       PortalAuth.requireAuth({ page: 'tracker' }).then(function(profile) {
         if (!profile) return;
         PortalAuth.initNav(profile);
-        PortalTracker.renderTrackerPage();
+        PortalTracker.renderTrackerPage(profile);
       });
     })();
   </script>
