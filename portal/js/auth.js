@@ -46,7 +46,9 @@
       db.ref('users/' + uid).once('value')
         .then(function(snap) {
           const val = snap.val();
-          resolve(val ? { name: val.name, rollNumber: val.rollNumber || '', role: val.role || 'pending', email: val.email } : null);
+          resolve(val ? { name: val.name, rollNumber: val.rollNumber || '', role: val.role || 'pending', email: val.email,
+            status: val.status || (val.role === 'pending' ? 'pending' : 'active'),
+            positions: val.positions || {}, perms: val.perms || {} } : null);
         })
         .catch(function() { resolve(null); });
     });
@@ -68,12 +70,13 @@
         if (profile) {
           currentUserProfile = {
             uid: user.uid, email: user.email, name: profile.name,
-            rollNumber: profile.rollNumber || '', role: profile.role
+            rollNumber: profile.rollNumber || '', role: profile.role,
+            status: profile.status, positions: profile.positions, perms: profile.perms
           };
         } else {
           currentUserProfile = {
             uid: user.uid, email: user.email, name: user.displayName || '',
-            rollNumber: '', role: 'pending'
+            rollNumber: '', role: 'pending', status: 'pending', positions: {}, perms: {}
           };
         }
         resolve(currentUserProfile);
@@ -153,7 +156,7 @@
 
   function requireRegent() {
     return requireAuth({ page: 'regent' }).then(function(profile) {
-      if (profile && profile.role !== 'admin') {
+      if (profile && profile.role !== 'admin' && profile.role !== 'regent') {
         window.location.href = '/portal';
         return null;
       }
@@ -163,7 +166,7 @@
 
   function requireStandards() {
     return requireAuth({ page: 'standards' }).then(function(profile) {
-      if (profile && profile.role !== 'admin') {
+      if (profile && profile.role !== 'admin' && profile.role !== 'standards') {
         window.location.href = '/portal';
         return null;
       }
@@ -177,6 +180,30 @@
         window.location.href = '/portal';
         return null;
       }
+      return profile;
+    });
+  }
+
+  /**
+   * True when the profile may do `perm` (finance, attendance, standards,
+   * service, pledges, settings). Admin may do everything.
+   */
+  function hasPerm(profile, perm) {
+    if (!profile) return false;
+    if (profile.role === 'admin') return true;
+    return !!(profile.perms && profile.perms[perm]);
+  }
+
+  /**
+   * Require any one of the listed capabilities (or admin). Redirects home otherwise.
+   * requirePerm('finance') or requirePerm(['attendance', 'standards']).
+   */
+  function requirePerm(perms, opts) {
+    var list = Array.isArray(perms) ? perms : [perms];
+    return requireAuth(Object.assign({ page: list[0] }, opts || {})).then(function(profile) {
+      if (!profile) return null;
+      var ok = list.some(function(p) { return hasPerm(profile, p); });
+      if (!ok) { window.location.href = '/portal'; return null; }
       return profile;
     });
   }
@@ -283,9 +310,24 @@
     if (role === 'admin') {
       var adminDd = document.getElementById('admin-dropdown');
       if (adminDd) adminDd.classList.remove('hidden');
-    } else if (role === 'rush_chair') {
+    }
+    if (role === 'rush_chair' || role === 'admin') {
       var t = document.getElementById('link-timer');
       if (t) t.classList.remove('hidden');
+    }
+
+    // Chapter Ops menu: any link tagged data-perm shows for holders of that
+    // capability (comma-separated = any of). The menu itself shows if any link does.
+    var opsDd = document.getElementById('ops-dropdown');
+    if (opsDd) {
+      var anyShown = false;
+      opsDd.querySelectorAll('[data-perm]').forEach(function(a) {
+        var need = a.getAttribute('data-perm').split(',');
+        var show = need.some(function(p) { return hasPerm(profile, p.trim()); });
+        a.classList.toggle('hidden', !show);
+        if (show) anyShown = true;
+      });
+      opsDd.classList.toggle('hidden', !anyShown);
     }
 
     var dropdowns = [].slice.call(document.querySelectorAll('.nav-dropdown'));
@@ -325,6 +367,8 @@
     requireRegent: requireRegent,
     requireStandards: requireStandards,
     requireRushChair: requireRushChair,
+    requirePerm: requirePerm,
+    hasPerm: hasPerm,
     signInWithGoogle: signInWithGoogle,
     signOut: signOut,
     registerBrother: registerBrother,

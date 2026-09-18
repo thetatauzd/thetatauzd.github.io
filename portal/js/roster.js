@@ -46,18 +46,34 @@
     });
   }
 
+  // The portal keeps its own roster (roster/{roll} and rosterByName/{key}),
+  // written whenever an admin saves a member. Look there first; the Apps
+  // Script gateway is only a fallback while the sheet is still authoritative.
+  function rollKey(v) { var m = String(v == null ? '' : v).match(/\d+/); return m ? String(parseInt(m[0], 10)) : ''; }
+  function nameKey(v) { return String(v == null ? '' : v).toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
+
+  function fromDb(path) {
+    try {
+      return firebase.database().ref(path).once('value').then(function (s) { return s.val(); });
+    } catch (e) { return Promise.resolve(null); }
+  }
+
   function byRollNumber(rollNumber) {
-    if (!isConfigured() || !String(rollNumber || '').trim()) {
-      return Promise.resolve({ found: false });
-    }
-    return call({ rollNumber: rollNumber });
+    var rk = rollKey(rollNumber);
+    if (!rk) return Promise.resolve({ found: false });
+    return fromDb('roster/' + rk).then(function (v) {
+      if (v && v.name) return { ok: true, found: true, rollNumber: rk, rollAsListed: rk, name: v.name };
+      return isConfigured() ? call({ rollNumber: rollNumber }) : { found: false };
+    }).catch(function () { return isConfigured() ? call({ rollNumber: rollNumber }) : { found: false }; });
   }
 
   function byName(name) {
-    if (!isConfigured() || !String(name || '').trim()) {
-      return Promise.resolve({ found: false });
-    }
-    return call({ name: name });
+    var nk = nameKey(name);
+    if (!nk) return Promise.resolve({ found: false });
+    return fromDb('rosterByName/' + nk).then(function (v) {
+      if (v && v.roll) return { ok: true, found: true, rollNumber: v.roll, rollAsListed: v.roll, name: v.name || name };
+      return isConfigured() ? call({ name: name }) : { found: false };
+    }).catch(function () { return isConfigured() ? call({ name: name }) : { found: false }; });
   }
 
   /**

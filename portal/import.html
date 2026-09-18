@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Theta Tau Tracker</title>
+  <title>Brother Portal – Import</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/portal.css?v=23">
@@ -15,7 +15,7 @@
 <body class="auth-pending">
   <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
   <header class="portal-header">
-    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Theta Tau Tracker</h1></div>
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Import from Tracker sheet</h1></div>
     <div class="user-info">
       <div class="nav-dropdown hidden" id="ops-dropdown">
         <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
@@ -55,70 +55,46 @@
     </div>
   </header>
 
-  <main class="portal-container">
-    <p id="tracker-status" style="color:#666;">Loading…</p>
+  <main class="portal-container ops-section">
+    <div class="portal-card">
+      <h2>Move the chapter off the Google Sheet</h2>
+      <p class="step-hint">This reads every tab of the F26 Theta Tau Tracker through the same gateway the old tracker page used, matches each row to a portal account by roll number (then by name), and writes it into the site. Run it once, check two brothers against the sheet's Dashboard, then make the sheet read-only. Running it again overwrites the same imported records, never duplicates them.</p>
 
-    <div id="tracker-body" class="hidden">
-      <div class="portal-card">
-        <h2>Payments</h2>
-        <div class="stat-grid" id="pay-summary"></div>
-        <div class="table-scroll">
-          <table class="admin-table" style="margin-top:1rem;">
-            <thead>
-              <tr><th>Item</th><th>Amount</th><th>Status</th><th>Due</th><th>Paid</th></tr>
-            </thead>
-            <tbody id="pay-tbody"></tbody>
-          </table>
+      <section class="setup-step">
+        <h3><span class="step-num">1</span>Fetch the sheet</h3>
+        <div class="add-row">
+          <div style="flex:0 0 auto;"><label class="field-label" for="imp-term">Import into term</label><input id="imp-term" class="field code-field" style="max-width:120px; text-transform:uppercase;" placeholder="F26"></div>
+          <div style="flex:0 0 auto;"><label class="field-label" for="imp-prev">Rollover came from</label><input id="imp-prev" class="field" style="max-width:120px;" placeholder="S26"></div>
+          <button type="button" class="btn btn-primary btn-small" id="btn-fetch" style="margin:0 0 0.1rem;">Fetch from sheet</button>
         </div>
-      </div>
+        <p class="status-line" id="fetch-status"></p>
+        <div id="tab-counts" class="kv" style="margin-top:0.5rem;"></div>
+      </section>
 
-      <div class="portal-card">
-        <h2>Demerits</h2>
-        <div class="stat-grid" id="dem-summary"></div>
-        <h3 style="font-size:1rem; margin:1.25rem 0 0.5rem; color:#666;">Standards adjustments</h3>
-        <div class="table-scroll">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Date</th><th>Reason</th><th>Change</th><th>Entered by</th></tr>
-            </thead>
-            <tbody id="dem-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+      <section class="setup-step hidden" id="step-match">
+        <h3><span class="step-num">2</span>Match people</h3>
+        <p class="step-hint">Rows the site could not match to a portal account. Pick the account, or leave "no account" to keep the row for sign-up autofill only.</p>
+        <div class="table-scroll"><table class="admin-table"><thead><tr><th>Sheet name</th><th>Roll #</th><th>Status</th><th>Portal account</th></tr></thead><tbody id="tbody-unmatched"></tbody></table></div>
+        <p class="step-hint" id="match-summary"></p>
+      </section>
 
-      <div class="portal-card hidden" id="card-service">
-        <h2>Service hours <span class="sec-count">(<span id="svc-total">0</span> confirmed)</span></h2>
-        <div class="table-scroll">
-          <table class="admin-table">
-            <thead>
-              <tr><th>Event</th><th>Date</th><th>Hours</th><th>Status</th></tr>
-            </thead>
-            <tbody id="svc-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <p style="color:#999; font-size:0.85rem;">
-        Figures come straight from the chapter Tracker sheet. If something looks wrong,
-        contact the Treasurer for payments or the Standards chair for demerits.
-      </p>
+      <section class="setup-step hidden" id="step-apply">
+        <h3><span class="step-num">3</span>Import</h3>
+        <div id="imp-options" style="display:grid; gap:0.3rem; font-size:0.92rem;"></div>
+        <p class="step-hint">Imported charges never accrue late fees retroactively; the sheet's payment statuses are kept as recorded. Settings are only seeded when none exist yet.</p>
+        <button type="button" class="btn btn-primary" id="btn-apply">Import into <span id="apply-term"></span></button>
+        <p class="status-line" id="apply-status"></p>
+        <pre id="apply-log" style="background:#f5f5f5; border-radius:8px; padding:0.75rem; font-size:0.8rem; max-height:320px; overflow:auto; display:none;"></pre>
+      </section>
     </div>
   </main>
-
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="js/firebase-config.js?v=23"></script>
   <script src="js/auth.js?v=23"></script>
-  <script src="js/tracker.js?v=23"></script>
-  <script>
-    (function() {
-      PortalAuth.requireAuth({ page: 'tracker' }).then(function(profile) {
-        if (!profile) return;
-        PortalAuth.initNav(profile);
-        PortalTracker.renderTrackerPage();
-      });
-    })();
-  </script>
+  <script src="js/ops-core.js?v=23"></script>
+  <script src="js/ops-db.js?v=23"></script>
+  <script src="js/import.js?v=23"></script>
 </body>
 </html>

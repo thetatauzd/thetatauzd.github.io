@@ -72,6 +72,7 @@ function handle(e) {
     if (action === 'me') return json(getMyRecord(req.idToken));
     if (action === 'lookupRoll') return json(lookupRoll(req.idToken, req.rollNumber));
     if (action === 'ping') return json({ ok: true, sheets: listTabs() });
+    if (action === 'exportAll') return json(exportAll(req.idToken));
 
     return json({ ok: false, error: 'Unknown action: ' + action });
   } catch (err) {
@@ -433,4 +434,50 @@ function lookupRoll(idToken, rollNumber) {
   }
 
   return { ok: true, found: !!name, name: name, rollNumber: roll };
+}
+
+
+// ── One-time export for the portal's Chapter Ops import (admin only) ─────────
+//
+// Returns every row of every tracker tab so the portal can move the chapter
+// off this sheet. The caller must hold the admin role on the portal; the
+// same users/{uid}.json?auth= read that verifies everyone else verifies this.
+
+function exportAll(idToken) {
+  var me = resolveCaller(idToken);
+  if (me.role !== 'admin') throw new Error('Admin only.');
+
+  var tabs = {
+    Roster:                { names: ['Roster'] },
+    Config:                { names: ['Config'],                hint: 'event type' },
+    Event_Info:            { names: ['Event_Info'],            hint: 'event title' },
+    Attendance:            { names: ['Attendance'] },
+    Payments_Fines:        { names: ['Payments_Fines'] },
+    Standards_Adjustments: { names: ['Standards_Adjustments'] },
+    Service_Log:           { names: ['Service_Log'] },
+    Excuses:               { names: ['Excuses'] }
+  };
+  var out = {};
+  Object.keys(tabs).forEach(function (k) {
+    var t = readTable(tabs[k].names, tabs[k].hint);
+    out[k] = { headers: t.headers, rows: t.rows.map(cleanRow) };
+  });
+  // Any tab named like "S26 Rollover Demerits" is the carry-in from last term.
+  SpreadsheetApp.getActiveSpreadsheet().getSheets().forEach(function (sh) {
+    if (/rollover/i.test(sh.getName())) {
+      var t = readTable([sh.getName()], 'demerits');
+      out.Rollover = { tab: sh.getName(), headers: t.headers, rows: t.rows.map(cleanRow) };
+    }
+  });
+  return { ok: true, exportedAt: new Date().toISOString(), tabs: out };
+}
+
+function cleanRow(obj) {
+  var o = {};
+  Object.keys(obj).forEach(function (k) {
+    var v = obj[k];
+    if (v instanceof Date) v = toDateString(v);
+    o[k] = v;
+  });
+  return o;
 }

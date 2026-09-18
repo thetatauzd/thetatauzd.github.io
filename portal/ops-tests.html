@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpsCore tests</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; } .ok { color: #2e7d32; } .fail { color: #c62828; font-weight: 600; }
+    li { margin: 0.15rem 0; } pre { background: #f5f5f5; padding: 0.5rem; overflow: auto; }
+    #summary { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>OpsCore tests — cases taken from the F26 Theta Tau Tracker Dashboard</h1>
+  <p>Open this page after changing <code>portal/js/ops-core.js</code>. Every line must read OK.</p>
+  <div id="summary">Running…</div>
+  <ul id="results"></ul>
+  <script src="js/ops-core.js"></script>
+  <script>
+  (function () {
+    var C = window.OpsCore, results = [], pass = 0, fail = 0;
+    function eq(name, got, want) {
+      var g = JSON.stringify(got), w = JSON.stringify(want);
+      if (g === w) { pass++; results.push('<li class="ok">OK — ' + name + '</li>'); }
+      else { fail++; results.push('<li class="fail">FAIL — ' + name + '<pre>got  ' + g + '\nwant ' + w + '</pre></li>'); }
+    }
+    var S = C.withDefaults({});
+
+    // ── Attendance facts shaped like the sheet: 12 chapters recorded? No — only recorded events count.
+    function recorded(type, n, prefix) {
+      var ev = {};
+      for (var i = 1; i <= n; i++) ev[prefix + i] = { title: prefix + ' ' + i, type: type, recorded: true };
+      return ev;
+    }
+    var events = Object.assign({}, recorded('chapter', 3, 'ch'), recorded('rush', 3, 'rush'), { lockin: { title: 'Lock In', type: 'other', recorded: true } });
+    function att(absentIds) {
+      var a = {};
+      Object.keys(events).forEach(function (eid) { a[eid] = {}; a[eid].u = { present: absentIds.indexOf(eid) === -1 }; });
+      return a;
+    }
+
+    // Brice Odom: 3 chapter absences (→ 2), 3 rush absences (→ 6), rollover −1, Lock In credit −2 → total 5, Good.
+    var brice = C.computeDemerits('u', {
+      events: events, attendance: att(['ch1', 'ch2', 'ch3', 'rush1', 'rush2', 'rush3']),
+      adjustments: { a1: { points: -2, reason: 'Lock In attendance credit' } }, rollover: { points: -1 }
+    }, S);
+    eq('Brice: chapter absences', brice.chapterAbsences, 3);
+    eq('Brice: chapter demerits (3 absences, 2 free)', brice.chapterDemerits, 2);
+    eq('Brice: other event demerits (3 rush × 2)', brice.otherEventDemerits, 6);
+    eq('Brice: attendance demerits', brice.attendanceDemerits, 8);
+    eq('Brice: total = −1 + 8 + 0 − 2 (service credit 0)', brice.total - brice.serviceCredit, 5);
+    eq('Brice: standing good', brice.standing, 'good');
+    eq('Brice: no buy-out', brice.buyout, 0);
+
+    // Jack Mesaric: 1 chapter absence (→ 0), 1 rush absence (→ 2), rollover −3, credit −2 → −3.
+    var jack = C.computeDemerits('u', { events: events, attendance: att(['ch1', 'rush1']),
+      adjustments: { a1: { points: -2 } }, rollover: { points: -3 } }, S);
+    eq('Jack: total −3', jack.total - jack.serviceCredit, -3);
+
+    // Dawson: 0 chapter absences, 2 rush absences (→ 4), rollover 9, credit −2 → 11 → Bad Standing, $50.
+    var dawson = C.computeDemerits('u', { events: events, attendance: att(['rush1', 'rush2']),
+      adjustments: { a1: { points: -2 } }, rollover: { points: 9 } }, S);
+    eq('Dawson: total 11', dawson.total - dawson.serviceCredit, 11);
+    eq('Dawson: bad standing', dawson.standing, 'bad');
+    eq('Dawson: buy-out $50', dawson.buyout, 50);
+
+    // Excused chapter absence does not consume the free allowance; excused initiation still costs 2.
+    var ev2 = Object.assign({}, recorded('chapter', 3, 'ch'), { init: { title: 'Initiation', type: 'initiation', recorded: true } });
+    var exc = C.computeDemerits('u', { events: ev2, attendance: { ch1: {}, ch2: {}, ch3: {}, init: {} },
+      excuses: { e1: { eventId: 'ch1', status: 'approved' }, e2: { eventId: 'init', status: 'approved' } } }, S);
+    eq('Excused chapter absence: 2 unexcused left → 0 demerits', exc.chapterDemerits, 0);
+    eq('Excused initiation still costs 2', exc.otherEventDemerits, 2);
+
+    // Thresholds and the buy-out ladder.
+    eq('standing: 7 → warning', C.computeStanding(7, S), 'warning');
+    eq('standing: 9 → warning', C.computeStanding(9, S), 'warning');
+    eq('standing: 10 → bad', C.computeStanding(10, S), 'bad');
+    eq('buyout: 14 → $50', C.buyoutFor(14, S), 50);
+    eq('buyout: 15 → $75', C.buyoutFor(15, S), 75);
+    eq('buyout: 18 → $75', C.buyoutFor(18, S), 75);
+    eq('buyout: 25 → $125 cap', C.buyoutFor(25, S), 125);
+    eq('buyout: 40 → $125 cap', C.buyoutFor(40, S), 125);
+    eq('standing override wins', C.computeStanding(0, S, { override: 'bad' }), 'bad');
+
+    // Unpaid charge with demerits attached, past due.
+    var payDem = C.computeDemerits('u', { events: {}, ledger: { c1: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15', demeritsIfLate: 3 } } }, S, { asOf: '2026-11-01' });
+    eq('Unpaid dues past due add demeritsIfLate', payDem.paymentDemerits, 3);
+    var payDemPaid = C.computeDemerits('u', { events: {}, ledger: { c1: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15', demeritsIfLate: 3 },
+      p1: { type: 'payment', chargeId: 'c1', amount: 250, date: '2026-10-14' } } }, S, { asOf: '2026-11-01' });
+    eq('Paid dues add no demerits', payDemPaid.paymentDemerits, 0);
+
+    // Service: 12 hours / 3 events required for brothers; shortfall demerits for next term.
+    var svc = C.serviceSummary({ s1: { hours: 2, eventId: 'ev1', status: 'approved' }, s2: { hours: 4, eventId: 'ev2', status: 'pending' } }, S);
+    eq('service: approved hours', svc.approvedHours, 2);
+    eq('service: pending hours', svc.pendingHours, 4);
+    eq('service: hours short of 12', svc.hoursShort, 10);
+    eq('service: events short of 3', svc.eventsShort, 2);
+    eq('service: shortfall demerits 10×1 + 2×2', svc.shortfallDemerits, 14);
+    var pnmSvc = C.serviceSummary({}, S, { pnm: true });
+    eq('PNM service requirement 8 hours / 3 events', [pnmSvc.hoursRequired, pnmSvc.eventsRequired], [8, 3]);
+    var extra = C.computeDemerits('u', { events: {}, service: { s1: { hours: 15, eventId: 'a', status: 'approved' } } }, S);
+    eq('3 extra hours erase 3 demerits', extra.serviceCredit, -3);
+
+    // Late fees: bylaws ladder $5, $5, then $10/week; late one day after due date.
+    var charge = { accruesLate: true, dueDate: '2026-10-15' };
+    eq('late fee: on the due date', C.lateFeeFor(charge, S, '2026-10-15'), 0);
+    eq('late fee: 1 day late (grace)', C.lateFeeFor(charge, S, '2026-10-16'), 0);
+    eq('late fee: 2 days late → week 1 $5', C.lateFeeFor(charge, S, '2026-10-17'), 5);
+    eq('late fee: 9 days late → week 2 $10', C.lateFeeFor(charge, S, '2026-10-24'), 10);
+    eq('late fee: 16 days late → week 3 $20', C.lateFeeFor(charge, S, '2026-10-31'), 20);
+    eq('late fee: 23 days late → week 4 $30', C.lateFeeFor(charge, S, '2026-11-07'), 30);
+    eq('late fee: no accrual flag', C.lateFeeFor({ accruesLate: false, dueDate: '2026-10-15' }, S, '2026-12-01'), 0);
+    eq('late fee: settled in week 1 stays $5', C.lateFeeFor(Object.assign({ settledAt: '2026-10-20' }, charge), S, '2026-12-01'), 5);
+    eq('late fee: plan arranged before due → 0', C.lateFeeFor(Object.assign({ planAt: '2026-10-10', planDueDate: '2026-12-01' }, charge), S, '2026-11-15'), 0);
+
+    // Ledger summary.
+    var L = C.ledgerSummary({
+      dues: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15', date: '2026-08-20' },
+      pay1: { type: 'payment', chargeId: 'dues', amount: 100, date: '2026-10-01' },
+      bewe: { type: 'charge', item: 'BEWE', amount: 135, dueDate: '2026-08-30', date: '2026-08-15' },
+      w1: { type: 'waiver', chargeId: 'bewe', amount: 135, date: '2026-08-20' }
+    }, S, { asOf: '2026-10-24' });
+    eq('ledger: dues status late', L.charges[1].status, 'late');
+    eq('ledger: dues remaining 150', L.charges[1].remaining, 150);
+    eq('ledger: dues late fee week 2 = $10', L.charges[1].lateFee, 10);
+    eq('ledger: BEWE waived', L.charges[0].status, 'waived');
+    eq('ledger: balance 150 + 10', L.balance, 160);
+    var paidL = C.ledgerSummary({ c: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15' }, p: { type: 'payment', chargeId: 'c', amount: 250, date: '2026-10-25' } }, S, { asOf: '2026-12-01' });
+    eq('ledger: paid late → paid, fee frozen at settlement ($10)', [paidL.charges[0].status, paidL.charges[0].lateFee], ['paid', 10]);
+    eq('ledger: settled charge adds no late fee to balance', paidL.balance, 0);
+    var rev = C.ledgerSummary({ c: { type: 'charge', item: 'Dues', amount: 250 }, r: { type: 'reversal', reverses: 'c' } }, S);
+    eq('ledger: reversed charge disappears', rev.charges.length, 0);
+
+    // Pledge readiness.
+    var pr = C.pledgeReadiness({ startDate: '2026-09-17', nationalExam: { passed: true }, chapterExam: { passed: true } },
+      { a: { hours: 4, eventId: 'e1', status: 'approved' }, b: { hours: 4, eventId: 'e2', status: 'approved' }, c: { hours: 1, eventId: 'e3', status: 'approved' } }, S, { asOf: '2026-11-13' });
+    eq('pledge: 8 weeks + 9 h + 3 events + exams → ready', pr.ready, true);
+    var pr2 = C.pledgeReadiness({ startDate: '2026-09-17' }, {}, S, { asOf: '2026-10-01' });
+    eq('pledge: fresh PNM not ready', pr2.ready, false);
+
+    // People.
+    eq('perms: treasurer → finance + settings', C.permsFor({ treasurer: true }, S), { finance: true, settings: true });
+    eq('legacyRole: standards chair → standards', C.legacyRole({ status: 'active', positions: { standards_chair: true, treasurer: true } }), 'standards');
+    eq('legacyRole: plain active → brother', C.legacyRole({ status: 'active', positions: {} }), 'brother');
+    eq('legacyRole: pnm', C.legacyRole({ status: 'pnm' }), 'pnm');
+    eq('legacyRole: admin stays admin', C.legacyRole({ role: 'admin', status: 'active' }), 'admin');
+    var up = C.upgradeUser({ role: 'regent', name: 'X' }, S);
+    eq('upgradeUser: regent → active + regent position + settings perm', [up.status, up.positions.regent, up.perms.settings, up.role], ['active', true, true, 'regent']);
+    eq('isActiveStatus: coop is not active', C.isActiveStatus('coop', S), false);
+    eq('rollKey: 415X! → 415', C.rollKey('415X!'), '415');
+    eq('nameKey: Jorge Naranjo Jr. → jorge_naranjo_jr', C.nameKey('Jorge Naranjo Jr.'), 'jorge_naranjo_jr');
+    eq('quorum: 68 active business → 34', C.quorum(68, 'business', S), 34);
+    eq('quorum: 68 active membership → 46', C.quorum(68, 'membership', S), 46);
+    eq('money: 1035.5 → $1035.50', C.money(1035.5), '$1035.50');
+    eq('withDefaults keeps stored values', C.withDefaults({ policy: { dues: { amount: 300 } } }).policy.dues.amount, 300);
+    eq('withDefaults fills missing', C.withDefaults({ policy: { dues: { amount: 300 } } }).policy.dues.graceDays, 1);
+
+    document.getElementById('results').innerHTML = results.join('');
+    var s = document.getElementById('summary');
+    s.textContent = fail === 0 ? 'All ' + pass + ' checks passed.' : fail + ' failed, ' + pass + ' passed.';
+    s.className = fail === 0 ? 'ok' : 'fail';
+    window.__opsTests = { pass: pass, fail: fail };
+  })();
+  </script>
+</body>
+</html>

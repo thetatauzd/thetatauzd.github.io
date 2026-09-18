@@ -6,7 +6,7 @@
   <title>Admin – Approve brothers & roles</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=22">
+  <link rel="stylesheet" href="css/portal.css?v=23">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -20,6 +20,19 @@
     .admin-table input.roll-input:focus { border-color: #FFCC33; background: #fffde7; outline: none; }
     .roll-saved { color: #2e7d32; font-size: 0.78rem; margin-left: 0.35rem; }
     .section-empty { color: #999; padding: 0.75rem 0; }
+    .admin-table select.status-select { padding: 0.3rem 0.4rem; border: 1px solid #ddd; border-radius: 5px; font: inherit; font-size: 0.85rem; }
+    .pos-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
+    .pos-chip { background: #fffde7; border: 1px solid #FFCC33; color: #8B0000; border-radius: 10px; padding: 0.05rem 0.5rem; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+    .pos-edit { background: none; border: 1px solid #ddd; border-radius: 5px; padding: 0.15rem 0.5rem; font-size: 0.75rem; cursor: pointer; color: #555; }
+    .pos-panel { position: absolute; z-index: 20; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); padding: 0.75rem; min-width: 260px; max-height: 360px; overflow-y: auto; }
+    .pos-panel h5 { margin: 0.4rem 0 0.2rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #999; }
+    .pos-panel label { display: flex; gap: 0.4rem; align-items: center; font-size: 0.85rem; padding: 0.15rem 0; cursor: pointer; }
+    .access-cell { font-size: 0.75rem; color: #666; }
+    .access-cell .perm { display: inline-block; background: #eee; border-radius: 8px; padding: 0 0.4rem; margin: 0 0.15rem 0.15rem 0; }
+    .access-cell .perm.admin { background: #8B0000; color: #fff; }
+    .row-muted td { color: #999; }
+    .member-name { font-weight: 600; }
+    .member-email { display: block; font-size: 0.75rem; color: #999; font-weight: 400; }
   </style>
   <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
 </head>
@@ -28,10 +41,22 @@
   <header class="portal-header">
     <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Admin – User Management</h1></div>
     <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu">
+          <a href="attendance" data-perm="attendance" class="hidden">Attendance</a>
+          <a href="standards-board" data-perm="standards" class="hidden">Standards Board</a>
+          <a href="treasurer" data-perm="finance" class="hidden">Treasurer</a>
+          <a href="service" data-perm="service" class="hidden">Service Hours</a>
+          <a href="marshal" data-perm="pledges" class="hidden">Marshal</a>
+          <a href="settings" data-perm="settings" class="hidden">Chapter Settings</a>
+        </div>
+      </div>
       <div class="nav-dropdown hidden" id="admin-dropdown">
         <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
         <div class="nav-dropdown-menu" id="admin-dd-menu">
           <a href="admin">User Management</a>
+          <a href="import">Import from Tracker sheet</a>
           <a href="newsletters-admin">Newsletters</a>
           <div class="dd-section-label">Voting</div>
           <a href="standards">Standards</a>
@@ -54,45 +79,50 @@
     </div>
   </header>
 
-  <main class="portal-container">
+  <main class="portal-container standards-main ops-section">
+    <div class="portal-card" id="card-migrate" style="display:none; border:2px solid #FFCC33;">
+      <h2>Upgrade member records</h2>
+      <p class="step-hint">Some accounts still use the old single role. Upgrading gives everyone a status (active, inactive, co-op, alumnus, PNM), a set of positions, and permissions derived from those positions. Nothing is lost; the old role is kept in sync automatically.</p>
+      <button type="button" class="btn btn-primary btn-small" id="btn-migrate">Upgrade <span id="migrate-count"></span> records</button>
+      <span id="migrate-status" class="step-hint"></span>
+    </div>
+
     <div class="portal-card" id="card-pending">
-      <h2>Pending approval <span class="sec-count" id="count-pending"></span></h2>
-      <p>New registrations waiting to be let in. Approving sets them to <strong>brother</strong>.</p>
-      <table class="admin-table">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Roll #</th><th>Role</th><th>Action</th></tr>
-        </thead>
+      <h2>Pending approval <span class="count-pill" id="count-pending"></span></h2>
+      <p class="step-hint">New registrations. Approving makes them an <strong>active brother</strong>; choose PNM instead for a pledge.</p>
+      <div class="table-scroll"><table class="admin-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Roll #</th><th>Approve as</th><th></th></tr></thead>
         <tbody id="tbody-pending"></tbody>
-      </table>
+      </table></div>
     </div>
 
     <div class="portal-card">
-      <h2>Exec <span class="sec-count" id="count-exec"></span></h2>
-      <p>Anyone holding a role beyond brother — admin, regent, standards or rush chair.</p>
-      <table class="admin-table">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Roll #</th><th>Role</th><th>Action</th></tr>
-        </thead>
-        <tbody id="tbody-exec"></tbody>
-      </table>
-    </div>
-
-    <div class="portal-card">
-      <h2>Brothers <span class="sec-count" id="count-brothers"></span></h2>
-      <table class="admin-table">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Roll #</th><th>Role</th><th>Action</th></tr>
-        </thead>
-        <tbody id="tbody-brothers"></tbody>
-      </table>
+      <div class="connected-head">
+        <h2 style="margin:0;">Members <span class="count-pill" id="count-members"></span></h2>
+        <input type="search" id="member-search" class="field" placeholder="Search name, roll or position…" autocomplete="off">
+        <select id="member-filter" class="field" style="max-width:200px;">
+          <option value="">Everyone</option>
+          <option value="positions">Officers &amp; chairs</option>
+          <option value="active">Active brothers</option>
+          <option value="pnm">PNMs</option>
+          <option value="other">Inactive / co-op / alumni</option>
+        </select>
+      </div>
+      <p class="step-hint">Status controls dues, quorum and voting. Positions grant what each person can do on the site (permissions are shown under the name). Roll numbers are digits only.</p>
+      <div class="table-scroll"><table class="admin-table" id="members-table">
+        <thead><tr><th>Name</th><th>Roll #</th><th>Status</th><th>Positions</th><th>Access</th><th></th></tr></thead>
+        <tbody id="tbody-members"></tbody>
+      </table></div>
     </div>
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=22"></script>
-  <script src="js/auth.js?v=22"></script>
-  <script src="js/admin.js?v=22"></script>
+  <script src="js/firebase-config.js?v=23"></script>
+  <script src="js/auth.js?v=23"></script>
+  <script src="js/ops-core.js?v=23"></script>
+  <script src="js/ops-db.js?v=23"></script>
+  <script src="js/admin.js?v=23"></script>
 </body>
 </html>

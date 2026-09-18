@@ -6,7 +6,7 @@
   <title>Session History – Brother Portal</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=22">
+  <link rel="stylesheet" href="css/portal.css?v=23">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -80,10 +80,22 @@
   <header class="portal-header">
     <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Session History</h1></div>
     <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu">
+          <a href="attendance" data-perm="attendance" class="hidden">Attendance</a>
+          <a href="standards-board" data-perm="standards" class="hidden">Standards Board</a>
+          <a href="treasurer" data-perm="finance" class="hidden">Treasurer</a>
+          <a href="service" data-perm="service" class="hidden">Service Hours</a>
+          <a href="marshal" data-perm="pledges" class="hidden">Marshal</a>
+          <a href="settings" data-perm="settings" class="hidden">Chapter Settings</a>
+        </div>
+      </div>
       <div class="nav-dropdown hidden" id="admin-dropdown">
         <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
         <div class="nav-dropdown-menu" id="admin-dd-menu">
           <a href="admin">User Management</a>
+          <a href="import">Import from Tracker sheet</a>
           <a href="newsletters-admin">Newsletters</a>
           <div class="dd-section-label">Voting</div>
           <a href="standards">Standards</a>
@@ -114,9 +126,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="js/firebase-config.js?v=22"></script>
-  <script src="js/auth.js?v=22"></script>
-  <script src="js/db.js?v=22"></script>
+  <script src="js/firebase-config.js?v=23"></script>
+  <script src="js/auth.js?v=23"></script>
+  <script src="js/db.js?v=23"></script>
   <script>
   (function() {
     'use strict';

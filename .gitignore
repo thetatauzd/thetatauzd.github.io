@@ -34,3 +34,5 @@ yarn-error.log*
 
 # Pages to exclude from production
 brothers.html
+# Local Claude Code permission settings
+.claude/settings.local.json

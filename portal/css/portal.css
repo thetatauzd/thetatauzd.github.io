@@ -137,7 +137,15 @@ body {
 
 /* The admin dropdown sits left of the profile one, so its menu opens rightward
    to avoid running off the left edge of narrow screens. */
-.portal-header #admin-dropdown .nav-dropdown-menu {
+.portal-header .nav-dropdown-toggle--ops {
+  background: transparent;
+  color: var(--color-gold);
+  border: 1.5px solid var(--color-gold);
+}
+.nav-dropdown-toggle--ops:hover { background: rgba(255, 204, 51, 0.15); }
+#ops-dropdown .nav-dropdown-menu { left: 0; right: auto; min-width: 200px; }
+
+#admin-dropdown .nav-dropdown-menu {
   right: auto;
   left: 0;
 }
@@ -1242,3 +1250,88 @@ body {
 .timer-btn-resume { background: #4caf50; color: #fff; }
 .timer-btn-reset  { background: #666; color: #fff; }
 .timer-btn-stop   { background: #c62828; color: #fff; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Chapter Ops pages (.ops-section) — shared form, list and layout pieces.
+   Mirrors the Standards page's inline styles so every ops page looks alike.
+   ══════════════════════════════════════════════════════════════════════════ */
+main.ops-section { max-width: 1500px; }
+.ops-section .btn { padding: 0.6rem 1rem; border-radius: 6px; border: none; background: var(--color-gold); color: var(--color-maroon); font-weight: 600; font-size: 1rem; cursor: pointer; font-family: inherit; }
+.ops-section .btn:hover { background: var(--color-gold-dark); }
+.ops-section .btn.secondary { background: #666; color: #fff; }
+.ops-section .btn.secondary:hover { background: #555; }
+.ops-section .btn.danger { background: #c62828; color: #fff; }
+.ops-section .btn.danger:hover { background: #a01010; }
+.ops-section .btn.ghost { background: #eee; color: #444; }
+.ops-section .btn-small { padding: 0.45rem 0.9rem; font-size: 0.9rem; }
+.ops-section .btn:disabled { opacity: 0.5; cursor: default; }
+.ops-section .btn-text { background: none; border: none; color: var(--color-maroon); text-decoration: underline; padding: 0; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.ops-section .field { width: 100%; max-width: 420px; border: 1px solid #ccc; border-radius: 6px; padding: 0.55rem 0.7rem; font: inherit; font-size: 0.95rem; margin: 0; background: #fff; }
+.ops-section .field:focus { border-color: var(--color-gold); outline: none; background: #fffdf3; }
+.ops-section .field-label { display: block; font-size: 0.85rem; font-weight: 600; margin: 0.5rem 0 0.25rem; }
+.ops-section .step-hint { font-size: 0.85rem; color: #666; margin: 0.25rem 0 0.5rem; line-height: 1.45; }
+.ops-section .setup-step { padding: 1.1rem 0 0.4rem; border-top: 1px solid #eee; }
+.ops-section .setup-step:first-of-type { border-top: none; padding-top: 0.25rem; }
+.ops-section .setup-step h3 { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; margin-bottom: 0.5rem; color: var(--color-maroon); }
+.ops-section .step-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--color-maroon); color: #fff; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+.ops-section .option-presets { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
+.ops-section .option-preset-btn { padding: 0.5rem 1rem; margin: 0; border: 2px solid #ddd; border-radius: 8px; background: #fff; color: #333; cursor: pointer; font-size: 0.9rem; font-weight: 500; font-family: inherit; transition: border-color 0.2s, background 0.2s; }
+.ops-section .option-preset-btn:hover { border-color: var(--color-gold); background: #fffde7; }
+.ops-section .option-preset-btn.selected { border-color: var(--color-gold); background: #fffde7; color: var(--color-maroon); font-weight: 700; box-shadow: inset 0 0 0 1px var(--color-gold); }
+.ops-section .option-preset-btn.good.selected { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; box-shadow: inset 0 0 0 1px #2e7d32; }
+.ops-section .option-preset-btn.bad.selected { border-color: #c62828; background: #ffebee; color: #c62828; box-shadow: inset 0 0 0 1px #c62828; }
+.ops-section .add-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+.ops-section .add-row > div { flex: 1 1 200px; }
+.ops-section .panel-collapse { margin-top: 0.75rem; border-top: 1px solid #eee; padding-top: 0.5rem; }
+.ops-section .panel-collapse > summary { cursor: pointer; font-weight: 600; color: var(--color-maroon); padding: 0.4rem 0; list-style: none; display: flex; align-items: center; gap: 0.5rem; }
+.ops-section .panel-collapse > summary::-webkit-details-marker { display: none; }
+.ops-section .panel-collapse > summary::before { content: '▸'; font-size: 0.8rem; color: #999; transition: transform 0.15s; }
+.ops-section .panel-collapse[open] > summary::before { transform: rotate(90deg); }
+.ops-section .count-pill { display: inline-block; background: #eee; color: #555; border-radius: 10px; padding: 0.05rem 0.55rem; font-size: 0.78rem; font-weight: 600; vertical-align: middle; }
+.ops-section .count-pill.good { background: #e8f5e9; color: #2e7d32; }
+.ops-section .count-pill.warn { background: #fff8e1; color: #b26a00; }
+.ops-section .count-pill.bad { background: #ffebee; color: #c62828; }
+.ops-section .connected-head { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.ops-section .connected-head .field { max-width: 260px; padding: 0.45rem 0.7rem; font-size: 0.9rem; }
+.ops-section .brother-list { list-style: none; padding: 0; margin: 0.5rem 0 0; max-height: 560px; overflow-y: auto; }
+.ops-section .brother-list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; }
+.ops-section .brother-list li .bro-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.ops-section .brother-list li.hidden { display: none; }
+.ops-section .cand { border: 1px solid #eee; border-radius: 8px; margin-bottom: 0.4rem; background: #fff; }
+.ops-section .cand[open] { border-color: var(--color-gold); }
+.ops-section .cand > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.8rem; }
+.ops-section .cand > summary::-webkit-details-marker { display: none; }
+.ops-section .cand > summary::before { content: '▸'; color: #999; font-size: 0.8rem; transition: transform 0.15s; flex-shrink: 0; }
+.ops-section .cand[open] > summary::before { transform: rotate(90deg); }
+.ops-section .cand-name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ops-section .cand-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; }
+.ops-section .rchip { font-family: monospace; font-size: 0.8rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 10px; background: #eee; color: #555; white-space: nowrap; }
+.ops-section .rchip.pass, .ops-section .rchip.good { background: #e8f5e9; color: #2e7d32; }
+.ops-section .rchip.warn { background: #fff8e1; color: #b26a00; }
+.ops-section .rchip.fail, .ops-section .rchip.bad { background: #ffebee; color: #c62828; }
+.ops-section .cand.hidden { display: none; }
+.ops-section .rd { padding: 0.6rem 0.9rem 0.9rem 2rem; border-top: 1px solid #f2f2f2; }
+.ops-section .rd-line { margin: 0 0 0.5rem; font-weight: 600; color: #444; font-size: 0.95rem; }
+.ops-section .rd-muted { color: #999; font-size: 0.9rem; margin: 0; }
+.ops-section .hbar { display: block; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; }
+.ops-section .hbar-fill { display: block; height: 100%; border-radius: 5px; background: #2e7d32; }
+.ops-section .vgroups { display: grid; gap: 0.3rem; font-size: 0.88rem; }
+.ops-section .vgroup { display: flex; gap: 0.6rem; align-items: baseline; }
+.ops-section .vg-label { font-weight: 700; flex: 0 0 7.5rem; font-family: monospace; }
+.ops-section .vg-names { color: #444; line-height: 1.45; }
+.ops-section .threshold-adjust { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.9rem; flex-wrap: wrap; }
+.ops-section .threshold-adjust input { width: 90px; }
+.ops-section .status-line { font-size: 0.9rem; margin: 0.5rem 0 0; }
+.ops-section .status-line.error { color: #c62828; }
+.ops-section .status-line.success { color: #2e7d32; }
+.ops-section .kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem 1rem; font-size: 0.9rem; }
+.ops-section .kv dt { color: #777; }
+.ops-section .kv dd { margin: 0; }
+.ops-section .standing-good { color: #2e7d32; }
+.ops-section .standing-warning { color: #b26a00; }
+.ops-section .standing-bad { color: #c62828; }
+@media (min-width: 1024px) {
+  .ops-section .live-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr); gap: 0 1.5rem; align-items: start; }
+  .ops-section .live-grid .portal-card { margin-bottom: 1.5rem; }
+}
