@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Marshal</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=23">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Marshal</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu">
+          <a href="attendance" data-perm="attendance" class="hidden">Attendance</a>
+          <a href="standards-board" data-perm="standards" class="hidden">Standards Board</a>
+          <a href="treasurer" data-perm="finance" class="hidden">Treasurer</a>
+          <a href="service" data-perm="service" class="hidden">Service Hours</a>
+          <a href="marshal" data-perm="pledges" class="hidden">Marshal</a>
+          <a href="settings" data-perm="settings" class="hidden">Chapter Settings</a>
+        </div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu">
+          <a href="admin">User Management</a>
+          <a href="import">Import from Tracker sheet</a>
+          <a href="newsletters-admin">Newsletters</a>
+          <div class="dd-section-label">Voting</div>
+          <a href="standards">Standards</a>
+          <a href="regent">Regent View</a>
+          <a href="history">Session History</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="/portal">Portal home</a>
+          <a href="voting">Voting</a>
+          <a href="tracker">Theta Tau Tracker</a>
+          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/">Back to Site</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <div class="live-grid">
+    <div class="live-side">
+      <div class="portal-card">
+        <h2>Pledge class</h2>
+        <select id="pc-select" class="field"></select>
+        <details class="panel-collapse"><summary>New pledge class</summary>
+          <label class="field-label" for="pc-label">Label</label><input id="pc-label" class="field" placeholder="Fall 2026 PC">
+          <div class="add-row">
+            <div style="flex:0 0 170px;"><label class="field-label" for="pc-start">Pledging starts</label><input id="pc-start" class="field" type="date"></div>
+            <div style="flex:0 0 170px;"><label class="field-label" for="pc-init">Initiation (target)</label><input id="pc-init" class="field" type="date"></div>
+          </div>
+          <label class="field-label" for="pc-meetings">Meetings (one per line: title, date)</label>
+          <textarea id="pc-meetings" class="field" rows="5" placeholder="Meeting 0, 2026-09-17&#10;Meeting 1, 2026-09-20"></textarea>
+          <button type="button" class="btn btn-primary btn-small" id="btn-pc-create">Create class</button>
+          <p class="status-line" id="pc-status"></p>
+        </details>
+        <div id="pc-info" class="step-hint"></div>
+      </div>
+      <div class="portal-card">
+        <h2>PNMs in this class</h2>
+        <p class="step-hint">Accounts approved as PNM on User Management. Add them to the class to track them.</p>
+        <ul class="brother-list" id="pnm-pool"></ul>
+      </div>
+    </div>
+    <div class="live-main">
+      <div class="portal-card">
+        <h2>Readiness <span class="count-pill" id="rd-count"></span></h2>
+        <p class="step-hint" id="rd-rules"></p>
+        <div class="table-scroll"><table class="admin-table"><thead><tr><th>PNM</th><th>Hours</th><th>Events</th><th>Weeks</th><th>National</th><th>Chapter</th><th>Meetings</th><th>Ready</th><th></th></tr></thead><tbody id="rd-tbody"></tbody></table></div>
+      </div>
+      <div class="portal-card">
+        <div class="connected-head"><h2 style="margin:0;">Meeting attendance</h2><select id="ma-meeting" class="field" style="max-width:260px;"></select></div>
+        <ul class="brother-list" id="ma-list"></ul>
+        <div class="add-row" style="align-items:center; margin-top:0.5rem;">
+          <button type="button" class="btn btn-primary btn-small" id="btn-ma-save" style="margin:0;">Save attendance</button>
+          <span class="status-line" id="ma-status" style="margin:0;"></span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=23"></script>
+  <script src="js/auth.js?v=23"></script>
+  <script src="js/ops-core.js?v=23"></script>
+  <script src="js/ops-db.js?v=23"></script>
+  <script src="js/marshal.js?v=23"></script>
+</body>
+</html>

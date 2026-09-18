@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Treasurer</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=23">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Treasurer</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu">
+          <a href="attendance" data-perm="attendance" class="hidden">Attendance</a>
+          <a href="standards-board" data-perm="standards" class="hidden">Standards Board</a>
+          <a href="treasurer" data-perm="finance" class="hidden">Treasurer</a>
+          <a href="service" data-perm="service" class="hidden">Service Hours</a>
+          <a href="marshal" data-perm="pledges" class="hidden">Marshal</a>
+          <a href="settings" data-perm="settings" class="hidden">Chapter Settings</a>
+        </div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu">
+          <a href="admin">User Management</a>
+          <a href="import">Import from Tracker sheet</a>
+          <a href="newsletters-admin">Newsletters</a>
+          <div class="dd-section-label">Voting</div>
+          <a href="standards">Standards</a>
+          <a href="regent">Regent View</a>
+          <a href="history">Session History</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="/portal">Portal home</a>
+          <a href="voting">Voting</a>
+          <a href="tracker">Theta Tau Tracker</a>
+          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/">Back to Site</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <div class="live-grid">
+    <div class="live-side">
+      <div class="portal-card">
+        <h2>Dues <span class="count-pill" id="tr-term"></span></h2>
+        <dl class="kv">
+          <dt>Brother dues</dt><dd id="tr-dues-amount">—</dd>
+          <dt>PNM dues</dt><dd id="tr-pnm-amount">—</dd>
+          <dt>Late fees</dt><dd id="tr-late-rule">—</dd>
+        </dl>
+        <label class="field-label" for="tr-due">Due date</label>
+        <input id="tr-due" class="field" type="date" style="max-width:200px;">
+        <div class="add-row" style="margin-top:0.5rem; align-items:center;">
+          <button type="button" class="btn btn-primary btn-small" id="btn-charge-dues" style="margin:0;">Charge dues to all active</button>
+          <button type="button" class="btn ghost btn-small" id="btn-charge-pnm" style="margin:0;">Charge PNM dues</button>
+        </div>
+        <p class="status-line" id="tr-status"></p>
+        <p class="step-hint">Charging is safe to repeat: anyone already charged this term is skipped. Amounts come from Chapter Settings.</p>
+      </div>
+
+      <div class="portal-card">
+        <h2>Charge a fee or event</h2>
+        <div class="add-row">
+          <div><label class="field-label" for="fee-item">Item</label><input id="fee-item" class="field" placeholder="e.g. BEWE, Formal, Rush shirt"></div>
+          <div style="flex:0 0 120px;"><label class="field-label" for="fee-amount">Amount</label><input id="fee-amount" class="field" type="number" step="0.01" placeholder="135"></div>
+          <div style="flex:0 0 170px;"><label class="field-label" for="fee-due">Due</label><input id="fee-due" class="field" type="date"></div>
+        </div>
+        <div class="add-row">
+          <div style="flex:0 0 120px;"><label class="field-label" for="fee-demerits">Demerits if late</label><input id="fee-demerits" class="field" type="number" step="1" value="0"></div>
+          <div><label style="display:flex; gap:0.4rem; align-items:center; font-size:0.9rem; margin-top:1.6rem;"><input type="checkbox" id="fee-late" checked> Late fees apply</label></div>
+        </div>
+        <label class="field-label">Who</label>
+        <div class="add-row" style="align-items:center;">
+          <input type="search" id="fee-search" class="field" placeholder="Find…" style="max-width:220px;">
+          <button type="button" class="btn ghost btn-small" id="fee-all" style="margin:0;">All active</button>
+          <button type="button" class="btn ghost btn-small" id="fee-none" style="margin:0;">None</button>
+          <span class="count-pill" id="fee-count">0 selected</span>
+        </div>
+        <ul class="brother-list" id="fee-list" style="max-height:260px;"></ul>
+        <button type="button" class="btn btn-primary btn-small" id="btn-charge-fee" style="margin-top:0.5rem;">Charge selected</button>
+        <p class="status-line" id="fee-status"></p>
+      </div>
+    </div>
+
+    <div class="live-main">
+      <div class="portal-card">
+        <div class="connected-head">
+          <h2 style="margin:0;">Balances</h2>
+          <input type="search" id="bal-search" class="field" placeholder="Find a brother…" autocomplete="off">
+          <select id="bal-filter" class="field" style="max-width:190px;"><option value="">Everyone charged</option><option value="owing">Owing</option><option value="late">Late</option><option value="plan">On a plan</option><option value="clear">Paid up</option></select>
+        </div>
+        <div class="stat-grid" style="margin:0.5rem 0 0.75rem;">
+          <div class="stat-tile"><div class="stat-label">Collected</div><div class="stat-value" id="bal-collected">—</div></div>
+          <div class="stat-tile stat-owing"><div class="stat-label">Outstanding</div><div class="stat-value" id="bal-outstanding">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Paid dues</div><div class="stat-value" id="bal-dues-paid">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Late</div><div class="stat-value" id="bal-late-count">—</div></div>
+        </div>
+        <div id="bal-list"></div>
+        <button type="button" class="btn secondary btn-small" id="btn-export-xlsx" style="margin-top:0.75rem;">Export to Excel</button>
+      </div>
+    </div>
+    </div>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="js/firebase-config.js?v=23"></script>
+  <script src="js/auth.js?v=23"></script>
+  <script src="js/ops-core.js?v=23"></script>
+  <script src="js/ops-db.js?v=23"></script>
+  <script src="js/treasurer.js?v=23"></script>
+</body>
+</html>

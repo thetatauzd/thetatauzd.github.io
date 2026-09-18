@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Service Hours</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=23">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Service Hours</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu">
+          <a href="attendance" data-perm="attendance" class="hidden">Attendance</a>
+          <a href="standards-board" data-perm="standards" class="hidden">Standards Board</a>
+          <a href="treasurer" data-perm="finance" class="hidden">Treasurer</a>
+          <a href="service" data-perm="service" class="hidden">Service Hours</a>
+          <a href="marshal" data-perm="pledges" class="hidden">Marshal</a>
+          <a href="settings" data-perm="settings" class="hidden">Chapter Settings</a>
+        </div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu">
+          <a href="admin">User Management</a>
+          <a href="import">Import from Tracker sheet</a>
+          <a href="newsletters-admin">Newsletters</a>
+          <div class="dd-section-label">Voting</div>
+          <a href="standards">Standards</a>
+          <a href="regent">Regent View</a>
+          <a href="history">Session History</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="/portal">Portal home</a>
+          <a href="voting">Voting</a>
+          <a href="tracker">Theta Tau Tracker</a>
+          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/">Back to Site</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <div class="live-grid">
+    <div class="live-main">
+      <div class="portal-card">
+        <h2>To review <span class="count-pill" id="rv-count"></span></h2>
+        <p class="step-hint">Brothers and PNMs log hours from their tracker. Approve what counts; deny with a note so they know why.</p>
+        <div id="rv-list"></div>
+      </div>
+      <div class="portal-card">
+        <div class="connected-head">
+          <h2 style="margin:0;">Progress <span class="count-pill" id="pg-term"></span></h2>
+          <input type="search" id="pg-search" class="field" placeholder="Find…" autocomplete="off">
+          <select id="pg-filter" class="field" style="max-width:190px;"><option value="">Active brothers</option><option value="short">Still short</option><option value="met">Requirement met</option><option value="pnm">PNMs</option></select>
+        </div>
+        <div class="stat-grid" style="margin:0.5rem 0 0.75rem;">
+          <div class="stat-tile"><div class="stat-label">Required</div><div class="stat-value" id="pg-req">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Met</div><div class="stat-value" id="pg-met">—</div></div>
+          <div class="stat-tile stat-owing"><div class="stat-label">Short</div><div class="stat-value" id="pg-short">—</div></div>
+          <div class="stat-tile"><div class="stat-label">Approved hours</div><div class="stat-value" id="pg-total">—</div></div>
+        </div>
+        <div class="table-scroll"><table class="admin-table"><thead><tr><th>Name</th><th>Approved</th><th>Pending</th><th>Events</th><th>Left</th><th>Next term</th></tr></thead><tbody id="pg-tbody"></tbody></table></div>
+        <p class="step-hint">"Next term" is the demerits a shortfall would add at rollover (1 per hour, 2 per event short, per the Standards Board procedures).</p>
+      </div>
+    </div>
+    <div class="live-side">
+      <div class="portal-card">
+        <h2>Service events</h2>
+        <p class="step-hint">Events you host or approve. They appear as suggestions when brothers log hours.</p>
+        <div class="table-scroll"><table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Hours</th></tr></thead><tbody id="ev-tbody"></tbody></table></div>
+        <details class="panel-collapse"><summary>Add an event</summary>
+          <label class="field-label" for="ev-name">Name</label><input id="ev-name" class="field" placeholder="e.g. Harvest Hope">
+          <div class="add-row">
+            <div style="flex:0 0 170px;"><label class="field-label" for="ev-date">Date</label><input id="ev-date" class="field" type="date"></div>
+            <div style="flex:0 0 110px;"><label class="field-label" for="ev-hours">Hours</label><input id="ev-hours" class="field" type="number" step="0.25" placeholder="2"></div>
+          </div>
+          <label style="display:flex; gap:0.4rem; align-items:center; font-size:0.9rem; margin:0.5rem 0;"><input type="checkbox" id="ev-pledges" checked> Counts for PNMs</label>
+          <button type="button" class="btn btn-primary btn-small" id="btn-add-ev">Add event</button>
+          <p class="status-line" id="ev-status"></p>
+        </details>
+      </div>
+      <div class="portal-card">
+        <h2>Credit hours in bulk</h2>
+        <p class="step-hint">For an event you ran: pick the event, the hours, and everyone who showed up. Entries are created already approved.</p>
+        <label class="field-label" for="bk-event">Event</label><select id="bk-event" class="field"></select>
+        <div class="add-row">
+          <div style="flex:0 0 110px;"><label class="field-label" for="bk-hours">Hours each</label><input id="bk-hours" class="field" type="number" step="0.25" placeholder="2"></div>
+          <div style="flex:0 0 170px;"><label class="field-label" for="bk-date">Date</label><input id="bk-date" class="field" type="date"></div>
+        </div>
+        <div class="add-row" style="align-items:center; margin-top:0.4rem;">
+          <input type="search" id="bk-search" class="field" placeholder="Find…" style="max-width:200px;">
+          <button type="button" class="btn ghost btn-small" id="bk-none" style="margin:0;">Clear</button>
+          <span class="count-pill" id="bk-count">0 selected</span>
+        </div>
+        <ul class="brother-list" id="bk-list" style="max-height:260px;"></ul>
+        <button type="button" class="btn btn-primary btn-small" id="btn-bulk" style="margin-top:0.5rem;">Credit selected</button>
+        <p class="status-line" id="bk-status"></p>
+      </div>
+    </div>
+    </div>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=23"></script>
+  <script src="js/auth.js?v=23"></script>
+  <script src="js/ops-core.js?v=23"></script>
+  <script src="js/ops-db.js?v=23"></script>
+  <script src="js/service.js?v=23"></script>
+</body>
+</html>
