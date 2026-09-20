@@ -100,6 +100,8 @@
     eq('weekly Sundays minus a skipped date', C.weeklyDates('2026-08-23', '2026-09-20', 0, ['2026-09-06']), ['2026-08-23', '2026-08-30', '2026-09-13', '2026-09-20']);
     eq('service week starts on Sunday', C.weekOf('2026-09-17'), '2026-09-13');
 
+    eq('empty stored settings keep the defaults', C.withDefaults({ policy: undefined, statuses: null }).policy.warningThreshold, 7);
+
     // Thresholds and the buy-out ladder.
     eq('standing: 7 → warning', C.computeStanding(7, S), 'warning');
     eq('standing: 9 → warning', C.computeStanding(9, S), 'warning');

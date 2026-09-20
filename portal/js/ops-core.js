@@ -92,6 +92,7 @@
     var out = clone(DEFAULTS);
     function merge(dst, src) {
       Object.keys(src || {}).forEach(function (k) {
+        if (src[k] === undefined || src[k] === null) return;      // nothing stored: keep the default
         if (isObj(src[k]) && isObj(dst[k])) merge(dst[k], src[k]);
         else dst[k] = src[k];
       });
