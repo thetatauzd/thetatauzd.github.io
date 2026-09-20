@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log Service Hours</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=24">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Log Service Hours</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <p id="page-status" class="step-hint">Loading…</p>
+    <div id="page-body" class="hidden">
+      <div class="live-grid">
+      <div class="live-main">
+        <div class="portal-card">
+          <h2>Log service hours <span class="count-pill" id="sv-term"></span></h2>
+          <p class="step-hint" id="sv-rule"></p>
+
+          <label class="field-label" for="sv-event">Which event did you attend?</label>
+          <input id="sv-event" class="field" placeholder="e.g. Habitat for Humanity, rush tabling, Final Victory" autocomplete="off">
+          <div class="add-row">
+            <div style="flex:0 0 130px;"><label class="field-label" for="sv-hours">Hours</label><input id="sv-hours" class="field" type="number" min="0.25" max="24" step="0.25" inputmode="decimal" placeholder="2"></div>
+            <div style="flex:0 0 180px;"><label class="field-label" for="sv-date">Date you did it</label><input id="sv-date" class="field" type="date"></div>
+          </div>
+
+          <h3 class="form-step">A photo of you at the event</h3>
+          <label class="btn secondary btn-small photo-add" for="sv-photos">Add a photo</label>
+          <input type="file" id="sv-photos" accept="image/*" multiple class="visually-hidden">
+          <div class="photo-preview" id="sv-preview"></div>
+
+          <label class="field-label" for="sv-vouch" style="margin-top:0.9rem;">No picture? Who hosted it and can vouch for you?</label>
+          <input id="sv-vouch" class="field" list="sv-people" placeholder="Name of the chair or brother" autocomplete="off">
+          <datalist id="sv-people"></datalist>
+          <label class="field-label" for="sv-notes">Anything the Service Chair should know (optional)</label>
+          <input id="sv-notes" class="field" placeholder="">
+
+          <button type="button" class="btn btn-primary" id="btn-send" style="margin-top:0.9rem;">Submit for approval</button>
+          <p class="status-line" id="sv-status"></p>
+        </div>
+      </div>
+      <div class="live-side">
+        <div class="portal-card">
+          <h2>Your hours</h2>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="stat-label">Approved</div><div class="stat-value" id="sv-approved">—</div></div>
+            <div class="stat-tile"><div class="stat-label">Hours left</div><div class="stat-value" id="sv-left">—</div></div>
+            <div class="stat-tile"><div class="stat-label">Service events</div><div class="stat-value" id="sv-events">—</div></div>
+          </div>
+          <p class="step-hint" id="sv-explain"></p>
+          <div id="sv-mine"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/ops-photos.js?v=24"></script>
+  <script src="js/log-service.js?v=24"></script>
+</body>
+</html>

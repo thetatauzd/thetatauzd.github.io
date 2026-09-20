@@ -6,7 +6,7 @@
   <title>Brother Portal – Attendance</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=23">
+  <link rel="stylesheet" href="css/portal.css?v=24">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -60,12 +60,13 @@
     <div class="live-side">
       <div class="portal-card">
         <h2>Events <span class="count-pill" id="ev-term"></span></h2>
-        <p class="step-hint">Every chapter, voting chapter, rush event, initiation, philanthropy event and committee meeting goes here. Click one to take attendance.</p>
+        <p class="step-hint">Only events that can give or take demerits belong here: chapters, voting chapters, rush events, initiation, philanthropy, committee meetings. Click one to take attendance. To lay out a whole term at once use <a href="semester">Semester Setup</a>.</p>
         <div class="table-scroll"><table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Type</th><th>Present</th></tr></thead><tbody id="ev-tbody"></tbody></table></div>
         <details class="panel-collapse" id="ev-add"><summary>Add an event</summary>
           <div class="add-row">
             <div><label class="field-label" for="ev-title">Title</label><input id="ev-title" class="field" placeholder="e.g. Chapter 4"></div>
             <div style="flex:0 0 170px;"><label class="field-label" for="ev-date">Date</label><input id="ev-date" class="field" type="date"></div>
+            <div style="flex:0 0 130px;"><label class="field-label" for="ev-time">Starts</label><input id="ev-time" class="field" type="time" value="19:00"></div>
           </div>
           <label class="field-label" for="ev-type">Type</label>
           <select id="ev-type" class="field"></select>
@@ -89,12 +90,22 @@
             <span class="count-pill" id="take-count"></span>
             <span class="count-pill" id="take-quorum"></span>
           </div>
+          <p class="step-hint" id="take-legend" style="margin:0 0 0.4rem;"><span class="att-badge e">E</span> excuse approved &nbsp; <span class="att-badge q">?</span> excuse waiting on Standards &nbsp; <span class="att-badge l">L</span> approved to arrive late or leave early (mark them present)</p>
           <ul class="brother-list" id="take-list"></ul>
           <div class="add-row" style="align-items:center; margin-top:0.75rem;">
             <button type="button" class="btn btn-primary" id="btn-save-att" style="margin:0;">Save attendance</button>
             <span class="status-line" id="take-status" style="margin:0;"></span>
           </div>
           <p class="step-hint" id="take-worth"></p>
+          <details class="panel-collapse" id="ev-edit"><summary>Edit or remove this event</summary>
+            <div class="add-row">
+              <div><label class="field-label" for="ed-title">Title</label><input id="ed-title" class="field"></div>
+              <div style="flex:0 0 170px;"><label class="field-label" for="ed-date">Date</label><input id="ed-date" class="field" type="date"></div>
+              <div style="flex:0 0 130px;"><label class="field-label" for="ed-time">Starts</label><input id="ed-time" class="field" type="time"></div>
+              <div style="flex:0 0 200px;"><label class="field-label" for="ed-type">Type</label><select id="ed-type" class="field"></select></div>
+            </div>
+            <div class="req-actions"><button type="button" class="btn btn-primary btn-small" id="btn-ed-save">Save changes</button><button type="button" class="btn danger btn-small" id="btn-ed-delete">Remove event</button><span class="status-line" id="ed-status" style="margin:0;"></span></div>
+          </details>
         </div>
       </div>
     </div>
@@ -103,10 +114,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=23"></script>
-  <script src="js/auth.js?v=23"></script>
-  <script src="js/ops-core.js?v=23"></script>
-  <script src="js/ops-db.js?v=23"></script>
-  <script src="js/attendance.js?v=23"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/attendance.js?v=24"></script>
 </body>
 </html>

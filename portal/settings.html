@@ -6,7 +6,7 @@
   <title>Brother Portal – Chapter Settings</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=23">
+  <link rel="stylesheet" href="css/portal.css?v=24">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -59,23 +59,7 @@
     <div class="portal-card">
       <h2>Term <span class="count-pill" id="term-pill"></span></h2>
       <p class="step-hint">Everything operational (attendance, fees, hours, demerits) is filed under the current term. Start a new term at the semester break; the wizard carries forward only what the bylaws say carries forward.</p>
-      <details class="panel-collapse" id="rollover-details"><summary>Start a new term</summary>
-        <div class="add-row">
-          <div style="flex:0 0 120px;"><label class="field-label" for="nt-id">Term code</label><input id="nt-id" class="field code-field" placeholder="S27" style="text-transform:uppercase;"></div>
-          <div><label class="field-label" for="nt-label">Label</label><input id="nt-label" class="field" placeholder="Spring 2027"></div>
-        </div>
-        <div class="add-row">
-          <div style="flex:0 0 170px;"><label class="field-label" for="nt-start">Starts</label><input id="nt-start" class="field" type="date"></div>
-          <div style="flex:0 0 170px;"><label class="field-label" for="nt-end">Ends</label><input id="nt-end" class="field" type="date"></div>
-          <div style="flex:0 0 170px;"><label class="field-label" for="nt-due">Dues due</label><input id="nt-due" class="field" type="date"></div>
-        </div>
-        <label style="display:flex; gap:0.4rem; align-items:center; font-size:0.9rem; margin:0.5rem 0;"><input type="checkbox" id="nt-rollover" checked> Carry service shortfalls into the new term as roll-over demerits</label>
-        <label style="display:flex; gap:0.4rem; align-items:center; font-size:0.9rem; margin:0.5rem 0;"><input type="checkbox" id="nt-dues" checked> Charge dues to every active brother in the new term</label>
-        <div id="nt-preview" class="step-hint"></div>
-        <button type="button" class="btn btn-primary btn-small" id="btn-preview-term">Preview</button>
-        <button type="button" class="btn danger btn-small hidden" id="btn-start-term">Start term</button>
-        <p class="status-line" id="nt-status"></p>
-      </details>
+      <div class="req-actions"><a class="btn btn-primary btn-small" href="semester">Open Semester Setup</a><span class="step-hint" style="margin:0;">Start a new term, schedule its chapters and events, clear old photos.</span></div>
     </div>
 
     <div class="portal-card">
@@ -126,10 +110,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=23"></script>
-  <script src="js/auth.js?v=23"></script>
-  <script src="js/ops-core.js?v=23"></script>
-  <script src="js/ops-db.js?v=23"></script>
-  <script src="js/settings.js?v=23"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/settings.js?v=24"></script>
 </body>
 </html>

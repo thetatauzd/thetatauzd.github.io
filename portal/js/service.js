@@ -1,7 +1,8 @@
 /**
  * Service Hours — the Community Service Chair's page: review submissions,
- * track everyone's progress against the requirement, keep the event list,
- * and credit hours in bulk for events the committee ran.
+ * track everyone's progress against the requirement, see each week's hours,
+ * and credit hours in bulk for events the committee ran. Service events are
+ * not kept on the site: a name is typed wherever one is needed.
  */
 (function (global) {
   'use strict';
@@ -9,7 +10,7 @@
   var C = global.OpsCore;
   var esc = C.esc, fmtDate = C.fmtDate;
   var me = null, S = null, term = null, all = null;
-  var bkSel = {};
+  var bkSel = {}, weekStart = null;
 
   function $(id) { return document.getElementById(id); }
   function setStatus(id, msg, kind) { var el = $(id); el.textContent = msg || ''; el.className = 'status-line' + (kind ? ' ' + kind : ''); }
@@ -18,7 +19,7 @@
   function isPnm(uid) { return (all.directory[uid] || {}).status === 'pnm'; }
 
   function reload() {
-    return PortalOps.loadTermFacts(term, ['service', 'serviceEvents']).then(function (f) { all = f; S = f.settings; renderAll(); });
+    return PortalOps.loadTermFacts(term, ['service']).then(function (f) { all = f; S = f.settings; renderAll(); });
   }
   function people(filterFn) {
     return Object.keys(all.directory).filter(function (uid) { var d = all.directory[uid]; return d.status !== 'pending' && (!filterFn || filterFn(d)); })
@@ -34,12 +35,16 @@
     $('rv-count').textContent = pending.length ? pending.length + ' pending' : 'nothing pending';
     $('rv-list').innerHTML = pending.length ? pending.map(function (e) {
       return '<div class="cand" style="padding:0.6rem 0.8rem;"><div style="display:flex; gap:0.75rem; align-items:baseline; flex-wrap:wrap;"><strong>' + esc(name(e.uid)) + '</strong>' + (isPnm(e.uid) ? ' ' + pill('PNM') : '') + ' <span>' + esc(e.eventName || '') + '</span> <span style="color:#999; font-size:0.85rem;">' + esc(fmtDate(e.date)) + '</span> ' + pill(e.hours + ' h', 'warn') + '</div>' +
-        '<div class="step-hint" style="margin:0.25rem 0;">' + (e.photoUrl ? '<a href="' + esc(e.photoUrl) + '" target="_blank" rel="noopener">Photo</a> · ' : '') + (e.vouchedBy ? 'Vouched by ' + esc(e.vouchedBy) : (e.photoUrl ? '' : 'No photo or voucher')) + (e.description ? ' · ' + esc(e.description) : '') + '</div>' +
+        '<div class="step-hint" style="margin:0.25rem 0;">' + (e.photoUrl ? '<a href="' + esc(e.photoUrl) + '" target="_blank" rel="noopener">Photo link</a> · ' : '') + (e.vouchedBy ? 'Vouched by ' + esc(e.vouchedBy) : ((e.photoIds || []).length || e.photoUrl ? '' : 'No photo or voucher')) + (e.description ? ' · ' + esc(e.description) : '') + '</div>' +
+        PortalPhotos.buttonsHtml('service', term, e.uid, e.photoIds) +
         '<div class="add-row" style="align-items:center;"><input class="field rv-hours" data-id="' + esc(e.id) + '" type="number" step="0.25" value="' + esc(e.hours) + '" style="max-width:90px;" title="Adjust hours before approving">' +
+        '<label class="check-line" style="margin:0;"><input type="checkbox" class="rv-counts" data-id="' + esc(e.id) + '"> service event</label>' +
         '<input class="field rv-note" data-id="' + esc(e.id) + '" placeholder="Note (optional)" style="max-width:280px;">' +
         '<button type="button" class="btn btn-primary btn-small rv-act" data-uid="' + esc(e.uid) + '" data-id="' + esc(e.id) + '" data-v="approved" style="margin:0;">Approve</button>' +
         '<button type="button" class="btn danger btn-small rv-act" data-uid="' + esc(e.uid) + '" data-id="' + esc(e.id) + '" data-v="denied" style="margin:0;">Deny</button></div></div>';
     }).join('') : '<p class="section-empty">All caught up.</p>';
+    PortalPhotos.wire($('rv-list'));
+    if (pending.length <= 12) PortalPhotos.loadAll($('rv-list'));
     $('rv-list').querySelectorAll('.rv-act').forEach(function (b) {
       b.addEventListener('click', function () {
         var uid = this.getAttribute('data-uid'), id = this.getAttribute('data-id'), v = this.getAttribute('data-v');
@@ -47,6 +52,7 @@
         var note = document.querySelector('.rv-note[data-id="' + id + '"]').value.trim();
         var upd = { status: v, reviewedBy: me.uid, reviewedByName: me.name || '', reviewedAt: new Date().toISOString(), reviewNote: note };
         if (v === 'approved' && hours > 0) upd.hours = hours;
+        if (v === 'approved') upd.countsAsEvent = document.querySelector('.rv-counts[data-id="' + id + '"]').checked;
         PortalOps.db.ref('service/' + term + '/' + uid + '/' + id).update(upd).then(function () {
           PortalOps.logChange(term, 'service', uid, v + ' ' + (upd.hours || '') + 'h for ' + name(uid), me); return reload();
         }).catch(function (err) { alert(err.message || 'Failed.'); });
@@ -72,25 +78,33 @@
       return true;
     }).sort(function (a, b) { return (a.s.approvedHours - b.s.approvedHours) || a.name.localeCompare(b.name); });
     $('pg-tbody').innerHTML = shown.length ? shown.map(function (r) {
-      return '<tr><td>' + esc(r.name) + '</td><td>' + r.s.approvedHours + '</td><td>' + (r.s.pendingHours || '—') + '</td><td>' + r.s.distinctEvents + ' / ' + r.s.eventsRequired + '</td><td>' + (r.s.met ? pill('met', 'good') : pill(r.s.hoursShort + ' h' + (r.s.eventsShort ? ' · ' + r.s.eventsShort + ' ev' : ''), 'warn')) + '</td><td>' + (r.s.shortfallDemerits ? '+' + r.s.shortfallDemerits : '0') + '</td></tr>';
+      return '<tr><td><a href="member?uid=' + encodeURIComponent(r.uid) + '">' + esc(r.name) + '</a></td><td>' + r.s.approvedHours + '</td><td>' + (r.s.pendingHours || '—') + '</td><td>' + r.s.distinctEvents + ' / ' + r.s.eventsRequired + '</td><td>' + (r.s.met ? pill('met', 'good') : pill(r.s.hoursShort + ' h' + (r.s.eventsShort ? ' · ' + r.s.eventsShort + ' ev' : ''), 'warn')) + '</td><td>' + (r.s.shortfallDemerits ? '+' + r.s.shortfallDemerits : '0') + '</td></tr>';
     }).join('') : '<tr><td colspan="6" class="section-empty">Nobody matches.</td></tr>';
   }
 
-  // ── Events ──
+  // ── Week board ──
 
-  function renderEvents() {
-    var evs = C.values(all.serviceEvents).sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
-    $('ev-tbody').innerHTML = evs.length ? evs.map(function (e) { return '<tr><td>' + esc(e.name) + (e.countsForPledges === false ? ' ' + pill('brothers only') : '') + '</td><td>' + esc(fmtDate(e.date)) + '</td><td>' + esc(e.hoursDefault || '') + '</td></tr>'; }).join('') : '<tr><td colspan="3" class="section-empty">No events yet.</td></tr>';
-    $('bk-event').innerHTML = '<option value="">Pick an event…</option>' + evs.map(function (e) { return '<option value="' + esc(e.key) + '" data-hours="' + esc(e.hoursDefault || '') + '" data-date="' + esc(e.date || '') + '">' + esc(e.name) + '</option>'; }).join('');
+  function renderWeek() {
+    if (!weekStart) weekStart = C.weekOf(new Date());
+    var end = C.toDate(weekStart); end.setDate(end.getDate() + 6);
+    $('wk-label').textContent = C.fmtDate(weekStart).replace(/, \d{4}$/, '') + ' – ' + C.fmtDate(end).replace(/, \d{4}$/, '');
+    var rows = [];
+    Object.keys(all.service || {}).forEach(function (uid) {
+      var hours = 0, what = {};
+      C.values(all.service[uid]).forEach(function (e) {
+        if (e.status !== 'approved' || C.weekOf(e.date) !== weekStart) return;
+        hours += Number(e.hours) || 0; what[e.eventName || ''] = true;
+      });
+      if (hours) rows.push({ name: name(uid), hours: hours, what: Object.keys(what).join(', ') });
+    });
+    rows.sort(function (a, b) { return b.hours - a.hours || a.name.localeCompare(b.name); });
+    var rank = 0, last = null;
+    $('wk-tbody').innerHTML = rows.length ? rows.map(function (r, i) {
+      if (r.hours !== last) { rank = i + 1; last = r.hours; }
+      return '<tr><td>' + rank + '</td><td>' + esc(r.name) + '</td><td>' + r.hours + '</td><td style="color:#666; font-size:0.85rem;">' + esc(r.what) + '</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="section-empty">No approved hours this week.</td></tr>';
   }
-  function addEvent() {
-    var nm = $('ev-name').value.trim(), date = $('ev-date').value, hours = parseFloat($('ev-hours').value) || 0;
-    if (!nm) return setStatus('ev-status', 'Name the event.', 'error');
-    var key = C.nameKey(nm) + (date ? '_' + date.replace(/-/g, '') : '');
-    PortalOps.db.ref('serviceEvents/' + term + '/' + key).set(Object.assign({ name: nm, date: date || null, hoursDefault: hours, countsForPledges: $('ev-pledges').checked }, PortalOps.audit(me)))
-      .then(function () { setStatus('ev-status', 'Added.', 'success'); $('ev-name').value = ''; return reload(); })
-      .catch(function (err) { setStatus('ev-status', err.message || 'Failed.', 'error'); });
-  }
+  function shiftWeek(days) { var d = C.toDate(weekStart); d.setDate(d.getDate() + days); weekStart = C.ymd(d); renderWeek(); }
 
   // ── Bulk credit ──
 
@@ -104,16 +118,16 @@
     $('bk-count').textContent = Object.keys(bkSel).filter(function (u) { return bkSel[u]; }).length + ' selected';
   }
   function bulkCredit() {
-    var sel = $('bk-event'), key = sel.value, opt = sel.options[sel.selectedIndex];
-    var hours = parseFloat($('bk-hours').value), date = $('bk-date').value;
+    var evName = $('bk-event').value.trim();
+    var hours = parseFloat($('bk-hours').value), date = $('bk-date').value || C.ymd(new Date());
+    var key = 'bulk_' + C.nameKey(evName) + '_' + date.replace(/-/g, '');
     var uids = Object.keys(bkSel).filter(function (u) { return bkSel[u]; });
-    if (!key) return setStatus('bk-status', 'Pick the event.', 'error');
+    if (!evName) return setStatus('bk-status', 'Name the event.', 'error');
     if (!(hours > 0)) return setStatus('bk-status', 'Enter the hours.', 'error');
     if (!uids.length) return setStatus('bk-status', 'Pick who attended.', 'error');
-    var evName = opt.textContent;
     var updates = {}, now = new Date().toISOString();
     uids.forEach(function (uid) {
-      updates['service/' + term + '/' + uid + '/' + key] = { hours: hours, eventName: evName, eventId: key, date: date || opt.getAttribute('data-date') || C.ymd(new Date()), status: 'approved', submittedAt: firebase.database.ServerValue.TIMESTAMP, reviewedBy: me.uid, reviewedByName: me.name || '', reviewedAt: now, reviewNote: 'Credited by the Service Chair', description: '' };
+      updates['service/' + term + '/' + uid + '/' + key] = { hours: hours, eventName: evName, date: date, week: C.weekOf(date), countsAsEvent: $('bk-counts').checked, name: name(uid), status: 'approved', submittedAt: firebase.database.ServerValue.TIMESTAMP, reviewedBy: me.uid, reviewedByName: me.name || '', reviewedAt: now, reviewNote: 'Credited by the Service Chair', description: '' };
     });
     if (!confirm('Credit ' + hours + ' h for "' + evName + '" to ' + uids.length + ' people?')) return;
     PortalOps.db.ref().update(updates).then(function () {
@@ -122,7 +136,7 @@
     }).catch(function (err) { setStatus('bk-status', err.message || 'Failed.', 'error'); });
   }
 
-  function renderAll() { renderReview(); renderProgress(); renderEvents(); renderBulkList(); }
+  function renderAll() { renderReview(); renderProgress(); renderWeek(); renderBulkList(); }
 
   function init() {
     PortalAuth.requirePerm(['service', 'standards']).then(function (profile) {
@@ -132,12 +146,12 @@
     }).then(function (s) {
       if (!s) return;
       term = PortalOps.currentTerm();
-      $('ev-date').value = C.ymd(new Date()); $('bk-date').value = C.ymd(new Date());
-      $('btn-add-ev').addEventListener('click', addEvent);
+      $('bk-date').value = C.ymd(new Date());
+      $('wk-prev').addEventListener('click', function () { shiftWeek(-7); });
+      $('wk-next').addEventListener('click', function () { shiftWeek(7); });
       $('btn-bulk').addEventListener('click', bulkCredit);
       $('bk-search').addEventListener('input', renderBulkList);
       $('bk-none').addEventListener('click', function () { bkSel = {}; renderBulkList(); });
-      $('bk-event').addEventListener('change', function () { var o = this.options[this.selectedIndex]; if (o && o.getAttribute('data-hours')) $('bk-hours').value = o.getAttribute('data-hours'); if (o && o.getAttribute('data-date')) $('bk-date').value = o.getAttribute('data-date'); });
       $('pg-search').addEventListener('input', renderProgress);
       $('pg-filter').addEventListener('change', renderProgress);
       return reload();

@@ -49,7 +49,7 @@
     }).sort(function (a, b) { return b.total - a.total || a.name.localeCompare(b.name); });
     $('db-tbody').innerHTML = shown.length ? shown.map(function (r) {
       var ov = (all.standing || {})[r.uid];
-      return '<tr' + (C.isActiveStatus(r.status, S) ? '' : ' class="row-muted"') + '><td><strong>' + esc(r.name) + '</strong>' + (C.isActiveStatus(r.status, S) ? '' : ' ' + pill(r.status)) + '</td><td>' + esc(r.roll) + '</td>' +
+      return '<tr' + (C.isActiveStatus(r.status, S) ? '' : ' class="row-muted"') + '><td><a href="member?uid=' + encodeURIComponent(r.uid) + '"><strong>' + esc(r.name) + '</strong></a>' + (C.isActiveStatus(r.status, S) ? '' : ' ' + pill(r.status)) + '</td><td>' + esc(r.roll) + '</td>' +
         '<td>' + r.rolloverPoints + '</td><td>' + r.chapterAbsences + '</td><td>' + r.chapterDemerits + '</td><td>' + r.otherEventDemerits + '</td><td>' + r.paymentDemerits + '</td><td>' + r.adjustmentsTotal + (r.serviceCredit ? ' <span style="color:#2e7d32;">' + r.serviceCredit + '</span>' : '') + '</td>' +
         '<td><strong>' + r.total + '</strong></td><td>' + pill(standingLabel(r.standing), standingCls(r.standing)) + (ov && ov.override ? ' <span title="' + esc(ov.reason || '') + '" style="font-size:0.75rem; color:#999;">override</span>' : '') + '</td>' +
         '<td>' + (r.buyout ? money(r.buyout) : '—') + '</td><td>' + r.service.approvedHours + 'h / ' + r.service.distinctEvents + 'ev</td><td>' + (r.serviceShortfallNext ? '+' + r.serviceShortfallNext : '0') + '</td>' +
@@ -73,38 +73,119 @@
   }
 
   // ── Excuses ──
+  // The queue Standards works from: what is at stake, whether it came in on time,
+  // what the brother's term looks like, the reason and any photos.
 
-  function renderExcuses() {
+  var excTab = 'pending', excGroup = 'event', excSel = {}, demCache = {};
+  var KIND = { absent: 'Missing it', late: 'Arriving late', leaveEarly: 'Leaving early' };
+
+  function allExcuses() {
     var list = [];
     Object.keys(all.excuses || {}).forEach(function (uid) {
-      Object.keys(all.excuses[uid]).forEach(function (id) { var x = all.excuses[uid][id]; list.push(Object.assign({ uid: uid, id: id }, x)); });
+      Object.keys(all.excuses[uid]).forEach(function (id) { list.push(Object.assign({}, all.excuses[uid][id], { uid: uid, id: id })); });
     });
-    list.sort(function (a, b) { return (a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1) || (b.submittedAt || 0) - (a.submittedAt || 0); });
-    var pending = list.filter(function (x) { return x.status === 'pending'; }).length;
-    $('exc-count').textContent = pending ? pending + ' pending' : 'none pending';
-    $('exc-list').innerHTML = list.length ? list.slice(0, 80).map(function (x) {
-      var ev = (all.events || {})[x.eventId] || { title: x.eventId };
-      var typeDef = S.eventTypes[ev.type] || S.eventTypes.other;
-      var flags = (x.lateSubmission ? pill('inside ' + S.policy.attendance.excuseHoursBefore + 'h window', 'warn') + ' ' : '') + (x.hasDoctorNote ? pill("doctor's note", 'good') + ' ' : '') + (x.category ? pill(x.category) : '');
-      var actions = x.status === 'pending'
-        ? '<div class="add-row" style="margin-top:0.4rem; align-items:center;"><input class="field exc-note" data-id="' + esc(x.id) + '" placeholder="Note back to the brother (optional)" style="max-width:320px;">' +
-          '<button type="button" class="btn btn-primary btn-small exc-act" data-uid="' + esc(x.uid) + '" data-id="' + esc(x.id) + '" data-v="approved" style="margin:0;">Approve</button>' +
-          '<button type="button" class="btn danger btn-small exc-act" data-uid="' + esc(x.uid) + '" data-id="' + esc(x.id) + '" data-v="denied" style="margin:0;">Deny</button></div>'
-        : '<div class="step-hint" style="margin:0.3rem 0 0;">' + esc(x.status) + (x.reviewedByName ? ' by ' + esc(x.reviewedByName) : '') + (x.reviewNote ? ' — ' + esc(x.reviewNote) : '') + '</div>';
-      return '<div class="cand" style="padding:0.6rem 0.8rem;"><div style="display:flex; gap:0.75rem; align-items:baseline; flex-wrap:wrap;"><strong>' + esc(name(x.uid)) + '</strong> <span>' + esc(ev.title) + '</span> <span style="color:#999; font-size:0.85rem;">' + esc(typeDef.label) + (ev.date ? ' · ' + C.fmtDate(ev.date) : '') + '</span> ' + pill(x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) + '</div>' +
-        '<div style="margin:0.3rem 0;">' + flags + '</div><div style="font-size:0.92rem;">' + esc(x.reason || '') + '</div>' + actions + '</div>';
-    }).join('') : '<p class="section-empty">No excuse requests this term.</p>';
-    $('exc-list').querySelectorAll('.exc-act').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var uid = this.getAttribute('data-uid'), id = this.getAttribute('data-id'), v = this.getAttribute('data-v');
-        var noteEl = document.querySelector('.exc-note[data-id="' + id + '"]');
-        var upd = { status: v, reviewedBy: me.uid, reviewedByName: me.name || '', reviewedAt: new Date().toISOString(), reviewNote: noteEl ? noteEl.value.trim() : '' };
-        PortalOps.db.ref('excuses/' + term + '/' + uid + '/' + id).update(upd).then(function () {
-          PortalOps.logChange(term, 'excuse', uid, v + ' excuse for ' + name(uid), me);
-          return reload();
-        }).catch(function (err) { alert(err.message || 'Failed.'); });
-      });
+    return list;
+  }
+  function excEvent(x) { return x.eventId ? ((all.events || {})[x.eventId] || { title: x.eventId, missing: true }) : { title: x.eventText || 'Unlisted event', date: x.eventDate, unlisted: true }; }
+  function demFor(uid) { return demCache[uid] || (demCache[uid] = C.computeDemerits(uid, PortalOps.factsFor(term, uid, all), S, { pnm: (all.directory[uid] || {}).status === 'pnm' })); }
+
+  function excuseCard(x, counts) {
+    var ev = excEvent(x), def = S.eventTypes[ev.type] || S.eventTypes.other;
+    var dem = demFor(x.uid), free = C.freeAbsences(dem, S);
+    var stakes = ev.unlisted ? 'event not linked yet' : 'unexcused ' + def.unexcused + ' · excused ' + def.excused;
+    var ctx = [
+      pill(KIND[x.kind || 'absent'] + (x.time ? ' ~' + x.time : ''), x.kind && x.kind !== 'absent' ? '' : ''),
+      x.afterEvent ? pill('sent after the event', 'bad') : (x.lateSubmission ? pill('inside ' + S.policy.attendance.excuseHoursBefore + ' h', 'warn') : pill('on time', 'good')),
+      x.category ? pill(x.category) : '',
+      x.category === 'sick' ? pill((x.photoIds || []).length ? 'photo attached' : "no doctor's note", (x.photoIds || []).length ? 'good' : 'warn') : '',
+      pill(dem.total + ' demerits', dem.standing === 'bad' ? 'bad' : (dem.standing === 'warning' ? 'warn' : '')),
+      ev.type === 'chapter' ? pill(free.left + ' of ' + free.allowed + ' free absences left') : '',
+      pill('request ' + counts.nth + ' of ' + counts.total + ' this term'),
+      (all.directory[x.uid] || {}).status === 'pnm' ? pill('PNM') : ''
+    ].filter(Boolean).join(' ');
+    var statusPill = pill(x.status === 'pending' ? 'to decide' : x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn'));
+    var linkSel = ev.unlisted ? '<select class="field exc-link" data-k="' + esc(x.uid + '|' + x.id) + '" style="max-width:260px; margin:0;"><option value="">Link to an event…</option>' +
+      C.values(all.events).sort(function (a, b) { return String(a.date || '').localeCompare(String(b.date || '')); }).map(function (e) { return '<option value="' + esc(e.key) + '">' + esc(e.title) + (e.date ? ' · ' + C.fmtDate(e.date) : '') + '</option>'; }).join('') + '</select>' : '';
+    var decided = x.status !== 'pending';
+    return '<div class="req-card" data-k="' + esc(x.uid + '|' + x.id) + '">' +
+      '<div class="req-head">' + (decided ? '' : '<input type="checkbox" class="exc-cb" data-k="' + esc(x.uid + '|' + x.id) + '"' + (excSel[x.uid + '|' + x.id] ? ' checked' : '') + '>') +
+      '<strong>' + esc(name(x.uid)) + '</strong><span>' + esc(ev.title) + '</span><span class="pick-sub">' + esc(ev.date ? C.fmtDate(ev.date) : '') + (ev.unlisted ? '' : ' · ' + esc(def.label)) + ' · ' + esc(stakes) + '</span>' + statusPill + '</div>' +
+      '<div class="req-context">' + ctx + '</div>' +
+      '<div class="req-body">' + esc(x.reason || '') + '</div>' +
+      PortalPhotos.buttonsHtml('excuse', term, x.uid, x.photoIds) +
+      (decided ? '<div class="pick-sub" style="margin-top:0.35rem;">' + esc(x.status) + (x.reviewedByName ? ' by ' + esc(x.reviewedByName) : '') + (x.reviewedAt ? ' · ' + esc(C.fmtDate(x.reviewedAt)) : '') + (x.reviewNote ? ' · “' + esc(x.reviewNote) + '”' : '') + '</div>' : '') +
+      '<div class="req-actions">' + linkSel +
+      '<input class="field exc-note" data-k="' + esc(x.uid + '|' + x.id) + '" placeholder="Note back to them (optional)" value="' + (decided ? esc(x.reviewNote || '') : '') + '">' +
+      (x.status !== 'approved' ? '<button type="button" class="btn btn-primary btn-small exc-act" data-k="' + esc(x.uid + '|' + x.id) + '" data-v="approved">' + (decided ? 'Change to approved' : 'Approve') + '</button>' : '') +
+      (x.status !== 'denied' ? '<button type="button" class="btn danger btn-small exc-act" data-k="' + esc(x.uid + '|' + x.id) + '" data-v="denied">' + (decided ? 'Change to denied' : 'Deny') + '</button>' : '') +
+      '</div></div>';
+  }
+
+  function renderExcuses() {
+    demCache = {};
+    var list = allExcuses();
+    var perBrother = {};
+    list.slice().sort(function (a, b) { return (a.submittedAt || 0) - (b.submittedAt || 0); }).forEach(function (x) {
+      var c = perBrother[x.uid] || (perBrother[x.uid] = { total: 0, nth: {} }); c.total++; c.nth[x.id] = c.total;
     });
+    var pending = list.filter(function (x) { return x.status === 'pending'; });
+    $('exc-count').textContent = pending.length ? pending.length + ' to decide' : 'all caught up';
+    var q = ($('exc-search').value || '').trim().toLowerCase();
+    var shown = list.filter(function (x) {
+      if (excTab === 'pending' && x.status !== 'pending') return false;
+      if (excTab === 'decided' && x.status === 'pending') return false;
+      if (q && (name(x.uid) + ' ' + excEvent(x).title + ' ' + (x.reason || '')).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    var groups = {}, order = [];
+    shown.forEach(function (x) {
+      var ev = excEvent(x);
+      var key = excGroup === 'event' ? (x.eventId || 'unlisted:' + ev.title) : x.uid;
+      if (!groups[key]) { groups[key] = { label: excGroup === 'event' ? ev.title : name(x.uid), sub: excGroup === 'event' ? (ev.date ? C.fmtDate(ev.date) : '') : '', sort: excGroup === 'event' ? String(ev.date || '9999') : name(x.uid), items: [] }; order.push(key); }
+      groups[key].items.push(x);
+    });
+    order.sort(function (a, b) { return groups[a].sort.localeCompare(groups[b].sort); });
+    if (excTab !== 'pending' && excGroup === 'event') order.reverse();
+    $('exc-list').innerHTML = order.length ? order.map(function (k) {
+      var g = groups[k];
+      g.items.sort(function (a, b) { return (a.submittedAt || 0) - (b.submittedAt || 0); });
+      return '<div class="group-head"><span>' + esc(g.label) + '</span><span class="pick-sub">' + esc(g.sub) + '</span>' + pill(g.items.length + (g.items.length === 1 ? ' request' : ' requests')) + '</div>' +
+        g.items.map(function (x) { return excuseCard(x, { nth: perBrother[x.uid].nth[x.id], total: perBrother[x.uid].total }); }).join('');
+    }).join('') : '<p class="section-empty">' + (excTab === 'pending' ? 'Nothing waiting on you.' : 'No requests match.') + '</p>';
+
+    var box = $('exc-list');
+    PortalPhotos.wire(box);
+    if (excTab === 'pending' && shown.length <= 12) PortalPhotos.loadAll(box);
+    box.querySelectorAll('.exc-cb').forEach(function (cb) { cb.addEventListener('change', function () { excSel[this.getAttribute('data-k')] = this.checked; renderBulkBar(); }); });
+    box.querySelectorAll('.exc-act').forEach(function (b) {
+      b.addEventListener('click', function () { decide([this.getAttribute('data-k')], this.getAttribute('data-v')); });
+    });
+    renderBulkBar();
+  }
+
+  function renderBulkBar() {
+    var n = Object.keys(excSel).filter(function (k) { return excSel[k]; }).length;
+    $('exc-bulk').classList.toggle('hidden', n === 0);
+    $('exc-sel-count').textContent = n + ' selected';
+  }
+
+  function decide(keys, decision) {
+    var byKey = {};
+    allExcuses().forEach(function (x) { byKey[x.uid + '|' + x.id] = x; });
+    var jobs = keys.map(function (k) {
+      var x = byKey[k]; if (!x) return null;
+      var noteEl = document.querySelector('.exc-note[data-k="' + k + '"]'), linkEl = document.querySelector('.exc-link[data-k="' + k + '"]');
+      var patch = linkEl && linkEl.value ? { eventId: linkEl.value } : null;
+      if (!x.eventId && !patch && decision === 'approved' && (x.kind || 'absent') === 'absent') return { error: name(x.uid) + ': link this request to an event first so the approval can count.' };
+      return { x: x, note: noteEl ? noteEl.value.trim() : '', patch: patch };
+    }).filter(Boolean);
+    var bad = jobs.filter(function (j) { return j.error; });
+    if (bad.length) return alert(bad[0].error);
+    Promise.all(jobs.map(function (j) { return PortalOps.decideExcuse(term, j.x, decision, j.note, me, j.patch); })).then(function () {
+      jobs.forEach(function (j) { PortalOps.logChange(term, 'excuse', j.x.uid, decision + ' excuse for ' + name(j.x.uid) + ' (' + excEvent(Object.assign({}, j.x, j.patch || {})).title + ')' + (j.x.status !== 'pending' ? ', was ' + j.x.status : ''), me); });
+      excSel = {};
+      return reload();
+    }).catch(function (err) { alert(err.message || 'Failed.'); });
   }
 
   // ── Adjustments ──
@@ -175,6 +256,20 @@
       $('db-search').addEventListener('input', renderDashboard);
       $('db-filter').addEventListener('change', renderDashboard);
       $('btn-adj').addEventListener('click', addAdjustment);
+      $('exc-search').addEventListener('input', renderExcuses);
+      [['exc-tab', function (v) { excTab = v; }], ['exc-group', function (v) { excGroup = v; }]].forEach(function (pair) {
+        $(pair[0]).querySelectorAll('button').forEach(function (b) {
+          b.addEventListener('click', function () {
+            pair[1](this.getAttribute('data-v'));
+            $(pair[0]).querySelectorAll('button').forEach(function (o) { o.classList.toggle('selected', o === b); });
+            renderExcuses();
+          });
+        });
+      });
+      function selectedKeys() { return Object.keys(excSel).filter(function (k) { return excSel[k]; }); }
+      $('btn-exc-approve-sel').addEventListener('click', function () { if (confirm('Approve ' + selectedKeys().length + ' requests?')) decide(selectedKeys(), 'approved'); });
+      $('btn-exc-deny-sel').addEventListener('click', function () { if (confirm('Deny ' + selectedKeys().length + ' requests?')) decide(selectedKeys(), 'denied'); });
+      $('btn-exc-clear-sel').addEventListener('click', function () { excSel = {}; renderExcuses(); });
       $('btn-export-json').addEventListener('click', exportJson);
       return reload();
     });

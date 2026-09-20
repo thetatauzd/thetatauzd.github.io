@@ -305,7 +305,9 @@
         var name = col(r, ['Brother Name', 'Name']); if (!name) return;
         var uid = uidFor(name, col(r, ['Roll Number'])); if (!uid) { unmatchedRows.push({ tab: 'Excuses', name: name }); return; }
         var st = String(col(r, ['Excuse Status', 'Status']) || 'pending').toLowerCase();
-        updates['excuses/' + T + '/' + uid + '/imp_' + i] = { eventId: eventKey(col(r, ['Event Title', 'Event'])), reason: String(col(r, ['Reason / Notes', 'Reason']) || ''), status: st === 'approved' ? 'approved' : (st === 'denied' ? 'denied' : 'pending'), reviewedBy: String(col(r, ['Approved By']) || ''), submittedAt: now, imported: true };
+        var impEventId = eventKey(col(r, ['Event Title', 'Event'])), impStatus = st === 'approved' ? 'approved' : (st === 'denied' ? 'denied' : 'pending');
+        if (impEventId) updates['excuseFlags/' + T + '/' + impEventId + '/' + uid] = impStatus;   // reason-free mirror the Scribe and other officers read
+        updates['excuses/' + T + '/' + uid + '/imp_' + i] = { kind: 'absent', eventId: impEventId, reason: String(col(r, ['Reason / Notes', 'Reason']) || ''), status: st === 'approved' ? 'approved' : (st === 'denied' ? 'denied' : 'pending'), reviewedBy: String(col(r, ['Approved By']) || ''), submittedAt: now, imported: true };
         n++;
       });
       counts.Excuses = n; say('Excuses: ' + n + ' entries.');

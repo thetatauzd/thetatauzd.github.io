@@ -68,13 +68,18 @@
   /**
    * Save membership fields for one user. Recomputes perms and the legacy role
    * and mirrors the public part into directory/ in the same write.
-   * patch may contain: name, rollNumber, status, positions, sortOrder, inactiveSince, notes
+   * patch may contain: name, rollNumber, status, positions, sortOrder, inactiveSince, notes,
+   * and statusEffective ('YYYY-MM-DD', not stored on the user) for the status history row.
+   * A status change is also appended to statusHistory/{uid}. It takes effect at the next
+   * roll call: attendance only counts events where the person was marked.
    */
   function saveUser(uid, patch, profile) {
     return Promise.all([loadSettings(), db.ref('users/' + uid).once('value')]).then(function (r) {
       var settings = r[0];
       var cur = r[1].val() || {};
       var next = Object.assign({}, cur, patch || {});
+      var effective = next.statusEffective || C.ymd(new Date());
+      delete next.statusEffective;
       if (!next.positions) next.positions = {};
       if (!next.status) next.status = cur.role === 'pending' ? 'pending' : 'active';
       next.perms = C.permsFor(next.positions, settings);
@@ -84,6 +89,12 @@
       next.updatedAt = new Date().toISOString();
       var updates = {};
       updates['users/' + uid] = next;
+      var before = cur.status || (cur.role === 'pending' ? 'pending' : (cur.role ? 'active' : ''));
+      if (before !== next.status) {
+        if (next.status === 'inactive' && !next.inactiveSince) next.inactiveSince = effective;
+        updates['statusHistory/' + uid + '/' + db.ref().push().key] = { from: before || null, to: next.status, effective: effective,
+          by: profile.uid, byName: profile.name || profile.email || '', at: new Date().toISOString() };
+      }
       if (next.status === 'pending') updates['directory/' + uid] = null;
       else updates['directory/' + uid] = directoryEntry(next);
       // Roster lookup for sign-up autofill.
@@ -152,7 +163,7 @@
 
   /** Everything an officer dashboard needs for a term (rules decide which subtrees resolve). */
   function loadTermFacts(term, wanted) {
-    var w = wanted || ['events', 'attendance', 'excuses', 'adjustments', 'rollover', 'ledger', 'service', 'standing', 'serviceEvents'];
+    var w = wanted || ['events', 'attendance', 'excuses', 'excuseFlags', 'adjustments', 'rollover', 'ledger', 'service', 'standing'];
     return Promise.all([loadSettings(), loadDirectory()].concat(w.map(function (n) {
       return db.ref(n + '/' + term).once('value').then(function (s) { return s.val() || {}; }).catch(function () { return {}; });
     }))).then(function (r) {
@@ -164,8 +175,11 @@
 
   /** Slice term-wide facts down to one uid for OpsCore.computeDemerits. */
   function factsFor(term, uid, all) {
+    // Officers who cannot read excuse reasons still get who is excused from the flags mirror.
+    var excusedEvents = {};
+    Object.keys(all.excuseFlags || {}).forEach(function (eid) { if ((all.excuseFlags[eid] || {})[uid] === 'approved') excusedEvents[eid] = true; });
     return {
-      events: all.events, attendance: all.attendance,
+      events: all.events, attendance: all.attendance, excusedEvents: excusedEvents,
       excuses: (all.excuses || {})[uid], adjustments: (all.adjustments || {})[uid], rollover: (all.rollover || {})[uid],
       ledger: (all.ledger || {})[uid], service: (all.service || {})[uid], standingOverride: (all.standing || {})[uid]
     };
@@ -187,6 +201,52 @@
     return db.ref().update(updates);
   }
 
+  // ── Excuses ──
+  // excuses/{term}/{uid}/{id} holds the request (reason, photos: the brother and Standards only).
+  // excuseFlags/{term}/{eventId}/{uid} mirrors just the state so the Scribe can show a badge
+  // and other officers can compute demerits without reading anyone's reasons.
+
+  function flagValue(kind, status) { return (kind === 'late' ? 'late_' : (kind === 'leaveEarly' ? 'early_' : '')) + status; }
+
+  /**
+   * One request per target. base = { kind, time, category, reason, photoIds, lateSubmission? }
+   * targets = [{ eventId }] for listed events or [{ eventText, eventDate }] when it is not listed yet.
+   */
+  function submitExcuses(term, uid, base, targets, settings, events) {
+    var updates = {}, now = Date.now();
+    targets.forEach(function (t) {
+      var key = db.ref().push().key;
+      var ev = t.eventId ? (events || {})[t.eventId] : { date: t.eventDate };
+      var timing = C.excuseTiming(ev || {}, now, settings);
+      var entry = Object.assign({}, base, {
+        eventId: t.eventId || null, eventText: t.eventId ? null : (t.eventText || ''), eventDate: t.eventId ? null : (t.eventDate || null),
+        status: 'pending', submittedAt: firebase.database.ServerValue.TIMESTAMP,
+        lateSubmission: !timing.onTime, afterEvent: !!timing.after
+      });
+      updates['excuses/' + term + '/' + uid + '/' + key] = entry;
+      if (t.eventId) updates['excuseFlags/' + term + '/' + t.eventId + '/' + uid] = flagValue(base.kind, 'pending');
+    });
+    return db.ref().update(updates);
+  }
+
+  /** The brother takes back a request Standards has not ruled on yet. */
+  function withdrawExcuse(term, uid, id, x) {
+    var updates = {};
+    updates['excuses/' + term + '/' + uid + '/' + id] = null;
+    if (x && x.eventId) updates['excuseFlags/' + term + '/' + x.eventId + '/' + uid] = null;
+    return db.ref().update(updates);
+  }
+
+  /** Standards rules on (or re-rules on) a request. patch may carry eventId to link an unlisted event. */
+  function decideExcuse(term, x, decision, note, profile, patch) {
+    var eventId = (patch && patch.eventId) || x.eventId;
+    var upd = Object.assign({}, patch || {}, { status: decision, reviewedBy: profile.uid, reviewedByName: profile.name || '', reviewedAt: new Date().toISOString(), reviewNote: note || '' });
+    var updates = {};
+    Object.keys(upd).forEach(function (k) { updates['excuses/' + term + '/' + x.uid + '/' + x.id + '/' + k] = upd[k]; });
+    if (eventId) updates['excuseFlags/' + term + '/' + eventId + '/' + x.uid] = flagValue(x.kind, decision);
+    return db.ref().update(updates);
+  }
+
   function addLedgerEntry(term, uid, entry, profile, key) {
     var ref = key ? db.ref('ledger/' + term + '/' + uid + '/' + key) : db.ref('ledger/' + term + '/' + uid).push();
     return ref.set(Object.assign({}, entry, audit(profile)));
@@ -194,7 +254,7 @@
 
   /** JSON snapshot of a whole term (officers) for backup or moving elsewhere. */
   function exportTermJson(term) {
-    var nodes = ['events', 'attendance', 'excuses', 'adjustments', 'rollover', 'standing', 'ledger', 'service', 'serviceEvents', 'changeLog'];
+    var nodes = ['events', 'attendance', 'excuses', 'excuseFlags', 'adjustments', 'rollover', 'standing', 'ledger', 'service', 'changeLog'];
     return Promise.all(nodes.map(function (n) { return db.ref(n + '/' + term).once('value').then(function (s) { return s.val(); }).catch(function () { return null; }); }))
       .then(function (r) {
         var out = { schemaVersion: C.SCHEMA_VERSION, term: term, exportedAt: new Date().toISOString() };
@@ -209,6 +269,7 @@
     audit: audit, logChange: logChange,
     loadUsers: loadUsers, loadDirectory: loadDirectory, saveUser: saveUser, migrateUsers: migrateUsers, hasPerm: hasPerm,
     loadMyFacts: loadMyFacts, loadTermFacts: loadTermFacts, factsFor: factsFor,
-    saveAttendance: saveAttendance, addLedgerEntry: addLedgerEntry, exportTermJson: exportTermJson
+    saveAttendance: saveAttendance, submitExcuses: submitExcuses, withdrawExcuse: withdrawExcuse, decideExcuse: decideExcuse, flagValue: flagValue,
+    addLedgerEntry: addLedgerEntry, exportTermJson: exportTermJson
   };
 })(typeof window !== 'undefined' ? window : this);

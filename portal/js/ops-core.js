@@ -53,10 +53,11 @@
       pending:   { label: 'Pending approval', order: 0, countsAsActive: false, chargedDues: false, votes: false },
       active:    { label: 'Active',           order: 1, countsAsActive: true,  chargedDues: true,  votes: true },
       coop:      { label: 'Co-op',            order: 2, countsAsActive: false, chargedDues: false, votes: false },
-      inactive:  { label: 'Inactive',         order: 3, countsAsActive: false, chargedDues: false, votes: false },
-      pnm:       { label: 'PNM (pledge)',     order: 4, countsAsActive: false, chargedDues: false, votes: false },
-      alumnus:   { label: 'Alumnus',          order: 5, countsAsActive: false, chargedDues: false, votes: false },
-      graduated: { label: 'Graduated',        order: 6, countsAsActive: false, chargedDues: false, votes: false }
+      abroad:    { label: 'Abroad',           order: 3, countsAsActive: false, chargedDues: false, votes: false },
+      inactive:  { label: 'Inactive',         order: 4, countsAsActive: false, chargedDues: false, votes: false },
+      pnm:       { label: 'PNM (pledge)',     order: 5, countsAsActive: false, chargedDues: false, votes: false },
+      alumnus:   { label: 'Alumni',           order: 6, countsAsActive: false, chargedDues: false, votes: false },
+      graduated: { label: 'Graduated',        order: 7, countsAsActive: false, chargedDues: false, votes: false }
     },
     eventTypes: {
       chapter:      { label: 'Chapter Meeting',   order: 1, unexcused: 2, excused: 0, freePerTerm: 2, source: 'Bylaws Art. II Sec. 11: two absences from weekly meetings per semester' },
@@ -74,7 +75,7 @@
       service: { hoursRequired: 12, eventsRequired: 3, perHourShort: 1, perEventShort: 2, pnmHours: 8, pnmEvents: 3, extraHourErases: 1 },
       buyout:  { base: 50, baseDemerits: 10, step: 25, stepDemerits: 5, cap: 125 },
       dues:    { amount: 250, pnmAmount: 295, earlyAlumAmount: 90, graceDays: 1, lateLadder: [5, 5], lateAfterLadder: 10, demeritsIfLate: 0 },
-      attendance: { excuseHoursBefore: 24, sicknessNeedsNote: true },
+      attendance: { excuseHoursBefore: 24, sicknessNeedsNote: true, defaultEventTime: '19:00' },
       quorum:  { business: 0.5, membership: 0.6667 },
       pledge:  { minWeeks: 8, initiationPct: 90, initiationMinActiveFraction: 0.6667, bidPct: 75, depledgePct: 50, flagStdDevs: 2, nationalExam: true, chapterExam: true, pinningFee: 30, initiationFee: 90 },
       gpa:     { member: 2.5, officer: 2.5 }
@@ -205,7 +206,11 @@
 
   // ── Demerits & standing ──
 
-  /** Was this person absent from a recorded event? Missing mark on a recorded event = absent. */
+  /**
+   * This person's mark for an event, or null. Roll call writes a mark for
+   * everyone on the roll that night, so NO mark means "was not on roll call"
+   * (PNM, co-op, abroad, inactive, joined later) and the event is skipped.
+   */
   function markFor(attendance, eventId, uid) {
     var ev = attendance && attendance[eventId];
     return ev && ev[uid] ? ev[uid] : null;
@@ -216,13 +221,27 @@
    * facts = { events, attendance, excuses (this uid's), adjustments (this uid's),
    *           rollover (this uid's, {points}), ledger (this uid's), service (this uid's), standingOverride }
    */
+  /**
+   * eventId → true for every event this person has an approved excuse for.
+   * Built from their excuse records when readable (self, Standards) or from
+   * facts.excusedEvents (the reason-free excuseFlags mirror other officers read).
+   * "late" / "leaveEarly" requests never excuse an absence: those people are marked present.
+   */
+  function excusedMap(facts) {
+    var out = {};
+    values(facts.excuses).forEach(function (x) {
+      if (x.status === 'approved' && x.eventId && (x.kind || 'absent') === 'absent') out[x.eventId] = true;
+    });
+    Object.keys(facts.excusedEvents || {}).forEach(function (eid) { if (facts.excusedEvents[eid]) out[eid] = true; });
+    return out;
+  }
+
   function computeDemerits(uid, facts, settings, opts) {
     var s = withDefaults(settings);
     opts = opts || {};
     var asOf = toDate(opts.asOf) || new Date();
     var events = facts.events || {};
-    var excused = {};
-    values(facts.excuses).forEach(function (x) { if (x.status === 'approved' && x.eventId) excused[x.eventId] = true; });
+    var excused = excusedMap(facts);
 
     var byType = {};
     Object.keys(events).forEach(function (eid) {
@@ -230,8 +249,7 @@
       if (!ev || !ev.recorded) return;
       var type = s.eventTypes[ev.type] ? ev.type : 'other';
       var mark = markFor(facts.attendance, eid, uid);
-      var present = !!(mark && mark.present);
-      if (present) return;
+      if (!mark || mark.present) return;
       var t = byType[type] || (byType[type] = { unexcused: 0, excused: 0, unexcusedEvents: [], excusedEvents: [] });
       if (excused[eid]) { t.excused++; t.excusedEvents.push(eid); }
       else { t.unexcused++; t.unexcusedEvents.push(eid); }
@@ -292,6 +310,122 @@
     };
   }
 
+  /**
+   * The same numbers as computeDemerits, as dated lines a brother can read:
+   * what was carried in, every absence (including the free ones and what an
+   * excused absence still cost), every adjustment, late-fee demerits and the
+   * extra-service credit, with a running total. Sum of points === computeDemerits().total.
+   */
+  function demeritTimeline(uid, facts, settings, opts) {
+    var s = withDefaults(settings);
+    opts = opts || {};
+    var asOf = toDate(opts.asOf) || new Date();
+    var lines = [];
+    var ro = facts.rollover ? (Number(facts.rollover.points) || 0) : 0;
+    if (ro || facts.rollover) lines.push({ date: null, order: 0, kind: 'rollover', label: 'Carried in from ' + ((facts.rollover && facts.rollover.from) || 'last term'), detail: (facts.rollover && facts.rollover.note) || '', points: ro });
+
+    var excused = excusedMap(facts);
+    var events = facts.events || {};
+    var ids = Object.keys(events).filter(function (eid) { return events[eid] && events[eid].recorded; })
+      .sort(function (a, b) { return String(events[a].date || '').localeCompare(String(events[b].date || '')) || a.localeCompare(b); });
+    var freeUsed = {};
+    ids.forEach(function (eid) {
+      var ev = events[eid];
+      var type = s.eventTypes[ev.type] ? ev.type : 'other';
+      var def = s.eventTypes[type];
+      var mark = markFor(facts.attendance, eid, uid);
+      if (!mark || mark.present) return;
+      if (excused[eid]) {
+        lines.push({ date: ev.date || null, order: 1, kind: 'excused', eventId: eid, label: 'Excused absence: ' + ev.title, detail: def.excused ? 'An excused ' + def.label.toLowerCase() + ' still costs ' + def.excused : def.label, points: def.excused || 0 });
+        return;
+      }
+      var free = def.freePerTerm || 0;
+      var used = freeUsed[type] || 0;
+      if (used < free) {
+        freeUsed[type] = used + 1;
+        lines.push({ date: ev.date || null, order: 1, kind: 'free', eventId: eid, label: 'Absent: ' + ev.title, detail: 'Free absence ' + (used + 1) + ' of ' + free, points: 0 });
+      } else {
+        lines.push({ date: ev.date || null, order: 1, kind: 'absence', eventId: eid, label: 'Absent: ' + ev.title, detail: 'Unexcused ' + def.label.toLowerCase(), points: def.unexcused || 0 });
+      }
+    });
+
+    values(facts.adjustments).forEach(function (a) {
+      var pts = Number(a.points) || 0;
+      lines.push({ date: a.date || (a.createdAt ? ymd(a.createdAt) : null), order: 2, kind: pts < 0 ? 'credit' : 'adjustment', label: a.reason || (pts < 0 ? 'Credit' : 'Demerits'), detail: 'Standards' + (a.enteredBy || a.createdByName ? ' · ' + (a.enteredBy || a.createdByName) : ''), points: pts });
+    });
+
+    var led = ledgerSummary(facts.ledger, s, { asOf: asOf });
+    led.charges.forEach(function (c) {
+      if (c.settled || c.waived || !c.demeritsIfLate || c.onPlan) return;
+      if (c.dueDate && daysBetween(c.dueDate, asOf) > (s.policy.dues.graceDays || 0)) {
+        lines.push({ date: c.dueDate, order: 3, kind: 'payment', label: 'Unpaid past due: ' + c.item, detail: 'Removed once it is paid', points: c.demeritsIfLate });
+      }
+    });
+
+    var svc = serviceSummary(facts.service, s, { pnm: opts.pnm });
+    var credit = -(svc.extraHours * (s.policy.service.extraHourErases || 0));
+    if (credit) lines.push({ date: ymd(asOf), order: 4, kind: 'credit', label: 'Extra service hours', detail: svc.extraHours + ' h past the ' + svc.hoursRequired + ' required', points: credit });
+
+    lines.sort(function (a, b) {
+      if (!a.date && b.date) return -1; if (a.date && !b.date) return 1;
+      return String(a.date || '').localeCompare(String(b.date || '')) || a.order - b.order;
+    });
+    var running = 0;
+    lines.forEach(function (l) { running += l.points; l.running = running; });
+    return { lines: lines, total: running };
+  }
+
+  /** Free absences for one event type (the bylaws' two chapter meetings): { allowed, used, left }. */
+  function freeAbsences(dem, settings, type) {
+    var s = withDefaults(settings);
+    type = type || 'chapter';
+    var allowed = (s.eventTypes[type] && s.eventTypes[type].freePerTerm) || 0;
+    var t = dem && dem.perType && dem.perType[type];
+    var used = t ? Math.min(t.unexcused, allowed) : 0;
+    return { allowed: allowed, used: used, left: Math.max(0, allowed - used) };
+  }
+
+  /** When an event starts, as a Date (events carry a date and an optional 'HH:MM' time). */
+  function eventStart(ev, settings) {
+    var d = toDate(ev && ev.date); if (!d) return null;
+    var t = String((ev && ev.time) || withDefaults(settings).policy.attendance.defaultEventTime || '19:00').match(/^(\d{1,2}):(\d{2})/);
+    var out = new Date(d.getTime());
+    out.setHours(t ? +t[1] : 19, t ? +t[2] : 0, 0, 0);
+    return out;
+  }
+
+  /**
+   * Bylaws Art. II Sec. 11: excuses at least N hours ahead.
+   * → { onTime, after, hoursAhead } where `after` means the event had already started.
+   */
+  function excuseTiming(ev, submittedAt, settings) {
+    var start = eventStart(ev, settings);
+    if (!start) return { onTime: true, after: false, hoursAhead: null };
+    var need = withDefaults(settings).policy.attendance.excuseHoursBefore || 0;
+    var when = submittedAt instanceof Date ? submittedAt.getTime() : (Number(submittedAt) || Date.now());
+    var ahead = (start.getTime() - when) / 3600000;
+    return { onTime: ahead >= need, after: ahead < 0, hoursAhead: Math.round(ahead * 10) / 10 };
+  }
+
+  /** Every date on a weekday (0 = Sunday) between two dates inclusive, minus `skip` dates. */
+  function weeklyDates(start, end, weekday, skip) {
+    var a = toDate(start), b = toDate(end), out = [];
+    if (!a || !b || b < a) return out;
+    var skipSet = {};
+    (skip || []).forEach(function (d) { var k = ymd(d); if (k) skipSet[k] = true; });
+    var d = new Date(a.getTime());
+    while (d.getDay() !== Number(weekday)) d.setDate(d.getDate() + 1);
+    for (; d <= b; d.setDate(d.getDate() + 7)) { var k = ymd(d); if (!skipSet[k]) out.push(k); }
+    return out;
+  }
+
+  /** Sunday that starts the week a date falls in ('YYYY-MM-DD'); the service form's "week". */
+  function weekOf(date) {
+    var d = toDate(date); if (!d) return '';
+    var s = new Date(d.getTime()); s.setDate(s.getDate() - s.getDay());
+    return ymd(s);
+  }
+
   function computeStanding(total, settings, override) {
     if (override && override.override) return override.override;
     var p = withDefaults(settings).policy;
@@ -318,7 +452,12 @@
     var list = values(entries);
     list.forEach(function (e) {
       var h = Number(e.hours) || 0;
-      if (e.status === 'approved') { approved += h; events[e.eventId || nameKey(e.eventName)] = true; }
+      if (e.status === 'approved') {
+        approved += h;
+        // The Service Chair ticks "counts as a service event" when approving. Two
+        // entries for the same event on the same day count once.
+        if (e.countsAsEvent) events[nameKey(e.eventName) + '|' + (e.date || '')] = true;
+      }
       else if (e.status === 'pending') pending += h;
     });
     var distinctEvents = Object.keys(events).filter(Boolean).length;
@@ -469,6 +608,13 @@
     isChargedStatus: isChargedStatus,
     upgradeUser: upgradeUser,
     computeDemerits: computeDemerits,
+    demeritTimeline: demeritTimeline,
+    freeAbsences: freeAbsences,
+    excusedMap: excusedMap,
+    eventStart: eventStart,
+    excuseTiming: excuseTiming,
+    weeklyDates: weeklyDates,
+    weekOf: weekOf,
     computeStanding: computeStanding,
     buyoutFor: buyoutFor,
     serviceSummary: serviceSummary,

@@ -85,24 +85,25 @@
     if (dem.serviceCredit) kv.push(['Extra service hours', dem.serviceCredit]);
     kv.push(['Total', dem.total]);
     $('st-breakdown').innerHTML = kv.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
-    var adj = C.values(facts.adjustments).sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
-    $('adj-tbody').innerHTML = adj.length ? adj.map(function (a) {
-      return '<tr><td>' + esc(fmtDate(a.date)) + '</td><td>' + esc(a.reason || '') + '</td><td>' + esc((a.points > 0 ? '+' : '') + a.points) + '</td><td>' + esc(a.enteredBy || a.createdByName || '') + '</td></tr>';
-    }).join('') : '<tr><td colspan="4" class="section-empty">None this term.</td></tr>';
+    var tl = C.demeritTimeline(me.uid, facts, S, { pnm: isPnm });
+    $('st-timeline').innerHTML = tl.lines.length ? '<li class="tl-head"><span>Date</span><span>What happened</span><span class="tl-pts">Change</span><span class="tl-run">Total</span></li>' + tl.lines.map(function (l) {
+      var cls = l.points > 0 ? 'plus' : (l.points < 0 ? 'minus' : 'zero');
+      return '<li><span class="tl-date">' + esc(l.date ? fmtDate(l.date).replace(/, \d{4}$/, '') : 'Start') + '</span><span>' + esc(l.label) + (l.detail ? '<span class="tl-detail">' + esc(l.detail) + '</span>' : '') + '</span>' +
+        '<span class="tl-pts ' + cls + '">' + (l.points > 0 ? '+' : '') + l.points + '</span><span class="tl-run">' + l.running + '</span></li>';
+    }).join('') : '<li class="section-empty">Nothing yet this term. You are at 0.</li>';
 
     // Attendance
-    var ch = dem.perType.chapter;
-    var freeUsed = ch ? Math.min(ch.unexcused, ch.free) : 0;
-    var chapterDef = S.eventTypes.chapter || { freePerTerm: 2 };
-    $('att-free').textContent = freeUsed + ' of ' + chapterDef.freePerTerm + ' free chapter absences used';
+    var free = C.freeAbsences(dem, S);
+    $('att-free').textContent = free.left + ' of ' + free.allowed + ' free chapter absences left';
     var excusesByEvent = {};
-    C.values(facts.excuses).forEach(function (x) { excusesByEvent[x.eventId] = x; });
+    C.values(facts.excuses).forEach(function (x) { if (x.eventId && (x.kind || 'absent') === 'absent' && (!excusesByEvent[x.eventId] || (x.submittedAt || 0) > (excusesByEvent[x.eventId].submittedAt || 0))) excusesByEvent[x.eventId] = x; });
     var events = C.values(facts.events).sort(function (a, b) { return String(a.date || '').localeCompare(String(b.date || '')); });
     var rowsHtml = events.map(function (ev) {
       var mark = facts.attendance[ev.key] && facts.attendance[ev.key][me.uid];
       var x = excusesByEvent[ev.key];
       var cell;
-      if (!ev.recorded) cell = x ? pill('Excuse ' + x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) : '<span style="color:#999;">upcoming</span>';
+      if (ev.recorded && !mark) cell = '<span style="color:#999;">not on roll call</span>';
+      else if (!ev.recorded) cell = x ? pill('Excuse ' + x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) : '<span style="color:#999;">upcoming</span>';
       else if (mark && mark.present) cell = pill('Present', 'good');
       else if (x && x.status === 'approved') cell = pill('Excused', 'good');
       else if (x && x.status === 'pending') cell = pill('Absent · excuse pending', 'warn');
@@ -112,13 +113,11 @@
     });
     $('att-tbody').innerHTML = rowsHtml.length ? rowsHtml.join('') : '<tr><td colspan="4" class="section-empty">No events recorded yet this term.</td></tr>';
     $('excuse-hours').textContent = p.attendance.excuseHoursBefore;
-    var sel = $('exc-event');
-    sel.innerHTML = events.filter(function (ev) { return !excusesByEvent[ev.key] || excusesByEvent[ev.key].status === 'denied'; })
-      .map(function (ev) { return '<option value="' + esc(ev.key) + '">' + esc(ev.title) + (ev.date ? ' · ' + fmtDate(ev.date) : '') + '</option>'; }).join('') || '<option value="">No events to excuse</option>';
     var mine = C.values(facts.excuses).sort(function (a, b) { return (b.submittedAt || 0) - (a.submittedAt || 0); });
     $('exc-list').innerHTML = mine.length ? '<div class="vgroups">' + mine.map(function (x) {
-      var ev = facts.events[x.eventId] || {};
-      return '<div class="vgroup"><span class="vg-label">' + pill(x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) + '</span><span class="vg-names"><strong>' + esc(ev.title || x.eventId) + '</strong> — ' + esc(x.reason || '') + (x.reviewNote ? ' <em>(' + esc(x.reviewNote) + ')</em>' : '') + '</span></div>';
+      var ev = facts.events[x.eventId] || { title: x.eventText || 'Unlisted event' };
+      var what = x.kind === 'late' ? ' (arriving late)' : (x.kind === 'leaveEarly' ? ' (leaving early)' : '');
+      return '<div class="vgroup"><span class="vg-label">' + pill(x.status, x.status === 'approved' ? 'good' : (x.status === 'denied' ? 'bad' : 'warn')) + '</span><span class="vg-names"><strong>' + esc(ev.title) + '</strong>' + esc(what) + ' — ' + esc(x.reason || '') + (x.reviewNote ? ' <em>(Standards: ' + esc(x.reviewNote) + ')</em>' : '') + '</span></div>';
     }).join('') + '</div>' : '';
 
     // Dues
@@ -144,7 +143,7 @@
       'Still need ' + svc.hoursShort + ' hour' + (svc.hoursShort === 1 ? '' : 's') + (svc.eventsShort ? ' and ' + svc.eventsShort + ' more event' + (svc.eventsShort === 1 ? '' : 's') : '') + '. Falling short adds ' + svc.shortfallDemerits + ' demerits next term.';
     var entries = svc.entries.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
     $('svc-tbody').innerHTML = entries.length ? entries.map(function (e) {
-      return '<tr><td>' + esc(e.eventName || '') + '</td><td>' + esc(fmtDate(e.date)) + '</td><td>' + esc(e.hours) + '</td><td>' + pill(e.status, e.status === 'approved' ? 'good' : (e.status === 'denied' ? 'bad' : 'warn')) + (e.reviewNote ? ' <span style="font-size:0.78rem; color:#666;">' + esc(e.reviewNote) + '</span>' : '') + '</td></tr>';
+      return '<tr><td>' + esc(e.eventName || '') + '</td><td>' + esc(fmtDate(e.date)) + '</td><td>' + esc(e.hours) + '</td><td>' + pill(e.status, e.status === 'approved' ? 'good' : (e.status === 'denied' ? 'bad' : 'warn')) + (e.countsAsEvent && e.status === 'approved' ? ' ' + pill('service event', 'good') : '') + (e.reviewNote ? ' <span style="font-size:0.78rem; color:#666;">' + esc(e.reviewNote) + '</span>' : '') + '</td></tr>';
     }).join('') : '<tr><td colspan="4" class="section-empty">Nothing logged yet.</td></tr>';
 
     // Pledge
@@ -159,49 +158,7 @@
     }
   }
 
-  // ── Forms ──
-
-  function wireForms() {
-    var svcDate = $('svc-date'); if (svcDate && !svcDate.value) svcDate.value = C.ymd(new Date());
-    PortalOps.db.ref('serviceEvents/' + term).once('value').then(function (s) {
-      var list = $('svc-event-list'); if (!list) return;
-      list.innerHTML = C.values(s.val() || {}).map(function (e) { return '<option value="' + esc(e.name) + '">'; }).join('');
-    }).catch(function () {});
-
-    $('btn-excuse').addEventListener('click', function () {
-      var eventId = $('exc-event').value, reason = $('exc-reason').value.trim();
-      if (!eventId) return setStatus('exc-status', 'Pick an event.', 'error');
-      if (!reason) return setStatus('exc-status', 'Say what is keeping you from it.', 'error');
-      var ev = facts.events[eventId] || {};
-      var hoursBefore = facts.settings.policy.attendance.excuseHoursBefore || 24;
-      var late = ev.date ? (C.toDate(ev.date).getTime() - Date.now()) < hoursBefore * 3600000 : false;
-      var entry = { eventId: eventId, category: $('exc-category').value, reason: reason, hasDoctorNote: $('exc-note').checked,
-        submittedAt: firebase.database.ServerValue.TIMESTAMP, lateSubmission: late, status: 'pending' };
-      var btn = this; btn.disabled = true; setStatus('exc-status', 'Sending…');
-      PortalOps.db.ref('excuses/' + term + '/' + me.uid).push(entry).then(function () {
-        setStatus('exc-status', late ? 'Sent. Note: this is inside the ' + hoursBefore + '-hour window, so Standards decides case by case.' : 'Sent to Standards.', 'success');
-        $('exc-reason').value = ''; $('exc-note').checked = false;
-        return PortalOps.loadMyFacts(term, me.uid).then(function (f) { facts = f; renderAll(); });
-      }).catch(function (err) { setStatus('exc-status', err.message || 'Could not send.', 'error'); }).finally(function () { btn.disabled = false; });
-    });
-
-    $('btn-service').addEventListener('click', function () {
-      var name = $('svc-event').value.trim(), hours = parseFloat($('svc-hours').value), date = $('svc-date').value;
-      if (!name) return setStatus('svc-status', 'Name the event.', 'error');
-      if (!(hours > 0)) return setStatus('svc-status', 'Enter the hours.', 'error');
-      if (!date) return setStatus('svc-status', 'Pick the date.', 'error');
-      var photo = $('svc-photo').value.trim(), vouch = $('svc-vouch').value.trim();
-      if (!photo && !vouch) return setStatus('svc-status', 'Add a photo link or the chair who can vouch for you.', 'error');
-      var entry = { hours: hours, eventName: name, eventId: C.nameKey(name), date: date, photoUrl: photo, vouchedBy: vouch, description: '',
-        status: 'pending', submittedAt: firebase.database.ServerValue.TIMESTAMP };
-      var btn = this; btn.disabled = true; setStatus('svc-status', 'Submitting…');
-      PortalOps.db.ref('service/' + term + '/' + me.uid).push(entry).then(function () {
-        setStatus('svc-status', 'Submitted. The Community Service Chair will approve it.', 'success');
-        $('svc-event').value = ''; $('svc-hours').value = ''; $('svc-photo').value = ''; $('svc-vouch').value = '';
-        return PortalOps.loadMyFacts(term, me.uid).then(function (f) { facts = f; renderAll(); });
-      }).catch(function (err) { setStatus('svc-status', err.message || 'Could not submit.', 'error'); }).finally(function () { btn.disabled = false; });
-    });
-  }
+  function wireForms() {}
 
   global.PortalTracker = { renderHomeStats: renderHomeStats, renderTrackerPage: renderTrackerPage, load: load };
 })(typeof window !== 'undefined' ? window : this);

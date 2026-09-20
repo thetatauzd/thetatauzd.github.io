@@ -299,6 +299,64 @@
    * rush_chair role only needs the timer, which stays in the main menu.
    * Call after auth resolves with a profile.
    */
+  /**
+   * The three header menus, in one place. Every page ships the same empty
+   * shells (#dd-menu, #ops-dd-menu, #admin-dd-menu); this fills them, so a new
+   * page is added to the site's navigation by adding one line here.
+   *   perm: shown to holders of any listed capability (admins always)
+   *   roles: shown to those legacy roles
+   */
+  var NAV = {
+    me: [
+      { href: '/portal', label: 'Portal home' },
+      { href: 'tracker', label: 'My Tracker' },
+      { href: 'excuse', label: 'Request an excuse' },
+      { href: 'log-service', label: 'Log service hours' },
+      { href: 'voting', label: 'Voting' },
+      { href: 'timer', label: 'Event Timer', roles: ['rush_chair', 'admin'] },
+      { href: '/', label: 'Back to Site' }
+    ],
+    ops: [
+      { href: 'attendance', label: 'Attendance', perm: ['attendance', 'standards'] },
+      { href: 'standards-board', label: 'Standards Board', perm: ['standards'] },
+      { href: 'treasurer', label: 'Treasurer', perm: ['finance'] },
+      { href: 'service', label: 'Service Hours', perm: ['service'] },
+      { href: 'marshal', label: 'Marshal', perm: ['pledges'] },
+      { href: 'semester', label: 'Semester Setup', perm: ['settings', 'attendance'] },
+      { href: 'settings', label: 'Chapter Settings', perm: ['settings'] }
+    ],
+    admin: [
+      { href: 'admin', label: 'User Management' },
+      { href: 'portal-links', label: 'Portal Links' },
+      { href: 'import', label: 'Import from Tracker sheet' },
+      { href: 'newsletters-admin', label: 'Newsletters' },
+      { section: 'Voting' },
+      { href: 'standards', label: 'Standards' },
+      { href: 'regent', label: 'Regent View' },
+      { href: 'history', label: 'Session History' }
+    ]
+  };
+
+  function navItemsHtml(items, profile) {
+    return items.filter(function(it) {
+      if (it.perm && !it.perm.some(function(p) { return hasPerm(profile, p); })) return false;
+      if (it.roles && it.roles.indexOf(profile.role || '') === -1) return false;
+      return true;
+    }).map(function(it) {
+      if (it.section) return '<div class="dd-section-label">' + it.section + '</div>';
+      return '<a href="' + it.href + '">' + it.label + '</a>';
+    }).join('');
+  }
+
+  function buildMenus(profile) {
+    var meMenu = document.getElementById('dd-menu');
+    if (meMenu) meMenu.innerHTML = navItemsHtml(NAV.me, profile) + '<div class="dd-divider"></div><button type="button" class="dd-signout" id="btn-signout">Sign out</button>';
+    var opsMenu = document.getElementById('ops-dd-menu');
+    if (opsMenu) opsMenu.innerHTML = navItemsHtml(NAV.ops, profile);
+    var adminMenu = document.getElementById('admin-dd-menu');
+    if (adminMenu) adminMenu.innerHTML = navItemsHtml(NAV.admin, profile);
+  }
+
   function initNav(profile) {
     revealPage();
     if (!profile) return;
@@ -307,28 +365,16 @@
     var nameEl = document.getElementById('user-name');
     if (nameEl) nameEl.textContent = profile.name || profile.email || 'Brother';
 
+    buildMenus(profile);
+
     if (role === 'admin') {
       var adminDd = document.getElementById('admin-dropdown');
       if (adminDd) adminDd.classList.remove('hidden');
     }
-    if (role === 'rush_chair' || role === 'admin') {
-      var t = document.getElementById('link-timer');
-      if (t) t.classList.remove('hidden');
-    }
 
-    // Chapter Ops menu: any link tagged data-perm shows for holders of that
-    // capability (comma-separated = any of). The menu itself shows if any link does.
+    // Chapter Ops menu shows when the person holds any capability it links to.
     var opsDd = document.getElementById('ops-dropdown');
-    if (opsDd) {
-      var anyShown = false;
-      opsDd.querySelectorAll('[data-perm]').forEach(function(a) {
-        var need = a.getAttribute('data-perm').split(',');
-        var show = need.some(function(p) { return hasPerm(profile, p.trim()); });
-        a.classList.toggle('hidden', !show);
-        if (show) anyShown = true;
-      });
-      opsDd.classList.toggle('hidden', !anyShown);
-    }
+    if (opsDd) opsDd.classList.toggle('hidden', !opsDd.querySelector('a'));
 
     var dropdowns = [].slice.call(document.querySelectorAll('.nav-dropdown'));
     dropdowns.forEach(function(dd) {

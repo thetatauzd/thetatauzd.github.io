@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Theta Tau Tracker</title>
+  <title>My Tracker</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=23">
+  <link rel="stylesheet" href="css/portal.css?v=24">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -15,7 +15,7 @@
 <body class="auth-pending">
   <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
   <header class="portal-header">
-    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Theta Tau Tracker</h1></div>
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>My Tracker</h1></div>
     <div class="user-info">
       <div class="nav-dropdown hidden" id="ops-dropdown">
         <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
@@ -73,26 +73,22 @@
         <p class="step-hint" id="st-explain"></p>
         <details class="panel-collapse"><summary>How this adds up</summary>
           <dl class="kv" id="st-breakdown"></dl>
-          <h3 style="font-size:0.95rem; margin:0.9rem 0 0.35rem;">Standards adjustments</h3>
-          <div class="table-scroll"><table class="admin-table"><thead><tr><th>Date</th><th>Reason</th><th>Change</th><th>Entered by</th></tr></thead><tbody id="adj-tbody"></tbody></table></div>
         </details>
+      </div>
+
+      <div class="portal-card" id="card-history">
+        <h2>Demerit history</h2>
+        <p class="step-hint" style="margin-top:0;">Every change this term, oldest first. The last running total is your demerit count.</p>
+        <ul class="timeline" id="st-timeline"></ul>
       </div>
 
       <div class="portal-card" id="card-attendance">
         <h2>Attendance <span class="count-pill" id="att-free"></span></h2>
         <div class="table-scroll"><table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Type</th><th>You</th></tr></thead><tbody id="att-tbody"></tbody></table></div>
-        <details class="panel-collapse" id="excuse-details"><summary>Request an excused absence</summary>
-          <p class="step-hint">Excuses should reach Standards at least <span id="excuse-hours">24</span> hours before the event. Sickness needs a doctor's note. Standards reviews every request.</p>
-          <div class="add-row">
-            <div><label class="field-label" for="exc-event">Event</label><select id="exc-event" class="field"></select></div>
-            <div><label class="field-label" for="exc-category">Reason type</label><select id="exc-category" class="field"><option value="class">Class</option><option value="work">Work</option><option value="sick">Sick</option><option value="family">Family</option><option value="other">Other</option></select></div>
-          </div>
-          <label class="field-label" for="exc-reason">Details</label>
-          <textarea id="exc-reason" class="field" rows="3" placeholder="What is keeping you from this event?"></textarea>
-          <label style="display:flex; gap:0.4rem; align-items:center; font-size:0.9rem; margin:0.5rem 0;"><input type="checkbox" id="exc-note"> I have a doctor's note (bring it to Standards)</label>
-          <button type="button" class="btn btn-primary btn-small" id="btn-excuse">Send request</button>
-          <p class="status-line" id="exc-status"></p>
-        </details>
+        <div class="req-actions" style="margin-top:0.75rem;">
+          <a class="btn btn-primary btn-small" href="excuse">Request an excuse</a>
+          <span class="step-hint" style="margin:0;">At least <span id="excuse-hours">24</span> hours before the event.</span>
+        </div>
         <div id="exc-list" style="margin-top:0.75rem;"></div>
       </div>
 
@@ -117,19 +113,7 @@
           <div class="stat-tile"><div class="stat-label">Events</div><div class="stat-value" id="svc-events">—</div></div>
         </div>
         <p class="step-hint" id="svc-explain"></p>
-        <details class="panel-collapse" open><summary>Log service hours</summary>
-          <div class="add-row">
-            <div><label class="field-label" for="svc-event">Event</label><input id="svc-event" class="field" list="svc-event-list" placeholder="e.g. Harvest Hope"><datalist id="svc-event-list"></datalist></div>
-            <div style="flex:0 0 110px;"><label class="field-label" for="svc-hours">Hours</label><input id="svc-hours" class="field" type="number" min="0.25" step="0.25" placeholder="2"></div>
-            <div style="flex:0 0 170px;"><label class="field-label" for="svc-date">Date</label><input id="svc-date" class="field" type="date"></div>
-          </div>
-          <div class="add-row">
-            <div><label class="field-label" for="svc-photo">Photo link (optional)</label><input id="svc-photo" class="field" placeholder="Google Drive / Photos link"></div>
-            <div><label class="field-label" for="svc-vouch">Chair who can vouch (if no photo)</label><input id="svc-vouch" class="field" placeholder="Name"></div>
-          </div>
-          <button type="button" class="btn btn-primary btn-small" id="btn-service" style="margin-top:0.5rem;">Submit for approval</button>
-          <p class="status-line" id="svc-status"></p>
-        </details>
+        <div class="req-actions"><a class="btn btn-primary btn-small" href="log-service">Log service hours</a></div>
         <div class="table-scroll"><table class="admin-table" style="margin-top:0.75rem;"><thead><tr><th>Event</th><th>Date</th><th>Hours</th><th>Status</th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
       </div>
 
@@ -147,11 +131,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=23"></script>
-  <script src="js/auth.js?v=23"></script>
-  <script src="js/ops-core.js?v=23"></script>
-  <script src="js/ops-db.js?v=23"></script>
-  <script src="js/tracker.js?v=23"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/ops-photos.js?v=24"></script>
+  <script src="js/tracker.js?v=24"></script>
   <script>
     (function() {
       PortalAuth.requireAuth({ page: 'tracker' }).then(function(profile) {

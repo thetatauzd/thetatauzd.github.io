@@ -44,7 +44,7 @@
     tr.setAttribute('data-uid', uid);
     if (!C.isActiveStatus(u.status, settings)) tr.classList.add('row-muted');
     tr.innerHTML =
-      '<td><span class="member-name">' + esc(u.name || '—') + '</span><span class="member-email">' + esc(u.email || '') + '</span></td>' +
+      '<td><a class="member-name" href="member?uid=' + encodeURIComponent(uid) + '" title="Open their full record">' + esc(u.name || '—') + '</a><span class="member-email">' + esc(u.email || '') + '</span></td>' +
       '<td><input type="text" class="roll-input" data-uid="' + uid + '" value="' + esc(u.rollNumber || '') + '" placeholder="—"><span class="roll-saved hidden" data-for="' + uid + '">saved</span></td>' +
       '<td>' + statusSelect(uid, u.status || 'active') + '</td>' +
       '<td><div class="pos-chips">' + positionChips(u.positions) + '<button type="button" class="pos-edit" data-uid="' + uid + '">' + (Object.keys(u.positions || {}).length ? 'Edit' : '+ Add') + '</button></div></td>' +
@@ -71,7 +71,7 @@
     if (f === 'positions') return hasPos || u.role === 'admin';
     if (f === 'active') return u.status === 'active';
     if (f === 'pnm') return u.status === 'pnm';
-    if (f === 'other') return ['inactive', 'coop', 'alumnus', 'graduated'].indexOf(u.status) !== -1;
+    if (f === 'other') return ['inactive', 'coop', 'abroad', 'alumnus', 'graduated'].indexOf(u.status) !== -1;
     return true;
   }
 
@@ -126,8 +126,11 @@
     document.querySelectorAll('.status-select').forEach(function(sel) {
       sel.addEventListener('change', function() {
         var uid = this.getAttribute('data-uid');
-        var patch = { status: this.value };
-        if (this.value === 'inactive' || this.value === 'coop') patch.inactiveSince = new Date().toISOString().slice(0, 10);
+        var def = settings.statuses[this.value] || {};
+        // Takes effect from the next roll call: earlier attendance stays as it was recorded.
+        var patch = { status: this.value, statusEffective: new Date().toISOString().slice(0, 10) };
+        if (['inactive', 'coop', 'abroad'].indexOf(this.value) !== -1) patch.inactiveSince = patch.statusEffective;
+        this.title = (def.label || this.value) + ': ' + (def.countsAsActive ? 'on roll call' : 'not on roll call') + ', ' + (def.chargedDues ? 'charged dues' : 'no dues') + ', ' + (def.votes ? 'votes' : 'does not vote');
         PortalOps.saveUser(uid, patch, me).catch(function(err) { alert(err.message || 'Failed to update status.'); });
       });
     });

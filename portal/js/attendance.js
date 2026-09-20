@@ -10,7 +10,7 @@
   var C = global.OpsCore;
   var esc = C.esc;
   var me = null, S = null, term = null;
-  var events = {}, directory = {}, attendance = {};
+  var events = {}, directory = {}, attendance = {}, flags = {};
   var selected = null;       // eventId
   var marks = {};            // uid -> bool for the selected event (unsaved)
 
@@ -44,6 +44,7 @@
 
   function renderTypeSelect() {
     var types = C.sortByOrder(C.values(S.eventTypes)).filter(function (t) { return t.key !== 'pledge'; });
+    $('ed-type').innerHTML = types.map(function (t) { return '<option value="' + esc(t.key) + '">' + esc(t.label) + '</option>'; }).join('');
     $('ev-type').innerHTML = types.map(function (t) { return '<option value="' + esc(t.key) + '">' + esc(t.label) + '</option>'; }).join('');
     $('ev-type').addEventListener('change', typeHint); typeHint();
   }
@@ -53,12 +54,12 @@
   }
 
   function addEvent() {
-    var title = $('ev-title').value.trim(), date = $('ev-date').value, type = $('ev-type').value;
+    var title = $('ev-title').value.trim(), date = $('ev-date').value, type = $('ev-type').value, time = $('ev-time').value;
     if (!title) return setStatus('ev-status', 'Give the event a title.', 'error');
     var key = C.nameKey(title) || 'event';
     var base = key, n = 2;
     while (events[key]) { key = base + '_' + (n++); }
-    var ev = Object.assign({ title: title, date: date || null, type: type, recorded: false, notes: '' }, PortalOps.audit(me));
+    var ev = Object.assign({ title: title, date: date || null, time: time || null, type: type, recorded: false, notes: '' }, PortalOps.audit(me));
     PortalOps.db.ref('events/' + term + '/' + key).set(ev).then(function () {
       setStatus('ev-status', 'Added.', 'success'); $('ev-title').value = '';
       PortalOps.logChange(term, 'event', key, 'Added event "' + title + '" (' + type + ')', me);
@@ -78,6 +79,7 @@
     $('take-sub').textContent = (ev.date ? C.fmtDate(ev.date) + ' · ' : '') + typeDef.label + (ev.recorded ? ' · recorded' : ' · not yet recorded');
     $('take-worth').textContent = 'Worth: ' + typeDef.unexcused + ' unexcused / ' + typeDef.excused + ' excused' + (typeDef.freePerTerm ? ' · first ' + typeDef.freePerTerm + ' unexcused chapter absences per term are free' : '') + '. Anyone not marked present counts as absent once you save.';
     $('take-tools').classList.remove('hidden');
+    $('ed-title').value = ev.title || ''; $('ed-date').value = ev.date || ''; $('ed-time').value = ev.time || ''; $('ed-type').value = ev.type || 'other';
     renderList(); renderEvents();
   }
 
@@ -94,8 +96,13 @@
       var m = marks[uid];
       if (m === true) present++;
       var hide = q && String(d.name || '').toLowerCase().indexOf(q) === -1;
+      var fl = (flags[selected] || {})[uid] || '';
+      var badge = fl === 'approved' ? '<span class="att-badge e" title="Excuse approved by Standards">E</span>'
+        : (fl === 'pending' ? '<span class="att-badge q" title="Excuse waiting on Standards">?</span>'
+        : (/^(late|early)_approved$/.test(fl) ? '<span class="att-badge l" title="Approved to ' + (fl.indexOf('late') === 0 ? 'arrive late' : 'leave early') + '">L</span>'
+        : (/^(late|early)_pending$/.test(fl) ? '<span class="att-badge q" title="Late / leaving early request waiting on Standards">?</span>' : '')));
       return '<li data-uid="' + esc(uid) + '"' + (hide ? ' class="hidden"' : '') + '>' +
-        '<span class="bro-name">' + esc(d.name || uid) + (d.rollNumber ? ' <span style="color:#999; font-size:0.8rem;">#' + esc(C.rollKey(d.rollNumber)) + '</span>' : '') + (C.isActiveStatus(d.status, S) ? '' : ' <span class="count-pill">' + esc(d.status) + '</span>') + '</span>' +
+        '<span class="bro-name">' + esc(d.name || uid) + (d.rollNumber ? ' <span style="color:#999; font-size:0.8rem;">#' + esc(C.rollKey(d.rollNumber)) + '</span>' : '') + badge + (C.isActiveStatus(d.status, S) ? '' : ' <span class="count-pill">' + esc(d.status) + '</span>') + '</span>' +
         '<span class="option-presets" style="margin:0; gap:0.3rem;">' +
         '<button type="button" class="option-preset-btn good mark-btn' + (m === true ? ' selected' : '') + '" data-uid="' + esc(uid) + '" data-v="1" style="padding:0.3rem 0.7rem;">Present</button>' +
         '<button type="button" class="option-preset-btn bad mark-btn' + (m === false ? ' selected' : '') + '" data-uid="' + esc(uid) + '" data-v="0" style="padding:0.3rem 0.7rem;">Absent</button></span></li>';
@@ -124,6 +131,31 @@
     }).catch(function (err) { setStatus('take-status', err.message || 'Failed.', 'error'); }).finally(function () { btn.disabled = false; });
   }
 
+  function saveEventEdit() {
+    if (!selected) return;
+    var title = $('ed-title').value.trim(); if (!title) return setStatus('ed-status', 'Give it a title.', 'error');
+    var patch = { title: title, date: $('ed-date').value || null, time: $('ed-time').value || null, type: $('ed-type').value, updatedBy: me.uid, updatedAt: new Date().toISOString() };
+    PortalOps.db.ref('events/' + term + '/' + selected).update(patch).then(function () {
+      setStatus('ed-status', 'Saved.', 'success');
+      PortalOps.logChange(term, 'event', selected, 'Edited event "' + title + '" (' + patch.type + ', ' + (patch.date || 'no date') + ')', me);
+      select(selected);
+    }).catch(function (err) { setStatus('ed-status', err.message || 'Failed.', 'error'); });
+  }
+  function deleteEvent() {
+    if (!selected) return;
+    var ev = events[selected] || {};
+    var msg = ev.recorded ? 'Remove "' + ev.title + '" AND the attendance taken for it? Demerits from it disappear.' : 'Remove "' + ev.title + '"?';
+    if (!confirm(msg)) return;
+    var updates = {}, id = selected;
+    updates['events/' + term + '/' + id] = null;
+    updates['attendance/' + term + '/' + id] = null;
+    Object.keys(attendance[id] || {}).forEach(function (uid) { updates['myAttendance/' + term + '/' + uid + '/' + id] = null; });
+    PortalOps.db.ref().update(updates).then(function () {
+      PortalOps.logChange(term, 'event', id, 'Removed event "' + ev.title + '"' + (ev.recorded ? ' and its attendance' : ''), me);
+      selected = null; marks = {}; $('take-tools').classList.add('hidden'); $('take-title').textContent = 'Take attendance'; $('take-sub').textContent = 'Pick an event on the left.';
+    }).catch(function (err) { setStatus('ed-status', err.message || 'Failed.', 'error'); });
+  }
+
   // ── Init ──
 
   function init() {
@@ -141,6 +173,9 @@
       $('btn-all-present').addEventListener('click', function () { Object.keys(marks).forEach(function (u) { marks[u] = true; }); renderList(); });
       $('btn-all-absent').addEventListener('click', function () { Object.keys(marks).forEach(function (u) { marks[u] = false; }); renderList(); });
       $('take-search').addEventListener('input', renderList);
+      $('btn-ed-save').addEventListener('click', saveEventEdit);
+      $('btn-ed-delete').addEventListener('click', deleteEvent);
+      PortalOps.db.ref('excuseFlags/' + term).on('value', function (s) { flags = s.val() || {}; if (selected) renderList(); }, function () {});
       PortalOps.db.ref('events/' + term).on('value', function (s) { events = s.val() || {}; renderEvents(); });
       PortalOps.db.ref('attendance/' + term).on('value', function (s) { attendance = s.val() || {}; renderEvents(); });
     });

@@ -166,52 +166,6 @@
     }).catch(function () { $('hist-list').innerHTML = '<p class="section-empty">History not readable.</p>'; });
   }
 
-  // ── Term rollover ──
-
-  var preview = null;
-  function previewTerm() {
-    var id = ($('nt-id').value || '').trim().toUpperCase();
-    if (!/^[FS]\d{2}$/.test(id)) return setStatus('nt-status', 'Term code like F26 or S27.', 'error');
-    if (id === term) return setStatus('nt-status', 'That is the current term.', 'error');
-    setStatus('nt-status', 'Computing…');
-    PortalOps.loadTermFacts(term).then(function (all) {
-      var carry = [];
-      Object.keys(all.directory).forEach(function (uid) {
-        var d = all.directory[uid]; if (!C.isActiveStatus(d.status, S)) return;
-        var r = C.computeDemerits(uid, PortalOps.factsFor(term, uid, all), S);
-        if (r.serviceShortfallNext > 0) carry.push({ uid: uid, name: d.name, points: r.serviceShortfallNext, hours: r.service.approvedHours, events: r.service.distinctEvents });
-      });
-      var active = Object.keys(all.directory).filter(function (u) { return C.isChargedStatus(all.directory[u].status, S); }).length;
-      preview = { id: id, carry: carry, active: active };
-      $('nt-preview').innerHTML = '<strong>' + carry.length + '</strong> brothers would carry service shortfall demerits into ' + esc(id) + ' (' + carry.reduce(function (t, c) { return t + c.points; }, 0) + ' points total). ' +
-        '<strong>' + active + '</strong> would be charged dues of ' + C.money(S.policy.dues.amount) + '.' + (carry.length ? '<div class="vgroups" style="margin-top:0.4rem;">' + carry.sort(function (a, b) { return b.points - a.points; }).slice(0, 80).map(function (c) { return '<div class="vgroup"><span class="vg-label">+' + c.points + '</span><span class="vg-names">' + esc(c.name) + ' (' + c.hours + 'h, ' + c.events + ' ev)</span></div>'; }).join('') + '</div>' : '');
-      $('btn-start-term').classList.remove('hidden'); setStatus('nt-status', '');
-    }).catch(function (err) { setStatus('nt-status', err.message || 'Failed.', 'error'); });
-  }
-  function startTerm() {
-    if (!preview) return;
-    var id = preview.id;
-    if (!confirm('Close ' + term + ' and start ' + id + '? This writes the roll-over and dues charges shown in the preview.')) return;
-    var updates = {}, now = new Date().toISOString();
-    updates['terms/' + term + '/status'] = 'closed'; updates['terms/' + term + '/closedAt'] = now;
-    updates['terms/' + id] = { label: $('nt-label').value.trim() || id, startDate: $('nt-start').value || null, endDate: $('nt-end').value || null, duesDueDate: $('nt-due').value || null, status: 'active', createdBy: me.uid, createdAt: now };
-    updates['settings/currentTerm'] = id;
-    if ($('nt-rollover').checked) preview.carry.forEach(function (c) { updates['rollover/' + id + '/' + c.uid] = { points: c.points, from: term, note: 'Service shortfall: ' + c.hours + 'h / ' + c.events + ' events in ' + term, createdBy: me.uid, createdAt: now }; });
-    var chargeDues = $('nt-dues').checked && $('nt-due').value;
-    var done = Promise.resolve();
-    if (chargeDues) done = PortalOps.loadDirectory().then(function (dir) {
-      Object.keys(dir).forEach(function (uid) {
-        if (!C.isChargedStatus(dir[uid].status, S)) return;
-        updates['ledger/' + id + '/' + uid + '/dues_' + id] = { type: 'charge', item: 'Dues', amount: S.policy.dues.amount, dueDate: $('nt-due').value, date: C.ymd(new Date()), accruesLate: true, demeritsIfLate: S.policy.dues.demeritsIfLate || 0, createdBy: me.uid, createdByName: me.name || '', createdAt: now };
-      });
-      updates['terms/' + id + '/duesChargedAt'] = now;
-    });
-    done.then(function () { return PortalOps.db.ref().update(updates); }).then(function () {
-      PortalOps.logChange(id, 'rollover', term, 'Started ' + id + ' from ' + term + ': ' + preview.carry.length + ' roll-overs' + (chargeDues ? ', dues charged' : ''), me);
-      setStatus('nt-status', 'Started ' + id + '.', 'success'); return reload();
-    }).catch(function (err) { setStatus('nt-status', err.message || 'Failed.', 'error'); });
-  }
-
   function reload() {
     return PortalOps.loadSettings(true).then(function (s) { S = s; term = PortalOps.currentTerm(); renderAll(); });
   }
@@ -227,7 +181,6 @@
       $('btn-et-save').addEventListener('click', saveEventTypes); $('btn-et-add').addEventListener('click', addEventType);
       $('btn-pos-save').addEventListener('click', savePositions); $('btn-pos-add').addEventListener('click', addPosition);
       $('btn-st-save').addEventListener('click', saveStatuses);
-      $('btn-preview-term').addEventListener('click', previewTerm); $('btn-start-term').addEventListener('click', startTerm);
       return reload();
     });
   }

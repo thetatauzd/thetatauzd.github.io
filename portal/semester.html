@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Tracker</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=24">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>My Tracker</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <p id="page-status" class="step-hint">Loading…</p>
+    <div id="page-body" class="hidden">
+
+      <div class="portal-card">
+        <h2>This semester <span class="count-pill" id="sm-term"></span></h2>
+        <p class="step-hint" id="sm-summary"></p>
+      </div>
+
+      <div class="live-grid">
+      <div class="live-main">
+
+        <div class="portal-card" id="card-schedule">
+          <h2><span class="step-num">2</span> Schedule the events that carry demerits</h2>
+          <p class="step-hint">Put every chapter, voting chapter, rush event, initiation and philanthropy event on the calendar up front. Brothers then pick from this list when they ask for an excuse, and the Scribe just opens the night's event to take roll. Service events do not go here.</p>
+
+          <h3 class="form-step">Weekly chapter meetings</h3>
+          <div class="add-row">
+            <div style="flex:0 0 170px;"><label class="field-label" for="wk-first">First meeting</label><input id="wk-first" class="field" type="date"></div>
+            <div style="flex:0 0 170px;"><label class="field-label" for="wk-last">Last meeting</label><input id="wk-last" class="field" type="date"></div>
+            <div style="flex:0 0 150px;"><label class="field-label" for="wk-day">Day</label><select id="wk-day" class="field"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
+            <div style="flex:0 0 130px;"><label class="field-label" for="wk-time">Starts</label><input id="wk-time" class="field" type="time" value="19:00"></div>
+          </div>
+          <div class="add-row">
+            <div><label class="field-label" for="wk-skip">Weeks with no meeting (dates, separated by commas)</label><input id="wk-skip" class="field" placeholder="e.g. 2026-10-11, 2026-11-29"></div>
+            <div style="flex:0 0 200px;"><label class="field-label" for="wk-title">Title</label><input id="wk-title" class="field" value="Chapter {n}"></div>
+          </div>
+          <button type="button" class="btn secondary btn-small" id="btn-wk-fill">Add these to the list below</button>
+
+          <h3 class="form-step">Events to create</h3>
+          <p class="step-hint" style="margin-top:0;">Fix a title, change a type (a chapter where you vote on candidates is a Voting Chapter), or add rows for rush events, initiation and philanthropy. Nothing is saved until you press Create.</p>
+          <div class="table-scroll"><table class="admin-table" id="draft-table"><thead><tr><th>Title</th><th>Date</th><th>Starts</th><th>Type</th><th>Worth</th><th></th></tr></thead><tbody id="draft-tbody"></tbody></table></div>
+          <div class="req-actions">
+            <button type="button" class="btn ghost btn-small" id="btn-draft-add">+ Add a row</button>
+            <button type="button" class="btn ghost btn-small" id="btn-draft-clear">Clear list</button>
+            <button type="button" class="btn btn-primary btn-small" id="btn-draft-create">Create these events</button>
+            <span class="status-line" id="draft-status" style="margin:0;"></span>
+          </div>
+        </div>
+
+        <div class="portal-card">
+          <h2>On the calendar for <span id="sm-term2"></span> <span class="count-pill" id="ev-count"></span></h2>
+          <div class="table-scroll"><table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Starts</th><th>Type</th><th>Attendance</th><th></th></tr></thead><tbody id="ev-tbody"></tbody></table></div>
+          <p class="step-hint">Edit an event or take attendance from the <a href="attendance">Attendance</a> page. Events with attendance already taken can only be removed there.</p>
+        </div>
+
+      </div>
+      <div class="live-side">
+
+        <div class="portal-card" id="card-newterm">
+          <h2><span class="step-num">1</span> Start a new semester</h2>
+          <p class="step-hint">Attendance, excuses, demerits, fees and service hours are all filed under the semester, so starting a new one gives everyone a clean slate. The old semester stays on record. Only what the Standards procedures carry forward comes along: service shortfalls become roll-over demerits.</p>
+          <div class="add-row">
+            <div style="flex:0 0 120px;"><label class="field-label" for="nt-id">Term code</label><input id="nt-id" class="field code-field" placeholder="S27" style="text-transform:uppercase;"></div>
+            <div><label class="field-label" for="nt-label">Label</label><input id="nt-label" class="field" placeholder="Spring 2027"></div>
+          </div>
+          <div class="add-row">
+            <div style="flex:0 0 170px;"><label class="field-label" for="nt-start">Starts</label><input id="nt-start" class="field" type="date"></div>
+            <div style="flex:0 0 170px;"><label class="field-label" for="nt-end">Ends</label><input id="nt-end" class="field" type="date"></div>
+            <div style="flex:0 0 170px;"><label class="field-label" for="nt-due">Dues due</label><input id="nt-due" class="field" type="date"></div>
+          </div>
+          <label class="check-line"><input type="checkbox" id="nt-rollover" checked> Carry service shortfalls in as roll-over demerits</label>
+          <label class="check-line"><input type="checkbox" id="nt-dues" checked> Charge dues to every brother whose status pays dues</label>
+          <div id="nt-preview" class="step-hint"></div>
+          <div class="req-actions">
+            <button type="button" class="btn btn-primary btn-small" id="btn-preview-term">Preview</button>
+            <button type="button" class="btn danger btn-small hidden" id="btn-start-term">Start the semester</button>
+          </div>
+          <p class="status-line" id="nt-status"></p>
+          <p class="step-hint">Before you start: check who is Active, Co-op, Abroad, Inactive or Alumni in <a href="admin">User Management</a>. Dues and roll call follow those statuses.</p>
+        </div>
+
+        <div class="portal-card" id="card-photos">
+          <h2><span class="step-num">3</span> Old photos</h2>
+          <p class="step-hint">Excuse and service photos live in the database, which has a 1 GB free limit. A semester is roughly 30–40 MB. After a semester is closed, download its photos as a zip for the record and clear them.</p>
+          <div id="ph-list"><p class="section-empty">Checking…</p></div>
+          <p class="status-line" id="ph-status"></p>
+        </div>
+
+      </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/semester.js?v=24"></script>
+</body>
+</html>

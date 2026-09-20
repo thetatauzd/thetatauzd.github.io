@@ -6,7 +6,7 @@
   <title>Brother Portal – Standards Board</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=23">
+  <link rel="stylesheet" href="css/portal.css?v=24">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -78,8 +78,20 @@
 
     <div class="live-grid">
     <div class="live-main">
-      <div class="portal-card">
-        <h2>Excuse requests <span class="count-pill" id="exc-count"></span></h2>
+      <div class="portal-card" id="excuses">
+        <div class="connected-head">
+          <h2 style="margin:0;">Excuse requests <span class="count-pill" id="exc-count"></span></h2>
+          <span class="seg" id="exc-tab"><button type="button" data-v="pending" class="selected">To decide</button><button type="button" data-v="decided">Decided</button><button type="button" data-v="all">All</button></span>
+          <span class="seg" id="exc-group"><button type="button" data-v="event" class="selected">By event</button><button type="button" data-v="brother">By brother</button></span>
+          <input type="search" id="exc-search" class="field" placeholder="Find…" autocomplete="off" style="max-width:180px;">
+        </div>
+        <p class="step-hint">Only the Standards Board can read reasons and photos. The Scribe just sees who is excused. When attendance is taken, an approved request turns that absence into an excused one on its own; nothing to copy anywhere.</p>
+        <div class="req-actions hidden" id="exc-bulk">
+          <span class="count-pill" id="exc-sel-count">0 selected</span>
+          <button type="button" class="btn btn-primary btn-small" id="btn-exc-approve-sel">Approve selected</button>
+          <button type="button" class="btn danger btn-small" id="btn-exc-deny-sel">Deny selected</button>
+          <button type="button" class="btn ghost btn-small" id="btn-exc-clear-sel">Clear</button>
+        </div>
         <div id="exc-list"></div>
       </div>
     </div>
@@ -110,10 +122,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=23"></script>
-  <script src="js/auth.js?v=23"></script>
-  <script src="js/ops-core.js?v=23"></script>
-  <script src="js/ops-db.js?v=23"></script>
-  <script src="js/standards-board.js?v=23"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/ops-photos.js?v=24"></script>
+  <script src="js/standards-board.js?v=24"></script>
 </body>
 </html>

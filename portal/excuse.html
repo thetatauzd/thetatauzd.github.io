@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request an Excuse</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=24">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Request an Excuse</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <p id="page-status" class="step-hint">Loading…</p>
+    <div id="page-body" class="hidden">
+      <div class="live-grid">
+      <div class="live-main">
+        <div class="portal-card">
+          <h2>Request an excused absence <span class="count-pill" id="x-term"></span></h2>
+          <p class="step-hint" id="x-rule"></p>
+
+          <h3 class="form-step"><span class="step-num">1</span> Which event?</h3>
+          <p class="step-hint" style="margin-top:0;">Tick every event this reason covers. Each one becomes its own request.</p>
+          <ul class="pick-list" id="x-events"></ul>
+          <label class="check-line"><input type="checkbox" id="x-unlisted"> My event isn't on this list yet</label>
+          <div class="add-row hidden" id="x-unlisted-row">
+            <div><label class="field-label" for="x-event-text">Event name</label><input id="x-event-text" class="field" placeholder="e.g. Chapter 9"></div>
+            <div style="flex:0 0 170px;"><label class="field-label" for="x-event-date">Date</label><input id="x-event-date" class="field" type="date"></div>
+          </div>
+
+          <h3 class="form-step"><span class="step-num">2</span> What are you asking for?</h3>
+          <div class="option-presets" id="x-kind" style="margin:0 0 0.5rem;">
+            <button type="button" class="option-preset-btn selected" data-v="absent">Missing the whole event</button>
+            <button type="button" class="option-preset-btn" data-v="late">Arriving late</button>
+            <button type="button" class="option-preset-btn" data-v="leaveEarly">Leaving early</button>
+          </div>
+          <div class="add-row hidden" id="x-time-row">
+            <div style="flex:0 0 170px;"><label class="field-label" for="x-time" id="x-time-label">About what time?</label><input id="x-time" class="field" type="time"></div>
+          </div>
+
+          <h3 class="form-step"><span class="step-num">3</span> Why?</h3>
+          <div class="add-row">
+            <div style="flex:0 0 230px;"><label class="field-label" for="x-category">Reason type</label>
+              <select id="x-category" class="field">
+                <option value="class">Class, exam or lab</option>
+                <option value="work">Work or internship</option>
+                <option value="sick">Illness</option>
+                <option value="family">Family</option>
+                <option value="org">Another organization</option>
+                <option value="travel">Travel</option>
+                <option value="other">Something else</option>
+              </select></div>
+          </div>
+          <p class="step-hint hidden" id="x-sick-hint" style="color:#8a5a00;">The bylaws ask for a doctor's note for sickness. Attach a photo of it below if you have one.</p>
+          <label class="field-label" for="x-reason">Details</label>
+          <textarea id="x-reason" class="field" rows="4" placeholder="What is keeping you from this event? Only you and the Standards Board can read this."></textarea>
+
+          <h3 class="form-step"><span class="step-num">4</span> Proof <span style="font-weight:400; color:#888;">(optional, up to 3 photos or screenshots)</span></h3>
+          <label class="btn secondary btn-small photo-add" for="x-photos">Add a photo</label>
+          <input type="file" id="x-photos" accept="image/*" multiple class="visually-hidden">
+          <div class="photo-preview" id="x-preview"></div>
+
+          <p class="step-hint" id="x-timing" style="margin-top:0.9rem;"></p>
+          <button type="button" class="btn btn-primary" id="btn-send">Send to Standards</button>
+          <p class="status-line" id="x-status"></p>
+        </div>
+      </div>
+      <div class="live-side">
+        <div class="portal-card">
+          <h2>Your requests <span class="count-pill" id="x-free"></span></h2>
+          <div id="x-mine"></div>
+          <p class="step-hint">You can take back a request until Standards rules on it. Decisions and any note from Standards show up here and on your tracker.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/ops-core.js?v=24"></script>
+  <script src="js/ops-db.js?v=24"></script>
+  <script src="js/ops-photos.js?v=24"></script>
+  <script src="js/excuse.js?v=24"></script>
+</body>
+</html>

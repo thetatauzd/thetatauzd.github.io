@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Tracker</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=24">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>My Tracker</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <div class="live-grid">
+    <div class="live-main">
+      <div class="portal-card">
+        <h2>Portal home links</h2>
+        <p class="step-hint">These are the tiles every brother sees on the portal home page. Rename a link, paste a new form URL each semester, reorder with the arrows, or hide one without deleting it. Nothing changes for brothers until you press Save.</p>
+        <p class="step-hint hidden" id="pl-default-note"></p>
+        <div id="pl-sections"></div>
+        <div class="req-actions">
+          <button type="button" class="btn ghost btn-small" id="btn-add-section">+ Add a section</button>
+        </div>
+      </div>
+      <div class="portal-card">
+        <h2>Chapter calendar</h2>
+        <label class="field-label" for="pl-calendar">Google Calendar embed link (leave blank to keep the current calendar)</label>
+        <input id="pl-calendar" class="field" placeholder="https://calendar.google.com/calendar/embed?...">
+        <p class="step-hint">In Google Calendar: Settings → the calendar → Integrate calendar → copy the link inside the embed code's src="…".</p>
+      </div>
+      <div class="portal-card">
+        <div class="req-actions" style="margin:0;">
+          <button type="button" class="btn btn-primary" id="btn-save">Save changes</button>
+          <button type="button" class="btn ghost btn-small" id="btn-reset">Put back the built-in set</button>
+          <span class="status-line" id="pl-status" style="margin:0;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="live-side">
+      <div class="portal-card">
+        <h2>Preview</h2>
+        <label class="field-label" for="pl-as">See it as</label>
+        <select id="pl-as" class="field"><option value="brother">A brother</option><option value="pnm">A PNM</option><option value="officer">An officer</option><option value="admin">An admin</option></select>
+      </div>
+      <div id="pl-preview"></div>
+    </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=24"></script>
+  <script src="js/auth.js?v=24"></script>
+  <script src="js/portal-links-core.js?v=24"></script>
+  <script src="js/portal-links.js?v=24"></script>
+</body>
+</html>
