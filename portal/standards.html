@@ -6,7 +6,7 @@
   <title>Standards – Session control</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=22">
+  <link rel="stylesheet" href="css/portal.css?v=23">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -264,10 +264,15 @@
         <div id="slides-setup" class="hidden">
           <p class="step-hint">
             In Google Slides choose <strong>File → Download → Microsoft PowerPoint (.pptx)</strong> and upload it here.
-            Each slide becomes a candidate with their photo, number and info. Photos are shrunk in your browser before upload.
+            Each slide becomes a candidate with their photo, number and info. Rush decks (GPA, major, events) and PNM voting decks (events, service, coffee chats) both work. Photos are shrunk in your browser before upload.
           </p>
           <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
           <div id="slides-status" class="slides-status"></div>
+          <div id="slides-section-wrap" class="hidden" style="margin-top:0.5rem;">
+            <label for="slides-section" class="field-label">Which round is tonight?</label>
+            <select id="slides-section" class="field" style="max-width:320px;"></select>
+            <p class="step-hint" style="margin-top:0.25rem;">This deck has several rounds. Only the slides under the round you pick are used.</p>
+          </div>
           <div id="slides-review" class="hidden">
             <div class="slides-review-head">
               <strong id="slides-count"></strong>
@@ -451,10 +456,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="js/firebase-config.js?v=22"></script>
-  <script src="js/auth.js?v=22"></script>
-  <script src="js/db.js?v=22"></script>
-  <script src="js/slides.js?v=22"></script>
-  <script src="js/standards.js?v=22"></script>
+  <script src="js/firebase-config.js?v=23"></script>
+  <script src="js/auth.js?v=23"></script>
+  <script src="js/db.js?v=23"></script>
+  <script src="js/slides.js?v=23"></script>
+  <script src="js/standards.js?v=23"></script>
 </body>
 </html>

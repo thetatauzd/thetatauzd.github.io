@@ -461,6 +461,13 @@ body {
 .cf-label { color: #888; min-width: 5.5rem; flex-shrink: 0; }
 .cf-value { font-weight: 500; }
 
+.candidate-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.5rem; margin-bottom: 0.7rem; }
+.cs-tile { background: #f7f5f0; border-radius: 10px; padding: 0.5rem 0.6rem; display: flex; flex-direction: column; min-width: 0; }
+.cs-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #888; }
+.cs-value { font-size: 1.35rem; font-weight: 700; color: var(--color-maroon); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.cs-sub { font-size: 0.75rem; color: #777; min-height: 1em; }
+.pnm-week { display: inline-block; vertical-align: middle; margin-left: 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: #5d4500; background: var(--color-gold); border-radius: 20px; padding: 0.15rem 0.55rem; }
+
 .candidate-events { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .ev-chip {
   font-size: 0.72rem;
@@ -650,7 +657,9 @@ body {
   .vote-stage .quiz-scores, .vote-stage > .vote-btn, .vote-stage .lockin-wrap { order: 4; }
   /* As a flex item the grid's auto margins would shrink it to its content; span the column instead. */
   .vote-stage .quiz-scores { width: 100%; max-width: none; margin: 0 0 0.75rem; }
-  .vote-stage .candidate-facts { order: 5; margin-top: 1rem; text-align: left; }
+  .vote-stage .candidate-facts, .vote-stage .candidate-stats { order: 5; margin-top: 1rem; text-align: left; }
+  .vote-stage .candidate-stats { grid-template-columns: repeat(2, 1fr); }
+  .vote-stage .candidate-name .pnm-week { display: block; margin: 0.2rem auto 0; width: max-content; }
   .vote-stage .candidate-facts > div { justify-content: flex-start; }
   .vote-stage .candidate-events { order: 6; justify-content: flex-start; }
   .vote-stage .quiz-nav { order: 7; }

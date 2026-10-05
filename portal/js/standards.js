@@ -311,9 +311,11 @@
       var meta = document.createElement('span');
       meta.className = 'meta';
       var bits = [];
+      if (c.stats) bits.push(PortalSlides.statsSummary(c));
+      if (c.pnmOfWeek) bits.push('PNM of the Week');
       if (c.gpa) bits.push('GPA ' + c.gpa);
       if (c.major) bits.push(c.major);
-      meta.textContent = bits.join(' · ');
+      meta.textContent = bits.filter(Boolean).join(' · ');
 
       var del = document.createElement('button');
       del.type = 'button';
@@ -342,6 +344,39 @@
     });
   }
 
+  /**
+   * PNM decks hold every voting round (1st, 2nd, Final) with the same people
+   * under each divider. Offer the rounds as a dropdown and keep only one;
+   * the default is the round with the most filled-in slides (photo or stats),
+   * which is the one being voted on tonight.
+   */
+  var parsedDeck = [];
+  function applyDeckSection(wanted) {
+    var wrap = $('slides-section-wrap'), sel = $('slides-section');
+    var sections = [];
+    parsedDeck.forEach(function(c) { if (c.section && sections.indexOf(c.section) === -1) sections.push(c.section); });
+    if (sections.length < 2 || !wrap || !sel) {
+      if (wrap) wrap.classList.add('hidden');
+      parsedRoster = parsedDeck.slice();
+      return parsedRoster;
+    }
+    if (!wanted) {
+      var best = sections[0], bestScore = -1;
+      sections.forEach(function(sec) {
+        var score = parsedDeck.filter(function(c) { return c.section === sec && (c.photo || (c.stats && Object.keys(c.stats).length)); }).length;
+        if (score >= bestScore) { best = sec; bestScore = score; }
+      });
+      wanted = best;
+    }
+    sel.innerHTML = sections.map(function(sec) {
+      var n = parsedDeck.filter(function(c) { return c.section === sec; }).length;
+      return '<option value="' + sec.replace(/"/g, '&quot;') + '"' + (sec === wanted ? ' selected' : '') + '>' + sec + ' (' + n + ')</option>';
+    }).join('');
+    wrap.classList.remove('hidden');
+    parsedRoster = parsedDeck.filter(function(c) { return c.section === wanted; });
+    return parsedRoster;
+  }
+
   function initSlideUpload() {
     var input = $('slides-file');
     if (!input) return;
@@ -357,8 +392,9 @@
         onProgress: function(done, total) {
           slidesStatus('Reading slide ' + done + ' of ' + total + '…');
         }
-      }).then(function(candidates) {
-        parsedRoster = candidates;
+      }).then(function(all) {
+        parsedDeck = all;
+        var candidates = applyDeckSection();
         renderRosterReview();
         var missing = candidates.filter(function(c) { return !c.name; }).length;
         if (!candidates.length) {
@@ -377,10 +413,22 @@
       });
     });
 
+    var sectionSel = $('slides-section');
+    if (sectionSel) {
+      sectionSel.addEventListener('change', function() {
+        applyDeckSection(sectionSel.value);
+        renderRosterReview();
+        slidesStatus(parsedRoster.length + ' candidates in ' + sectionSel.value + '.', 'ok');
+        refreshSetupSteps();
+      });
+    }
+
     var clear = $('btn-slides-clear');
     if (clear) {
       clear.addEventListener('click', function() {
         parsedRoster = [];
+        parsedDeck = [];
+        $('slides-section-wrap').classList.add('hidden');
         input.value = '';
         slidesStatus('');
         renderRosterReview();

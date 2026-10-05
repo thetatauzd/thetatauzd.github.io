@@ -107,7 +107,14 @@
     var info = document.createElement('div');
     info.className = 'rc-info';
 
-    var facts = [
+    var st = cand.stats;
+    var facts = st ? [
+      ['Events', st.eventsAttended != null ? st.eventsAttended + (st.eventsTotal != null ? ' / ' + st.eventsTotal : '') : ''],
+      ['Service', st.serviceHours != null ? st.serviceHours + ' h' + (st.serviceEvents != null ? ' · ' + st.serviceEvents + ' events' : '') : ''],
+      ['Coffee chats', st.chatsActive != null ? st.chatsActive + ' active' + (st.chatsAlum != null ? ' · ' + st.chatsAlum + ' alum' : '') : ''],
+      ['Test', st.testPct != null ? st.testPct + '%' : ''],
+      ['', cand.pnmOfWeek ? 'PNM of the Week' : '']
+    ].filter(function(f) { return f[1]; }) : [
       ['GPA', cand.gpa],
       ['Major', cand.major],
       ['Class', cand.classStanding],
