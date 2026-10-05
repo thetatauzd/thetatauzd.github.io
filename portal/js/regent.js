@@ -135,6 +135,13 @@
       info.appendChild(row);
     });
 
+    (cand.notes || []).forEach(function(n) {
+      var row = document.createElement('div');
+      row.className = 'rc-row rc-note';
+      row.textContent = n;
+      info.appendChild(row);
+    });
+
     if (cand.events && cand.events.length) {
       var ev = document.createElement('div');
       ev.className = 'rc-events';

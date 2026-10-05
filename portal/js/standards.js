@@ -313,6 +313,7 @@
       var bits = [];
       if (c.stats) bits.push(PortalSlides.statsSummary(c));
       if (c.pnmOfWeek) bits.push('PNM of the Week');
+      if (c.notes && c.notes.length) bits.push(c.notes.length + (c.notes.length === 1 ? ' note' : ' notes'));
       if (c.gpa) bits.push('GPA ' + c.gpa);
       if (c.major) bits.push(c.major);
       meta.textContent = bits.filter(Boolean).join(' · ');

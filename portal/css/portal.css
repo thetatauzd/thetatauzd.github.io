@@ -468,6 +468,11 @@ body {
 .cs-sub { font-size: 0.75rem; color: #777; min-height: 1em; }
 .pnm-week { display: inline-block; vertical-align: middle; margin-left: 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: #5d4500; background: var(--color-gold); border-radius: 20px; padding: 0.15rem 0.55rem; }
 
+.candidate-notes { background: #fff8e1; border-radius: 10px; padding: 0.55rem 0.75rem; margin-bottom: 0.7rem; font-size: 0.9rem; color: #4a3a00; }
+.cn-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #8a6d00; margin-bottom: 0.25rem; }
+.cn-line { margin: 0.15rem 0; line-height: 1.4; }
+.rc-note { font-size: 0.85rem; color: #4a3a00; background: #fff8e1; border-radius: 6px; padding: 0.25rem 0.5rem; }
+
 .candidate-events { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .ev-chip {
   font-size: 0.72rem;
@@ -661,6 +666,7 @@ body {
   .vote-stage .candidate-stats { grid-template-columns: repeat(2, 1fr); }
   .vote-stage .candidate-name .pnm-week { display: block; margin: 0.2rem auto 0; width: max-content; }
   .vote-stage .candidate-facts > div { justify-content: flex-start; }
+  .vote-stage .candidate-notes { order: 6; text-align: left; }
   .vote-stage .candidate-events { order: 6; justify-content: flex-start; }
   .vote-stage .quiz-nav { order: 7; }
   .quiz-scores { gap: 0.35rem; }
