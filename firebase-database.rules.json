@@ -5,7 +5,7 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && ((auth.uid === $uid && (!data.exists() || data.child('role').val() === 'pending')) || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-        ".validate": "(root.child('users').child(auth.uid).child('role').val() === 'admin') || (!newData.hasChild('positions') && !newData.hasChild('perms') && (!newData.hasChild('status') || newData.child('status').val() === 'pending'))"
+        ".validate": "(root.child('users').child(auth.uid).child('role').val() === 'admin') || (newData.child('role').val() === 'pending' && !newData.hasChild('positions') && !newData.hasChild('perms') && (!newData.hasChild('status') || newData.child('status').val() === 'pending'))"
       }
     },
     "sessionByCode": {
