@@ -219,7 +219,8 @@
             ".write": "auth != null && ((root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('finance').val() === true) && !data.exists())",
             ".validate": "newData.hasChildren(['type','createdBy','createdAt']) && newData.child('createdBy').val() === auth.uid"
           }
-        }
+        },
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin' && !newData.exists()"
       }
     },
     "service": {

@@ -36,3 +36,6 @@ yarn-error.log*
 brothers.html
 # Local Claude Code permission settings
 .claude/settings.local.json
+
+# arena skill runs (local tournaments, never committed)
+.arena/
