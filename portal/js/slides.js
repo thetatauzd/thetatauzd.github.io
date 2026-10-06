@@ -382,13 +382,12 @@
       }
       if (pnm) {
         if (!pnm.name) warnings.push('No name found on this slide');
-        return Promise.all([photoOf(zip, doc, path, maxDim, quality), notesOf(zip, path)]).then(function (r) {
-          var photo = r[0];
+        return photoOf(zip, doc, path, maxDim, quality).then(function (photo) {
           if (!photo) warnings.push('No photo on this slide');
           if (!pnm.hasStats) warnings.push('Stat boxes are empty');
           if (!pnm.name && !photo) return null;
           return { number: number, slide: number, name: pnm.name, photo: photo, format: 'pnm',
-            stats: pnm.stats, pnmOfWeek: pnm.pnmOfWeek, notes: r[1], events: [], warnings: warnings };
+            stats: pnm.stats, pnmOfWeek: pnm.pnmOfWeek, events: [], warnings: warnings };
         });
       }
 
@@ -430,7 +429,6 @@
 
       if (!name) warnings.push('No name found on this slide');
 
-      var notesPromise = notesOf(zip, path);
       var photoPromise = photoOf(zip, doc, path, maxDim, quality);
 
       return photoPromise.then(function (photo) {
@@ -450,40 +448,8 @@
           events: events,
           warnings: warnings
         };
-      }).then(function (cand) {
-        if (!cand) return null;
-        return notesPromise.then(function (notes) { cand.notes = notes; return cand; });
       });
     });
-  }
-
-  /**
-   * Speaker notes for a slide, one entry per paragraph (the slide-number
-   * placeholder dropped). Standards keeps each PNM's excuses here
-   * ("Week 2: rescheduled coffee chats…"), so they ride along to the ballot.
-   */
-  function notesOf(zip, path) {
-    var relsFile = zip.file(path.replace(/\/slides\/([^/]+)$/, '/slides/_rels/$1.rels'));
-    if (!relsFile) return Promise.resolve([]);
-    return relsFile.async('string').then(function (relsXml) {
-      var rels = parseXml(relsXml).getElementsByTagName('Relationship');
-      var target = null;
-      for (var r = 0; r < rels.length; r++) {
-        if (/notesSlide$/.test(rels[r].getAttribute('Type') || '')) { target = rels[r].getAttribute('Target'); break; }
-      }
-      if (!target) return [];
-      var notesFile = zip.file(relTargetPath(target));
-      if (!notesFile) return [];
-      return notesFile.async('string').then(function (xml) {
-        var doc = parseXml(xml), out = [];
-        var shapes = doc.getElementsByTagName('p:sp');
-        for (var i = 0; i < shapes.length; i++) {
-          if (placeholderType(shapes[i]) === 'sldNum') continue;
-          paragraphsOf(shapes[i]).forEach(function (t) { if (!/^\d+$/.test(t)) out.push(t); });
-        }
-        return out;
-      });
-    }).catch(function () { return []; });
   }
 
   /** The first embedded picture on a slide, shrunk to a small JPEG data URL ('' if none). */

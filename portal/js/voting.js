@@ -515,22 +515,6 @@
       }
     }
 
-    if (cand && cand.notes && cand.notes.length) {
-      var notes = document.createElement('div');
-      notes.className = 'candidate-notes';
-      var nh = document.createElement('div');
-      nh.className = 'cn-label';
-      nh.textContent = 'Notes from Standards';
-      notes.appendChild(nh);
-      cand.notes.forEach(function(n) {
-        var line = document.createElement('div');
-        line.className = 'cn-line';
-        line.textContent = n;
-        notes.appendChild(line);
-      });
-      body.appendChild(notes);
-    }
-
     card.appendChild(body);
     return card;
   }
