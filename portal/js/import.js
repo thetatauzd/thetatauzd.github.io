@@ -36,6 +36,37 @@
       var rk = C.rollKey(u.rollNumber); if (rk) byRoll[rk] = uid;
       var nk = C.nameKey(u.name); if (nk) byName[nk] = uid;
     });
+    indexLoose();
+    if (data) indexRoster();
+  }
+  // The sheet's tabs are not consistent about names ("Tommy Dunn" on Attendance,
+  // "Thomas Dunn" on Roster, "Ana Nicole Betancourt" with a middle name…). Three
+  // fallbacks after an exact match: the Roster tab's own spelling (linked through
+  // its roll number), a loose key of first + last name, and common nicknames.
+  var NICKNAMES = { tommy: 'thomas', tom: 'thomas', zach: 'zachary', zack: 'zachary', abby: 'abigail', mike: 'michael', matt: 'matthew',
+    sam: 'samantha', sami: 'samantha', chris: 'christopher', will: 'william', bill: 'william', nick: 'nicholas', alex: 'alexander',
+    ben: 'benjamin', dan: 'daniel', danny: 'daniel', jake: 'jacob', josh: 'joshua', kate: 'katherine', katie: 'katherine', liz: 'elizabeth',
+    maddie: 'madeleine', max: 'maxwell', nate: 'nathan', pat: 'patrick', rob: 'robert', bob: 'robert', greg: 'gregory', jon: 'jonathan', jack: 'jack' };
+  var byLoose = {}, rosterAlias = {};
+  function looseKey(name) {
+    var parts = C.nameKey(name).split('_').filter(function(p) { return p && !/^(jr|sr|ii|iii|iv)$/.test(p) && p.length > 1; });
+    if (parts.length < 2) return '';
+    var first = NICKNAMES[parts[0]] || parts[0];
+    return first + '_' + parts[parts.length - 1];
+  }
+  function indexLoose() {
+    byLoose = {};
+    Object.keys(users).forEach(function(uid) { var lk = looseKey(users[uid].name); if (lk && !byLoose[lk]) byLoose[lk] = uid; });
+  }
+  /** After a fetch: Roster names resolve through their roll number, so every other tab can use the Roster spelling. */
+  function indexRoster() {
+    rosterAlias = {};
+    rows('Roster').forEach(function(r) {
+      var name = col(r, ['Brother Name', 'Name']), rk = C.rollKey(col(r, ['Roll Number']));
+      if (!name || !rk || !byRoll[rk]) return;
+      rosterAlias[C.nameKey(name)] = byRoll[rk];
+      var lk = looseKey(name); if (lk) rosterAlias[lk] = byRoll[rk];
+    });
   }
   function uidFor(name, roll) {
     var rk = C.rollKey(roll);
@@ -43,6 +74,9 @@
     var nk = C.nameKey(name);
     if (nk && byName[nk]) return byName[nk];
     if (manual[nk]) return manual[nk];
+    if (rosterAlias[nk]) return rosterAlias[nk];
+    var lk = looseKey(name);
+    if (lk && (rosterAlias[lk] || byLoose[lk])) return rosterAlias[lk] || byLoose[lk];
     return null;
   }
   function rows(tab) { return (data && data.tabs && data.tabs[tab] && data.tabs[tab].rows) || []; }
@@ -253,7 +287,7 @@
         var paidOn = ymd(col(r, ['Date Paid'])) || due || ymd(now);
         var base = 'ledger/' + T + '/' + uid + '/imp_' + C.nameKey(item) + '_' + i;
         updates[base] = Object.assign({ type: 'charge', item: item, amount: amount, dueDate: due, date: due, accruesLate: false, demeritsIfLate: num(col(r, ['Demerits If Unpaid/Late', 'Demerits If Unpaid', 'Demerits'])), note: String(col(r, ['Notes']) || '') }, audit);
-        if (st === 'paid') updates[base + '_pay'] = Object.assign({ type: 'payment', chargeId: 'imp_' + C.nameKey(item) + '_' + i, amount: amount, date: paidOn, method: 'imported' }, audit);
+        if (st === 'paid') updates[base + '_pay'] = Object.assign({ type: 'payment', item: item, chargeId: 'imp_' + C.nameKey(item) + '_' + i, amount: amount, date: paidOn, method: 'imported' }, audit);
         else if (st === 'waived') updates[base + '_waive'] = Object.assign({ type: 'waiver', chargeId: 'imp_' + C.nameKey(item) + '_' + i, amount: amount, date: paidOn }, audit);
         else if (/plan/.test(st)) updates[base + '_plan'] = Object.assign({ type: 'plan', chargeId: 'imp_' + C.nameKey(item) + '_' + i, date: ymd(now), planDueDate: null, note: 'Payment plan (from sheet)' }, audit);
         n++;
