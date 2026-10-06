@@ -469,7 +469,16 @@
       ((cand && cand.name) || fallbackName || '');
     body.appendChild(heading);
 
-    if (cand) {
+    if (cand && cand.pnmOfWeek) {
+      var badge = document.createElement('span');
+      badge.className = 'pnm-week';
+      badge.textContent = 'PNM of the Week';
+      heading.appendChild(badge);
+    }
+
+    if (cand && cand.stats) {
+      body.appendChild(buildStatTiles(cand.stats));
+    } else if (cand) {
       // GPA always shows so a blank one reads as N/A rather than vanishing.
       var facts = [
         ['GPA', cand.gpa || 'N/A'],
@@ -508,6 +517,28 @@
 
     card.appendChild(body);
     return card;
+  }
+
+  /** PNM voting slides carry numbers, not an info list: show them as tiles. */
+  function buildStatTiles(st) {
+    var grid = document.createElement('div');
+    grid.className = 'candidate-stats';
+    var n = function(v) { return v == null ? '—' : String(v); };
+    [
+      ['Events', st.eventsAttended == null ? '—' : n(st.eventsAttended) + (st.eventsTotal != null ? ' / ' + n(st.eventsTotal) : ''), 'attended / total'],
+      ['Service', st.serviceHours == null ? '—' : n(st.serviceHours) + ' h', (st.serviceEvents != null ? n(st.serviceEvents) + ' event' + (st.serviceEvents === 1 ? '' : 's') : '')],
+      ['Coffee chats', st.chatsActive == null ? '—' : n(st.chatsActive), (st.chatsAlum != null ? '+ ' + n(st.chatsAlum) + ' alum' : 'active')],
+      st.testPct != null ? ['Test', st.testPct + '%', ''] : null
+    ].filter(Boolean).forEach(function(t) {
+      var tile = document.createElement('div');
+      tile.className = 'cs-tile';
+      tile.innerHTML = '<span class="cs-label"></span><span class="cs-value"></span><span class="cs-sub"></span>';
+      tile.querySelector('.cs-label').textContent = t[0];
+      tile.querySelector('.cs-value').textContent = t[1];
+      tile.querySelector('.cs-sub').textContent = t[2];
+      grid.appendChild(tile);
+    });
+    return grid;
   }
 
   /**

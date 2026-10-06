@@ -1,6 +1,14 @@
 /**
- * Candidate slide-deck parser (rush slides, PNM check-in slides, anything
- * following the same one-person-per-slide shape).
+ * Candidate slide-deck parser. Two slide formats are recognised, per slide:
+ *
+ *   Rush slides      — photo + "Label: value" info box (GPA, Major, Class Standing…)
+ *                      and an "Events attended" list.
+ *   PNM voting slides — name across the top, three stat boxes (Events "# | Total",
+ *                      Service "Hours | Events", Coffee Chats "Active | Alum"), an
+ *                      optional "Test Percentage" box and a "PNM of the Week!" badge.
+ *                      These decks hold several rounds ("1st Voting (Week 3)" divider
+ *                      slides); every candidate carries the round it sits under so
+ *                      Standards can pick one.
  *
  * Reads a .pptx exported from Google Slides (File > Download > Microsoft PowerPoint)
  * entirely in the browser and turns each slide into a candidate record:
@@ -210,6 +218,78 @@
     return words.length >= 1 && words.length <= 4 && t.length <= 40;
   }
 
+  /** Top-left and size of a shape in EMU, or null. */
+  function shapeBox(shapeEl) {
+    var xfrm = shapeEl.getElementsByTagName('a:xfrm')[0];
+    if (!xfrm) return null;
+    var off = xfrm.getElementsByTagName('a:off')[0], ext = xfrm.getElementsByTagName('a:ext')[0];
+    if (!off) return null;
+    return { x: +off.getAttribute('x') || 0, y: +off.getAttribute('y') || 0,
+      w: ext ? +ext.getAttribute('cx') || 0 : 0, h: ext ? +ext.getAttribute('cy') || 0 : 0 };
+  }
+
+  var PNM_HEADER = /coffee\s*chats/i;
+  var PNM_PAIR = /(\d+(?:\.\d+)?)\s*(?:\||\/)?\s*(\d+(?:\.\d+)?)?/;
+  var PNM_WEEK = /pnm\s*of\s*the\s*week/i;
+  var PNM_TEST_LABEL = /test\s*percentage/i;
+  var SLIDE_W = 9144000;
+
+  /**
+   * Read a PNM voting slide. Returns null when the slide is not in that format,
+   * { divider: title } for a round divider ("1st Voting (Week 3)"), or the
+   * candidate's name + stats. Stat boxes are matched by where they sit on the
+   * slide (left / middle / right third), since Google Slides keeps them in any order.
+   */
+  function parsePnmSlide(doc) {
+    var shapes = doc.getElementsByTagName('p:sp');
+    var items = [];
+    var isPnm = false;
+    for (var i = 0; i < shapes.length; i++) {
+      var paras = paragraphsOf(shapes[i]);
+      if (!paras.length) continue;
+      var text = paras.join(' ').trim();
+      if (PNM_HEADER.test(text)) isPnm = true;
+      items.push({ text: text, box: shapeBox(shapes[i]) || { x: 0, y: 0, w: 0, h: 0 } });
+    }
+    if (!isPnm) return null;
+
+    var name = '', stats = {}, pnmOfWeek = false, hasTestLabel = false, testPct = null;
+    items.forEach(function (it) {
+      if (PNM_WEEK.test(it.text)) { pnmOfWeek = true; return; }
+      if (PNM_TEST_LABEL.test(it.text)) { hasTestLabel = true; return; }
+      if (PNM_HEADER.test(it.text) || /\bhours\b.*\balum\b/i.test(it.text)) return;   // the two header rows
+      var numeric = /^[\d.\s|\/%]+$/.test(it.text);
+      if (!numeric) {
+        // The name is the wide text box across the top. Anything else non-numeric is decoration.
+        if (!name && it.box.y < 1200000 && it.box.w > 3000000) name = it.text;
+        return;
+      }
+      var m = it.text.match(PNM_PAIR);
+      if (!m) return;
+      var a = parseFloat(m[1]), b = m[2] != null ? parseFloat(m[2]) : null;
+      var cx = it.box.x + it.box.w / 2;
+      if (it.box.y < 1200000 && cx > SLIDE_W * 0.65) { testPct = a; return; }   // the Test Percentage number
+      if (it.box.y < 1200000) return;
+      if (cx < SLIDE_W / 3) { stats.eventsAttended = a; stats.eventsTotal = b; }
+      else if (cx < SLIDE_W * 2 / 3) { stats.serviceHours = a; stats.serviceEvents = b; }
+      else { stats.chatsActive = a; stats.chatsAlum = b; }
+    });
+    if (hasTestLabel && testPct != null) stats.testPct = testPct;
+    // Names are typed in a hurry ("Amya furtick"): capitalise all-lowercase words.
+    name = cleanName(name).replace(/\b[a-z][a-z'-]*\b/g, function (w) { return w.charAt(0).toUpperCase() + w.slice(1); });
+    return { name: name, stats: stats, pnmOfWeek: pnmOfWeek, hasStats: Object.keys(stats).length > 0 };
+  }
+
+  /** A slide with one or two short lines of text and no picture is a round divider. */
+  function dividerTitle(doc) {
+    if (doc.getElementsByTagName('p:pic').length) return '';
+    var shapes = doc.getElementsByTagName('p:sp'), lines = [];
+    for (var i = 0; i < shapes.length; i++) lines = lines.concat(paragraphsOf(shapes[i]));
+    if (!lines.length || lines.length > 3) return '';
+    var t = lines.join(' ').trim();
+    return (t.length <= 60 && t.indexOf(':') === -1) ? t : '';
+  }
+
   function relTargetPath(target) {
     // Targets look like "../media/image15.png" relative to ppt/slides/
     return 'ppt/' + target.replace(/^\.\.\//, '');
@@ -267,11 +347,16 @@
         var total = slidePaths.length;
         var chain = Promise.resolve();
         var candidates = [];
+        var section = '', inSection = 0;
 
         slidePaths.forEach(function (path, idx) {
           chain = chain.then(function () {
             return parseSlide(zip, path, idx + 1, maxDim, quality).then(function (cand) {
-              if (cand) candidates.push(cand);
+              if (cand && cand.divider) { section = cand.divider; inSection = 0; }
+              else if (cand) {
+                if (cand.format === 'pnm') { cand.section = section; cand.number = ++inSection; }
+                candidates.push(cand);
+              }
               onProgress(idx + 1, total);
             });
           });
@@ -289,6 +374,22 @@
     return file.async('string').then(function (xml) {
       var doc = parseXml(xml);
       var warnings = [];
+
+      var pnm = parsePnmSlide(doc);
+      if (!pnm) {
+        var divider = dividerTitle(doc);
+        if (divider) return { divider: divider };
+      }
+      if (pnm) {
+        if (!pnm.name) warnings.push('No name found on this slide');
+        return photoOf(zip, doc, path, maxDim, quality).then(function (photo) {
+          if (!photo) warnings.push('No photo on this slide');
+          if (!pnm.hasStats) warnings.push('Stat boxes are empty');
+          if (!pnm.name && !photo) return null;
+          return { number: number, slide: number, name: pnm.name, photo: photo, format: 'pnm',
+            stats: pnm.stats, pnmOfWeek: pnm.pnmOfWeek, events: [], warnings: warnings };
+        });
+      }
 
       var name = '';
       var infoParagraphs = [];
@@ -328,41 +429,7 @@
 
       if (!name) warnings.push('No name found on this slide');
 
-      // Find the first embedded picture on the slide.
-      var pics = doc.getElementsByTagName('p:pic');
-      var embedId = null;
-      for (var p = 0; p < pics.length && !embedId; p++) {
-        var blips = pics[p].getElementsByTagName('a:blip');
-        for (var b = 0; b < blips.length && !embedId; b++) {
-          embedId = blips[b].getAttributeNS(NS_R, 'embed') || blips[b].getAttribute('r:embed');
-        }
-      }
-
-      var relsPath = path.replace(/\/slides\/([^/]+)$/, '/slides/_rels/$1.rels');
-
-      var photoPromise = Promise.resolve('');
-      if (embedId) {
-        var relsFile = zip.file(relsPath);
-        if (relsFile) {
-          photoPromise = relsFile.async('string').then(function (relsXml) {
-            var relDoc = parseXml(relsXml);
-            var rels = relDoc.getElementsByTagName('Relationship');
-            var target = null;
-            for (var r = 0; r < rels.length; r++) {
-              if (rels[r].getAttribute('Id') === embedId) {
-                target = rels[r].getAttribute('Target');
-                break;
-              }
-            }
-            if (!target) return '';
-            var mediaFile = zip.file(relTargetPath(target));
-            if (!mediaFile) return '';
-            return mediaFile.async('blob').then(function (blob) {
-              return shrinkImage(blob, maxDim, quality).catch(function () { return ''; });
-            });
-          });
-        }
-      }
+      var photoPromise = photoOf(zip, doc, path, maxDim, quality);
 
       return photoPromise.then(function (photo) {
         if (!photo) warnings.push('No photo found on this slide');
@@ -385,6 +452,45 @@
     });
   }
 
+  /** The first embedded picture on a slide, shrunk to a small JPEG data URL ('' if none). */
+  function photoOf(zip, doc, path, maxDim, quality) {
+    var pics = doc.getElementsByTagName('p:pic');
+    var embedId = null;
+    for (var p = 0; p < pics.length && !embedId; p++) {
+      var blips = pics[p].getElementsByTagName('a:blip');
+      for (var b = 0; b < blips.length && !embedId; b++) {
+        embedId = blips[b].getAttributeNS(NS_R, 'embed') || blips[b].getAttribute('r:embed');
+      }
+    }
+    if (!embedId) return Promise.resolve('');
+    var relsFile = zip.file(path.replace(/\/slides\/([^/]+)$/, '/slides/_rels/$1.rels'));
+    if (!relsFile) return Promise.resolve('');
+    return relsFile.async('string').then(function (relsXml) {
+      var rels = parseXml(relsXml).getElementsByTagName('Relationship');
+      var target = null;
+      for (var r = 0; r < rels.length; r++) {
+        if (rels[r].getAttribute('Id') === embedId) { target = rels[r].getAttribute('Target'); break; }
+      }
+      if (!target) return '';
+      var mediaFile = zip.file(relTargetPath(target));
+      if (!mediaFile) return '';
+      return mediaFile.async('blob').then(function (blob) {
+        return shrinkImage(blob, maxDim, quality).catch(function () { return ''; });
+      });
+    });
+  }
+
+  /** One-line summary of a PNM's stats for lists and tables. */
+  function statsSummary(cand) {
+    var st = cand && cand.stats; if (!st) return '';
+    var bits = [];
+    if (st.eventsAttended != null) bits.push('Events ' + st.eventsAttended + (st.eventsTotal != null ? '/' + st.eventsTotal : ''));
+    if (st.serviceHours != null) bits.push('Service ' + st.serviceHours + ' h' + (st.serviceEvents != null ? ' · ' + st.serviceEvents + ' ev' : ''));
+    if (st.chatsActive != null) bits.push('Chats ' + st.chatsActive + (st.chatsAlum != null ? ' + ' + st.chatsAlum + ' alum' : ''));
+    if (st.testPct != null) bits.push('Test ' + st.testPct + '%');
+    return bits.join(' · ');
+  }
+
   /** Rough byte size of the roster once serialized, for free-tier budgeting. */
   function estimateSize(candidates) {
     try {
@@ -396,6 +502,7 @@
 
   global.PortalSlides = {
     parseDeck: parseDeck,
+    statsSummary: statsSummary,
     estimateSize: estimateSize,
     shrinkImage: shrinkImage
   };
