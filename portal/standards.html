@@ -276,10 +276,15 @@
         <div id="slides-setup" class="hidden">
           <p class="step-hint">
             In Google Slides choose <strong>File → Download → Microsoft PowerPoint (.pptx)</strong> and upload it here.
-            Each slide becomes a candidate with their photo, number and info. Photos are shrunk in your browser before upload.
+            Each slide becomes a candidate with their photo, number and info. Rush decks (GPA, major, events) and PNM voting decks (events, service, coffee chats) both work. Photos are shrunk in your browser before upload.
           </p>
           <input type="file" id="slides-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
           <div id="slides-status" class="slides-status"></div>
+          <div id="slides-section-wrap" class="hidden" style="margin-top:0.5rem;">
+            <label for="slides-section" class="field-label">Which round is tonight?</label>
+            <select id="slides-section" class="field" style="max-width:320px;"></select>
+            <p class="step-hint" style="margin-top:0.25rem;">This deck has several rounds. Only the slides under the round you pick are used.</p>
+          </div>
           <div id="slides-review" class="hidden">
             <div class="slides-review-head">
               <strong id="slides-count"></strong>
