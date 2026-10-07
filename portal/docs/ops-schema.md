@@ -161,3 +161,25 @@ The three header menus are built by `NAV` in `js/auth.js`. Add a page to the sit
 3. Write `rollover/{next}/{uid} = serviceShortfallNext` for everyone with a shortfall (from `OpsCore.computeDemerits`).
 4. Charge dues (`dues_{next}`) to every status with `chargedDues`.
 Each step is idempotent by key.
+
+## Decisions (owner, 2026)
+
+Why the module looks the way it does. Change these only on purpose.
+
+- Only events that can give or take demerits are entered on the site (chapters, voting chapters, rush, initiation,
+  philanthropy, committee). **Service events are never listed**: brothers type the event name when logging hours, and
+  the Service Chair ticks "counts as a service event" when approving.
+- Excused absences and service hours are built-in forms with photo upload. Standards Report, Standards Concerns and
+  the Suggestion Box stay external Google Forms (links editable by admins on Portal Links).
+- Photos are compressed in the browser and stored in the Realtime Database under `proof/` (free plan, no Storage),
+  cleared per semester from Semester Setup.
+- Excuse reasons and photos are readable only by the brother, the Standards Chair and admins; everyone else uses
+  `excuseFlags`. The Regent does not hold the `standards` capability. Exactly two admins: Technology Chair and
+  Standards Chair.
+- Statuses: active, co-op, abroad, inactive, alumni and PNM all keep portal access; only active brothers are on roll
+  call, pay dues and vote (editable in Chapter Settings). No attendance mark on a recorded event = not on roll call.
+- A late fee is money owed, not a demerit trigger: once the principal is paid the fee stops growing and is still owed;
+  payment demerits follow the principal only.
+- "Reset at the start of a semester" = Semester Setup: start a new term code, then bulk-schedule events.
+- The budget stays in Google Sheets. The old tracker sheet is imported once, then archived.
+- Service requirement default is 12 hours / 3 events (the Service Chair's target; bylaws say 8, editable).

@@ -323,7 +323,8 @@
       { href: 'service', label: 'Service Hours', perm: ['service'] },
       { href: 'marshal', label: 'Marshal', perm: ['pledges'] },
       { href: 'semester', label: 'Semester Setup', perm: ['settings', 'attendance'] },
-      { href: 'settings', label: 'Chapter Settings', perm: ['settings'] }
+      { href: 'settings', label: 'Chapter Settings', perm: ['settings'] },
+      { href: 'https://github.com/thetatauzd/thetatauzd.github.io/blob/main/portal/docs/officer-guide.md', label: 'Officer guide', perm: ['attendance', 'standards', 'finance', 'service', 'pledges', 'settings'] }
     ],
     admin: [
       { href: 'admin', label: 'User Management' },
@@ -344,7 +345,7 @@
       return true;
     }).map(function(it) {
       if (it.section) return '<div class="dd-section-label">' + it.section + '</div>';
-      return '<a href="' + it.href + '">' + it.label + '</a>';
+      return '<a href="' + it.href + '"' + (/^https:/.test(it.href) ? ' target="_blank" rel="noopener"' : '') + '>' + it.label + '</a>';
     }).join('');
   }
 

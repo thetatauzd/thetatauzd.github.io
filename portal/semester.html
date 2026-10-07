@@ -6,7 +6,7 @@
   <title>Semester Setup</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=26">
+  <link rel="stylesheet" href="css/portal.css?v=27">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -35,6 +35,20 @@
   <main class="portal-container ops-section">
     <p id="page-status" class="step-hint">Loading…</p>
     <div id="page-body" class="hidden">
+      <details class="panel-collapse portal-card" style="margin-bottom:1rem;">
+        <summary>Start-of-semester checklist</summary>
+        <ol style="margin:0.5rem 0 0; padding-left:1.25rem; line-height:1.6;">
+          <li><a href="admin">User Management</a>: approve sign-ups; set every returning member's status (Active, Co-op, Abroad, Inactive, Alumni).</li>
+          <li>User Management: positions for the new exec board and chairs; remove positions from people who left them.</li>
+          <li>Step 1 below: new term code, dates, dues due date → Preview. The preview should list a handful of service shortfalls, not everyone. Then Start (no undo).</li>
+          <li>Step 2 below: weekly chapters, then voting chapters, rush events, initiation, philanthropy, committee meetings → Create.</li>
+          <li><a href="treasurer">Treasurer</a>: dues charged, or charge them when the national invoice arrives.</li>
+          <li><a href="marshal">Marshal</a>: create the pledge class after bid day.</li>
+          <li>Step 3 below (admin): download last semester's photos to the chapter Drive, then clear them.</li>
+          <li><a href="settings">Chapter Settings</a>: change numbers only if the bylaws changed, with the bylaw section in the note.</li>
+        </ol>
+        <p class="step-hint">Full checklist, including elections and admin succession: <a href="https://github.com/thetatauzd/thetatauzd.github.io/blob/main/portal/docs/semester-checklist.md" target="_blank" rel="noopener">semester-checklist.md</a>.</p>
+      </details>
 
       <div class="portal-card">
         <h2>This semester <span class="count-pill" id="sm-term"></span></h2>
@@ -119,10 +133,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=26"></script>
-  <script src="js/auth.js?v=26"></script>
-  <script src="js/ops-core.js?v=26"></script>
-  <script src="js/ops-db.js?v=26"></script>
-  <script src="js/semester.js?v=26"></script>
+  <script src="js/firebase-config.js?v=27"></script>
+  <script src="js/auth.js?v=27"></script>
+  <script src="js/ops-core.js?v=27"></script>
+  <script src="js/ops-db.js?v=27"></script>
+  <script src="js/semester.js?v=27"></script>
 </body>
 </html>
