@@ -39,3 +39,6 @@ brothers.html
 
 # arena skill runs (local tournaments, never committed)
 .arena/
+
+# Firebase CLI (firepit) debug log
+firepit-log.txt
