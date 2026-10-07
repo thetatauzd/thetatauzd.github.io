@@ -88,7 +88,8 @@
   function bool(v) { return v === true || /^(true|yes|y|1|approved|confirmed)$/i.test(String(v || '').trim()); }
   function ymd(v) { return C.ymd(v) || ''; }
 
-  var STATUS_MAP = { active: 'active', inactive: 'inactive', 'co-op': 'coop', coop: 'coop', alumnus: 'alumnus', alumni: 'alumnus', graduated: 'graduated', pnm: 'pnm' };
+  var STATUS_MAP = { active: 'active', inactive: 'inactive', 'co-op': 'coop', coop: 'coop', alumnus: 'alumnus', alumni: 'alumnus', graduated: 'graduated', pnm: 'pnm',
+    abroad: 'abroad', 'study abroad': 'abroad', 'co op': 'coop', alum: 'alumnus', pledge: 'pnm' };
 
   function renderMatching() {
     var tb = $('tbody-unmatched'); tb.innerHTML = '';
@@ -182,7 +183,14 @@
   function apply() {
     var T = term(), P = prevTerm();
     var opts = {}; document.querySelectorAll('.imp-opt:checked').forEach(function(cb) { opts[cb.value] = true; });
-    if (!confirm('Import the selected tabs into term ' + T + '? Imported records are overwritten on re-run, never duplicated.')) return;
+    if (!confirm('Import the selected tabs into term ' + T + '? Run this once, before the site goes live.')) return;
+    var impId = null;
+    db.ref('imports').orderByChild('term').equalTo(T).once('value').then(function(s) {
+      if (s.exists() && prompt('Term ' + T + ' was already imported (or an import was started and failed). A second run does NOT remove the first run\'s records: delete the term\'s data in the Firebase console first (see portal/docs/semester-checklist.md, "Re-import"), or you will get duplicates. Type ' + T + ' to continue.') !== T) return;
+      run();
+    }).catch(function(err) { status('apply-status', 'Failed: ' + (err.message || err), 'error'); });
+
+    function run() {
     $('btn-apply').disabled = true; log = []; status('apply-status', 'Importing…');
     var counts = {}, unmatchedRows = [];
     var updates = {};
@@ -193,21 +201,30 @@
 
     // Roster → users (status, sortOrder, roll), roster nodes.
     if (opts.Roster) chain = chain.then(function() {
-      var n = 0, rosterOnly = 0;
+      var n = 0, rosterOnly = 0, badStatus = 0, matched = {};
       var seq = Promise.resolve();
       rows('Roster').forEach(function(r) {
         var name = col(r, ['Brother Name', 'Name']); if (!name) return;
         var roll = C.rollKey(col(r, ['Roll Number', 'Roll #', 'Roll']));
-        var st = STATUS_MAP[String(col(r, ['Status']) || 'active').toLowerCase().trim()] || 'active';
+        var raw = String(col(r, ['Status']) || 'active').toLowerCase().trim(), st = STATUS_MAP[raw];
+        if (!st) { badStatus++; say('Roster: ' + name + ' has status "' + raw + '", not recognised; status left unchanged. Set it on User Management.'); }
         var uid = uidFor(name, roll);
         if (roll) { updates['roster/' + roll] = { name: name }; updates['rosterByName/' + C.nameKey(name)] = { roll: roll, name: name }; }
         if (!uid) { rosterOnly++; unmatchedRows.push({ tab: 'Roster', name: name, roll: roll }); return; }
-        var patch = { status: st, sortOrder: num(col(r, ['Sort Order'])) || 0 };
+        matched[uid] = true;
+        var patch = { sortOrder: num(col(r, ['Sort Order'])) || 0 };
+        if (st) patch.status = st;
         if (roll && !C.rollKey(users[uid].rollNumber)) patch.rollNumber = roll;
         var inactiveSince = ymd(col(r, ['Inactive Since'])); if (inactiveSince) patch.inactiveSince = inactiveSince;
         seq = seq.then(function() { return PortalOps.saveUser(uid, patch, me); }).then(function(u) { users[uid] = u; n++; });
       });
-      return seq.then(function() { counts.Roster = n; say('Roster: ' + n + ' accounts updated, ' + rosterOnly + ' kept as roster-only.'); indexUsers(); });
+      return seq.then(function() {
+        counts.Roster = n; say('Roster: ' + n + ' accounts updated, ' + rosterOnly + ' kept as roster-only' + (badStatus ? ', ' + badStatus + ' with an unrecognised status' : '') + '.');
+        // Accounts the sheet never mentions keep whatever status they had (often "active" from the upgrade).
+        var loose = Object.keys(users).filter(function(u) { return !matched[u] && users[u].role !== 'pending' && C.isActiveStatus(users[u].status, C.withDefaults({})); });
+        if (loose.length) say('Roster: ' + loose.length + ' accounts are Active but have NO Roster row, so the import left them alone. Set each on User Management (Alumnus, Inactive…) before checking counts: ' + loose.map(function(u) { return users[u].name || u; }).join(', '));
+        indexUsers();
+      });
     });
 
     // Config → settings only when empty.
@@ -276,7 +293,13 @@
 
     // Payments_Fines → ledger
     if (opts.Payments_Fines) chain = chain.then(function() {
-      var n = 0, skipped = 0;
+      var n = 0, skipped = 0, duesId = {}, folded = 0;
+      // First pass: each brother's imported dues charge, so the sheet's own late-fee rows can be folded into it.
+      rows('Payments_Fines').forEach(function(r, i) {
+        var nm = col(r, ['Brother Name', 'Name']), uid0 = nm && uidFor(nm, col(r, ['Roll Number']));
+        var it = String(col(r, ['Item', 'Item / Fine', 'Fine']) || '');
+        if (uid0 && /dues/i.test(it) && !/late/i.test(it) && !duesId[uid0]) duesId[uid0] = 'imp_' + C.nameKey(it) + '_' + i;
+      });
       rows('Payments_Fines').forEach(function(r, i) {
         var name = col(r, ['Brother Name', 'Name']); if (!name) return;
         var uid = uidFor(name, col(r, ['Roll Number'])); if (!uid) { skipped++; unmatchedRows.push({ tab: 'Payments_Fines', name: name }); return; }
@@ -286,13 +309,23 @@
         var due = ymd(col(r, ['Due Date'])) || null;
         var paidOn = ymd(col(r, ['Date Paid'])) || due || ymd(now);
         var base = 'ledger/' + T + '/' + uid + '/imp_' + C.nameKey(item) + '_' + i;
-        updates[base] = Object.assign({ type: 'charge', item: item, amount: amount, dueDate: due, date: due, accruesLate: false, demeritsIfLate: num(col(r, ['Demerits If Unpaid/Late', 'Demerits If Unpaid', 'Demerits'])), note: String(col(r, ['Notes']) || '') }, audit);
+        if (/late/i.test(item) && duesId[uid]) {
+          // The site computes the bylaws late fee on the dues row itself, so the sheet's fee row is not owed twice.
+          folded++;
+          if (st === 'paid') { updates[base + '_pay'] = Object.assign({ type: 'payment', item: item, chargeId: duesId[uid], amount: amount, date: paidOn, method: 'imported', note: 'Late fee paid (from sheet)' }, audit); return; }
+          updates[base] = Object.assign({ type: 'charge', item: item, amount: amount, dueDate: due, date: due, accruesLate: false, demeritsIfLate: 0 }, audit);
+          updates[base + '_waive'] = Object.assign({ type: 'waiver', chargeId: 'imp_' + C.nameKey(item) + '_' + i, amount: amount, date: ymd(now), note: 'Replaced by the late fee the site computes on the dues row' }, audit);
+          n++; return;
+        }
+        // Unpaid dues accrue the bylaws ladder from their real due date, like dues the site charges.
+        var accrues = /dues/i.test(item) && !!due && st !== 'paid' && st !== 'waived';
+        updates[base] = Object.assign({ type: 'charge', item: item, amount: amount, dueDate: due, date: due, accruesLate: accrues, demeritsIfLate: num(col(r, ['Demerits If Unpaid/Late', 'Demerits If Unpaid', 'Demerits'])), note: String(col(r, ['Notes']) || '') }, audit);
         if (st === 'paid') updates[base + '_pay'] = Object.assign({ type: 'payment', item: item, chargeId: 'imp_' + C.nameKey(item) + '_' + i, amount: amount, date: paidOn, method: 'imported' }, audit);
         else if (st === 'waived') updates[base + '_waive'] = Object.assign({ type: 'waiver', chargeId: 'imp_' + C.nameKey(item) + '_' + i, amount: amount, date: paidOn }, audit);
         else if (/plan/.test(st)) updates[base + '_plan'] = Object.assign({ type: 'plan', chargeId: 'imp_' + C.nameKey(item) + '_' + i, date: ymd(now), planDueDate: null, note: 'Payment plan (from sheet)' }, audit);
         n++;
       });
-      counts.Payments_Fines = n; say('Payments_Fines: ' + n + ' charges (' + skipped + ' without an account skipped).');
+      counts.Payments_Fines = n; say('Payments_Fines: ' + n + ' charges (' + skipped + ' without an account skipped' + (folded ? ', ' + folded + ' late-fee rows folded into the dues charge' : '') + ').');
     });
 
     // Standards_Adjustments → adjustments
@@ -326,7 +359,7 @@
         var name = col(r, ['Brother Name', 'Name']); if (!name) return;
         var uid = uidFor(name, col(r, ['Roll Number'])); if (!uid) { unmatchedRows.push({ tab: 'Service_Log', name: name }); return; }
         var ev = String(col(r, ['Event', 'Event Title']) || '');
-        updates['service/' + T + '/' + uid + '/imp_' + i] = { hours: num(col(r, ['Hours', 'Service Hours'])), eventName: ev, eventId: C.nameKey(ev), date: ymd(col(r, ['Date'])) || null, status: bool(col(r, ['Confirmed', 'Status'])) ? 'approved' : 'pending', submittedAt: now, imported: true, reviewedBy: bool(col(r, ['Confirmed', 'Status'])) ? me.uid : null };
+        updates['service/' + T + '/' + uid + '/imp_' + i] = { hours: num(col(r, ['Hours', 'Service Hours'])), eventName: ev, eventId: C.nameKey(ev), date: ymd(col(r, ['Date'])) || null, status: bool(col(r, ['Confirmed', 'Status'])) ? 'approved' : 'pending', countsAsEvent: true, submittedAt: Date.parse(now), imported: true, reviewedBy: bool(col(r, ['Confirmed', 'Status'])) ? me.uid : null };
         n++;
       });
       counts.Service_Log = n; say('Service_Log: ' + n + ' entries.');
@@ -341,7 +374,7 @@
         var st = String(col(r, ['Excuse Status', 'Status']) || 'pending').toLowerCase();
         var impEventId = eventKey(col(r, ['Event Title', 'Event'])), impStatus = st === 'approved' ? 'approved' : (st === 'denied' ? 'denied' : 'pending');
         if (impEventId) updates['excuseFlags/' + T + '/' + impEventId + '/' + uid] = impStatus;   // reason-free mirror the Scribe and other officers read
-        updates['excuses/' + T + '/' + uid + '/imp_' + i] = { kind: 'absent', eventId: impEventId, reason: String(col(r, ['Reason / Notes', 'Reason']) || ''), status: st === 'approved' ? 'approved' : (st === 'denied' ? 'denied' : 'pending'), reviewedBy: String(col(r, ['Approved By']) || ''), submittedAt: now, imported: true };
+        updates['excuses/' + T + '/' + uid + '/imp_' + i] = { kind: 'absent', eventId: impEventId, reason: String(col(r, ['Reason / Notes', 'Reason']) || ''), status: st === 'approved' ? 'approved' : (st === 'denied' ? 'denied' : 'pending'), reviewedBy: String(col(r, ['Approved By']) || ''), submittedAt: Date.parse(now), imported: true };
         n++;
       });
       counts.Excuses = n; say('Excuses: ' + n + ' entries.');
@@ -353,18 +386,31 @@
         updates['settings/currentTerm'] = T;
       });
     }).then(function() {
-      say('Writing ' + Object.keys(updates).length + ' records…');
-      return chunkedUpdate(updates);
+      // Record the run before writing, so a failed run still leaves a trace (and the next run asks first).
+      impId = db.ref('imports').push().key;
+      return db.ref('imports/' + impId).set({ at: now, by: me.uid, byName: me.name || '', term: T, status: 'started' })
+        .then(function() { return db.ref('ledger/' + T).once('value'); })
+        .then(function(ls) {
+          var have = ls.val() || {}, kept = 0;
+          Object.keys(updates).forEach(function(k) {
+            var p = k.split('/');                          // ledger/<T>/<uid>/<id>: append-only, never rewritten
+            if (p[0] === 'ledger' && p.length === 4 && have[p[2]] && have[p[2]][p[3]]) { delete updates[k]; kept++; }
+          });
+          if (kept) say('Ledger: ' + kept + ' entries already exist and were kept (the ledger is append-only).');
+          say('Writing ' + Object.keys(updates).length + ' records…');
+          return chunkedUpdate(updates);
+        });
     }).then(function(n) {
-      var id = db.ref('imports').push().key;
-      var rec = { at: now, by: me.uid, byName: me.name || '', term: T, counts: counts, unmatched: unmatchedRows.slice(0, 200), records: n };
-      return db.ref('imports/' + id).set(rec).then(function() { return PortalOps.logChange(T, 'import', 'sheet', 'Imported ' + n + ' records from the Tracker sheet', me); });
+      return db.ref('imports/' + impId).update({ status: 'done', counts: counts, unmatched: unmatchedRows.slice(0, 200), records: n })
+        .then(function() { return PortalOps.logChange(T, 'import', 'sheet', 'Imported ' + n + ' records from the Tracker sheet', me); });
     }).then(function() {
       status('apply-status', 'Done. Check My Tracker for two brothers against the sheet\'s Dashboard.', 'success');
       say('Done.');
     }).catch(function(err) {
       status('apply-status', 'Failed: ' + (err.message || err), 'error'); say('ERROR ' + (err.message || err));
+      if (impId) db.ref('imports/' + impId).update({ status: 'failed', error: String(err.message || err) }).catch(function() {});
     }).finally(function() { $('btn-apply').disabled = false; });
+    }
   }
 
   function init() {

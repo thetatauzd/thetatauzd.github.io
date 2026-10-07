@@ -120,12 +120,12 @@
     var next = {};
     $('pos-tbody').querySelectorAll('tr').forEach(function (tr) {
       var k = tr.getAttribute('data-key'); var perms = {};
-      tr.querySelectorAll('.pos-perm').forEach(function (cb) { if (cb.checked) perms[cb.getAttribute('data-p')] = true; });
+      tr.querySelectorAll('.pos-perm').forEach(function (cb) { perms[cb.getAttribute('data-p')] = cb.checked; });   // store false too, or a default true comes back
       next[k] = { label: tr.querySelector('.pos-label').value.trim() || k, group: tr.querySelector('.pos-group').value, order: parseInt(tr.querySelector('.pos-order').value, 10) || 0, perms: perms };
     });
     var note = prompt('Why are positions changing? (kept in the history)', ''); if (note === null) return;
     PortalOps.saveSettings('positions', next, me, note).then(function () {
-      setStatus('pos-status', 'Saved. Re-save affected people on User Management to refresh their permissions.', 'success'); return reload();
+      setStatus('pos-status', 'Saved. Now re-save every holder of a changed position on User Management.', 'success'); return reload();
     }).catch(function (err) { setStatus('pos-status', err.message || 'Failed.', 'error'); });
   }
   function addPosition() {

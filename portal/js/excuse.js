@@ -36,7 +36,8 @@
   function render() {
     var p = S.policy.attendance;
     $('x-term').textContent = term;
-    $('x-rule').textContent = 'Send it at least ' + p.excuseHoursBefore + ' hours before the event. Standards decides every request and you will see the answer here. Two chapter meetings a term can be missed without an excuse.';
+    $('x-rule').textContent = 'Send it at least ' + p.excuseHoursBefore + ' hours before the event. Standards decides every request and you will see the answer here.' +
+      ((S.eventTypes.chapter || {}).freePerTerm ? ' ' + S.eventTypes.chapter.freePerTerm + ' chapter meetings a term can be missed without an excuse; they still show on your tracker.' : '');
 
     // Events: everything not yet recorded, plus the last two weeks for late requests.
     var today = C.ymd(new Date()), cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14);

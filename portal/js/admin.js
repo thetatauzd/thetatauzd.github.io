@@ -44,7 +44,7 @@
     tr.setAttribute('data-uid', uid);
     if (!C.isActiveStatus(u.status, settings)) tr.classList.add('row-muted');
     tr.innerHTML =
-      '<td><a class="member-name" href="member?uid=' + encodeURIComponent(uid) + '" title="Open their full record">' + esc(u.name || '—') + '</a><span class="member-email">' + esc(u.email || '') + '</span></td>' +
+      '<td><a class="member-name" href="member?uid=' + encodeURIComponent(uid) + '" title="Open their full record">' + esc(u.name || '—') + '</a> <button type="button" class="btn-text rename-btn" data-uid="' + uid + '">rename</button><span class="member-email">' + esc(u.email || '') + '</span></td>' +
       '<td><input type="text" class="roll-input" data-uid="' + uid + '" value="' + esc(u.rollNumber || '') + '" placeholder="—"><span class="roll-saved hidden" data-for="' + uid + '">saved</span></td>' +
       '<td>' + statusSelect(uid, u.status || 'active') + '</td>' +
       '<td><div class="pos-chips">' + positionChips(u.positions) + '<button type="button" class="pos-edit" data-uid="' + uid + '">' + (Object.keys(u.positions || {}).length ? 'Edit' : '+ Add') + '</button></div></td>' +
@@ -123,10 +123,20 @@
       input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
     });
 
+    document.querySelectorAll('.rename-btn').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var uid = this.getAttribute('data-uid'), v = prompt('Full name, as it should appear everywhere:', (users[uid] || {}).name || '');
+        if (!v || !v.trim()) return;
+        PortalOps.saveUser(uid, { name: v.trim() }, me).catch(function(err) { alert(err.message || 'Failed to rename.'); });
+      });
+    });
+
     document.querySelectorAll('.status-select').forEach(function(sel) {
       sel.addEventListener('change', function() {
         var uid = this.getAttribute('data-uid');
         var def = settings.statuses[this.value] || {};
+        var u0 = users[uid] || {}, label = def.label || this.value;
+        if (!confirm('Change ' + (u0.name || 'this person') + ' to ' + label + '?\n' + (def.countsAsActive ? 'On roll call' : 'NOT on roll call') + ', ' + (def.chargedDues ? 'charged dues' : 'no dues') + ', ' + (def.votes ? 'votes' : 'cannot vote') + '. Takes effect at the next roll call.')) { this.value = u0.status || 'active'; return; }
         // Takes effect from the next roll call: earlier attendance stays as it was recorded.
         var patch = { status: this.value, statusEffective: new Date().toISOString().slice(0, 10) };
         if (['inactive', 'coop', 'abroad'].indexOf(this.value) !== -1) patch.inactiveSince = patch.statusEffective;

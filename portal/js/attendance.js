@@ -13,6 +13,11 @@
   var events = {}, directory = {}, attendance = {}, flags = {};
   var selected = null;       // eventId
   var marks = {};            // uid -> bool for the selected event (unsaved)
+  var dirty = false;         // unsaved marks exist; also kept in localStorage so a phone reload does not lose them
+
+  function draftKey() { return 'ops-roll:' + term + ':' + selected; }
+  function saveDraft() { dirty = true; try { localStorage.setItem(draftKey(), JSON.stringify(marks)); } catch (e) {} }
+  function clearDraft() { dirty = false; try { localStorage.removeItem(draftKey()); } catch (e) {} }
 
   function $(id) { return document.getElementById(id); }
   function setStatus(id, msg, kind) { var el = $(id); el.textContent = msg || ''; el.className = 'status-line' + (kind ? ' ' + kind : ''); }
@@ -79,6 +84,12 @@
     $('take-sub').textContent = (ev.date ? C.fmtDate(ev.date) + ' · ' : '') + typeDef.label + (ev.recorded ? ' · recorded' : ' · not yet recorded');
     $('take-worth').textContent = 'Worth: ' + typeDef.unexcused + ' unexcused / ' + typeDef.excused + ' excused' + (typeDef.freePerTerm ? ' · first ' + typeDef.freePerTerm + ' unexcused chapter absences per term are free' : '') + '. Anyone not marked present counts as absent once you save.';
     $('take-tools').classList.remove('hidden');
+    var draft = null;
+    try { draft = JSON.parse(localStorage.getItem(draftKey()) || 'null'); } catch (e) {}
+    dirty = false;
+    if (draft && confirm('This phone has an unsaved roll for "' + ev.title + '". Restore it?')) {
+      Object.keys(draft).forEach(function (uid) { if (uid in marks) marks[uid] = draft[uid]; }); dirty = true;
+    } else if (draft) clearDraft();
     $('ed-title').value = ev.title || ''; $('ed-date').value = ev.date || ''; $('ed-time').value = ev.time || ''; $('ed-type').value = ev.type || 'other';
     renderList(); renderEvents();
   }
@@ -90,11 +101,12 @@
       var ra = parseInt(C.rollKey(da.rollNumber) || '99999', 10), rb = parseInt(C.rollKey(db_.rollNumber) || '99999', 10);
       return (ra - rb) || String(da.name || '').localeCompare(String(db_.name || ''));
     });
-    var present = 0;
+    var present = 0, unmarked = 0;
     $('take-list').innerHTML = uids.map(function (uid) {
       var d = directory[uid] || { name: uid };
       var m = marks[uid];
       if (m === true) present++;
+      if (m === null || m === undefined) unmarked++;
       var hide = q && String(d.name || '').toLowerCase().indexOf(q) === -1;
       var fl = (flags[selected] || {})[uid] || '';
       var badge = fl === 'approved' ? '<span class="att-badge e" title="Excuse approved by Standards">E</span>'
@@ -108,12 +120,12 @@
         '<button type="button" class="option-preset-btn bad mark-btn' + (m === false ? ' selected' : '') + '" data-uid="' + esc(uid) + '" data-v="0" style="padding:0.3rem 0.7rem;">Absent</button></span></li>';
     }).join('');
     $('take-list').querySelectorAll('.mark-btn').forEach(function (b) {
-      b.addEventListener('click', function () { marks[this.getAttribute('data-uid')] = this.getAttribute('data-v') === '1'; renderList(); });
+      b.addEventListener('click', function () { marks[this.getAttribute('data-uid')] = this.getAttribute('data-v') === '1'; saveDraft(); renderList(); });
     });
     var ev = events[selected] || {};
     var active = activeUids().length;
     var q1 = C.quorum(active, ev.type === 'voting' ? 'membership' : 'business', S);
-    $('take-count').textContent = present + ' present of ' + uids.length;
+    $('take-count').textContent = present + ' present · ' + unmarked + ' not marked · ' + uids.length + ' on roll';
     var qEl = $('take-quorum');
     qEl.textContent = 'Quorum ' + q1 + ' (' + (ev.type === 'voting' ? 'two-thirds' : 'half') + ' of ' + active + ' active)';
     qEl.className = 'count-pill ' + (present >= q1 ? 'good' : 'warn');
@@ -123,8 +135,12 @@
     if (!selected) return;
     var toSave = {};
     Object.keys(marks).forEach(function (uid) { toSave[uid] = marks[uid] === true; });
+    var absent = Object.keys(marks).filter(function (u) { return marks[u] !== true; });
+    var names = absent.map(function (u) { return (directory[u] || {}).name || u; }).sort();
+    if (!confirm('Save: ' + (Object.keys(marks).length - absent.length) + ' present, ' + absent.length + ' absent.\n\nAbsent: ' + (names.join(', ') || 'nobody'))) return;
     var btn = $('btn-save-att'); btn.disabled = true; setStatus('take-status', 'Saving…');
     PortalOps.saveAttendance(term, selected, toSave, me).then(function () {
+      clearDraft();
       setStatus('take-status', 'Saved.', 'success');
       var present = Object.keys(toSave).filter(function (u) { return toSave[u]; }).length;
       PortalOps.logChange(term, 'attendance', selected, 'Recorded ' + present + ' present / ' + (Object.keys(toSave).length - present) + ' absent for "' + (events[selected] || {}).title + '"', me);
@@ -170,8 +186,8 @@
       $('ev-date').value = C.ymd(new Date());
       $('btn-add-event').addEventListener('click', addEvent);
       $('btn-save-att').addEventListener('click', saveAttendance);
-      $('btn-all-present').addEventListener('click', function () { Object.keys(marks).forEach(function (u) { marks[u] = true; }); renderList(); });
-      $('btn-all-absent').addEventListener('click', function () { Object.keys(marks).forEach(function (u) { marks[u] = false; }); renderList(); });
+      $('btn-all-present').addEventListener('click', function () { Object.keys(marks).forEach(function (u) { marks[u] = true; }); saveDraft(); renderList(); });
+      window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
       $('take-search').addEventListener('input', renderList);
       $('btn-ed-save').addEventListener('click', saveEventEdit);
       $('btn-ed-delete').addEventListener('click', deleteEvent);

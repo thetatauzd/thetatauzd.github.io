@@ -159,8 +159,15 @@
     eq('ledger: BEWE waived', L.charges[0].status, 'waived');
     eq('ledger: balance 150 + 10', L.balance, 160);
     var paidL = C.ledgerSummary({ c: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15' }, p: { type: 'payment', chargeId: 'c', amount: 250, date: '2026-10-25' } }, S, { asOf: '2026-12-01' });
-    eq('ledger: paid late → paid, fee frozen at settlement ($10)', [paidL.charges[0].status, paidL.charges[0].lateFee], ['paid', 10]);
-    eq('ledger: settled charge adds no late fee to balance', paidL.balance, 0);
+    var due = { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15' }, p250 = { type: 'payment', chargeId: 'c', amount: 250, date: '2026-10-25' };
+    var L1 = C.ledgerSummary({ c: due, p: p250 }, S, { asOf: '2026-12-01' });
+    eq('ledger: principal paid late → $10 fee frozen and still owed, not "late"', [L1.charges[0].status, L1.charges[0].lateFee, L1.balance, L1.charges[0].remaining, L1.charges[0].isLate], ['fee', 10, 10, 0, false]);
+    var L2 = C.ledgerSummary({ c: due, p: p250, q: { type: 'payment', chargeId: 'c', amount: 10, date: '2026-11-01' } }, S, { asOf: '2026-12-01' });
+    eq('ledger: fee paid → paid, balance 0', [L2.charges[0].status, L2.balance], ['paid', 0]);
+    var L3 = C.ledgerSummary({ c: due, p: p250, w: { type: 'waiver', chargeId: 'c', amount: 0, date: '2026-11-01' } }, S, { asOf: '2026-12-01' });
+    eq('ledger: "waive the rest" waives only the frozen $10 fee', [L3.charges[0].settled, L3.balance, L3.charges[0].waived, L3.totalWaived], [true, 0, 10, 10]);
+    var feeDem = C.computeDemerits('u', { events: {}, ledger: { c: { type: 'charge', item: 'BEWE', amount: 135, dueDate: '2026-10-15', demeritsIfLate: 2 }, p: { type: 'payment', chargeId: 'c', amount: 135, date: '2026-10-25' } } }, S, { asOf: '2026-12-01' });
+    eq('ledger: only the late fee left → no payment demerits', feeDem.paymentDemerits, 0);
     var rev = C.ledgerSummary({ c: { type: 'charge', item: 'Dues', amount: 250 }, r: { type: 'reversal', reverses: 'c' } }, S);
     eq('ledger: reversed charge disappears', rev.charges.length, 0);
 
@@ -177,6 +184,7 @@
     eq('legacyRole: plain active → brother', C.legacyRole({ status: 'active', positions: {} }), 'brother');
     eq('legacyRole: pnm', C.legacyRole({ status: 'pnm' }), 'pnm');
     eq('legacyRole: admin stays admin', C.legacyRole({ role: 'admin', status: 'active' }), 'admin');
+    eq('perms: a stored false beats a default true', C.permsFor({ treasurer: true }, { positions: { treasurer: { perms: { finance: true, settings: false } } } }), { finance: true });
     var up = C.upgradeUser({ role: 'regent', name: 'X' }, S);
     eq('upgradeUser: regent → active + regent position + settings perm', [up.status, up.positions.regent, up.perms.settings, up.role], ['active', true, true, 'regent']);
     eq('isActiveStatus: coop is not active', C.isActiveStatus('coop', S), false);

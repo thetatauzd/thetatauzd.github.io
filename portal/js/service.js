@@ -38,7 +38,7 @@
         '<div class="step-hint" style="margin:0.25rem 0;">' + (e.photoUrl ? '<a href="' + esc(e.photoUrl) + '" target="_blank" rel="noopener">Photo link</a> · ' : '') + (e.vouchedBy ? 'Vouched by ' + esc(e.vouchedBy) : ((e.photoIds || []).length || e.photoUrl ? '' : 'No photo or voucher')) + (e.description ? ' · ' + esc(e.description) : '') + '</div>' +
         PortalPhotos.buttonsHtml('service', term, e.uid, e.photoIds) +
         '<div class="add-row" style="align-items:center;"><input class="field rv-hours" data-id="' + esc(e.id) + '" type="number" step="0.25" value="' + esc(e.hours) + '" style="max-width:90px;" title="Adjust hours before approving">' +
-        '<label class="check-line" style="margin:0;"><input type="checkbox" class="rv-counts" data-id="' + esc(e.id) + '"> service event</label>' +
+        '<label class="check-line" style="margin:0;"><input type="checkbox" class="rv-counts" data-id="' + esc(e.id) + '" checked> counts as a service event (untick for hours only)</label>' +
         '<input class="field rv-note" data-id="' + esc(e.id) + '" placeholder="Note (optional)" style="max-width:280px;">' +
         '<button type="button" class="btn btn-primary btn-small rv-act" data-uid="' + esc(e.uid) + '" data-id="' + esc(e.id) + '" data-v="approved" style="margin:0;">Approve</button>' +
         '<button type="button" class="btn danger btn-small rv-act" data-uid="' + esc(e.uid) + '" data-id="' + esc(e.id) + '" data-v="denied" style="margin:0;">Deny</button></div></div>';

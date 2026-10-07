@@ -127,10 +127,10 @@
     $('pay-late').textContent = money(led.lateFees);
     $('pay-tbody').innerHTML = led.charges.length ? led.charges.map(function (c) {
       var cls = c.status === 'paid' ? 'is-paid' : (c.status === 'waived' ? 'is-waived' : 'is-unpaid');
-      var label = c.status === 'plan' ? 'Payment plan' : c.status.charAt(0).toUpperCase() + c.status.slice(1);
+      var label = c.status === 'plan' ? 'Payment plan' : c.status === 'fee' ? 'Late fee owed' : c.status.charAt(0).toUpperCase() + c.status.slice(1);
       return '<tr class="' + (c.settled ? 'row-paid' : '') + '"><td>' + esc(c.item) + '</td><td>' + money(c.amount) + '</td><td>' + esc(fmtDate(c.dueDate)) + '</td>' +
         '<td><span class="pay-status ' + cls + '">' + esc(label) + '</span>' + (c.lateFee && !c.settled ? ' <span style="font-size:0.78rem; color:#c62828;">+' + money(c.lateFee) + ' late</span>' : '') + '</td>' +
-        '<td>' + (c.settled ? '—' : money(c.remaining + c.lateFee)) + '</td></tr>';
+        '<td>' + (c.settled ? '—' : money(c.owed)) + '</td></tr>';
     }).join('') : '<tr><td colspan="5" class="section-empty">Nothing charged yet this term.</td></tr>';
     var d = p.dues;
     $('pay-explain').textContent = 'Fees are late one day after the due date: $' + (d.lateLadder || []).join(', then $') + ' per week, then $' + d.lateAfterLadder + ' per week. Talk to the Treasurer for a payment plan.';

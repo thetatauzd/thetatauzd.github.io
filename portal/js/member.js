@@ -75,8 +75,8 @@
       tiles.push(['Balance', money(led.balance)]);
       $('m-balance').textContent = money(led.balance) + ' due';
       $('m-ledger').innerHTML = led.charges.length ? led.charges.map(function (c) {
-        var label = c.status === 'plan' ? 'Payment plan' : c.status.charAt(0).toUpperCase() + c.status.slice(1);
-        return '<tr><td>' + esc(c.item) + '</td><td>' + money(c.amount) + '</td><td>' + esc(fmtDate(c.dueDate)) + '</td><td>' + esc(label) + (c.lateFee && !c.settled ? ' <span style="color:#c62828; font-size:0.78rem;">+' + money(c.lateFee) + ' late</span>' : '') + '</td><td>' + (c.settled ? '—' : money(c.remaining + c.lateFee)) + '</td></tr>';
+        var label = c.status === 'plan' ? 'Payment plan' : c.status === 'fee' ? 'Late fee owed' : c.status.charAt(0).toUpperCase() + c.status.slice(1);
+        return '<tr><td>' + esc(c.item) + '</td><td>' + money(c.amount) + '</td><td>' + esc(fmtDate(c.dueDate)) + '</td><td>' + esc(label) + (c.lateFee && !c.settled ? ' <span style="color:#c62828; font-size:0.78rem;">+' + money(c.lateFee) + ' late</span>' : '') + '</td><td>' + (c.settled ? '—' : money(c.owed)) + '</td></tr>';
       }).join('') : '<tr><td colspan="5" class="section-empty">Nothing charged this term.</td></tr>';
     }
 

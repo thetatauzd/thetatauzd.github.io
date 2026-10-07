@@ -24,7 +24,7 @@
    */
   var DEFAULTS = {
     positions: {
-      regent:                  { label: 'Regent',                  group: 'officer', order: 1,  perms: { settings: true, standards: true } },
+      regent:                  { label: 'Regent',                  group: 'officer', order: 1,  perms: { settings: true } },   // not standards: excuse reasons stay with the Standards Chair
       vice_regent:             { label: 'Vice-Regent',             group: 'officer', order: 2,  perms: { settings: true, attendance: true } },
       scribe:                  { label: 'Scribe',                  group: 'officer', order: 3,  perms: { attendance: true } },
       treasurer:               { label: 'Treasurer',               group: 'officer', order: 4,  perms: { finance: true, settings: true } },
@@ -274,7 +274,7 @@
     var paymentDemerits = 0, paymentItems = [];
     var led = ledgerSummary(facts.ledger, s, { asOf: asOf });
     led.charges.forEach(function (c) {
-      if (c.settled || c.waived || !c.demeritsIfLate) return;
+      if (c.remaining <= 0.005 || c.waived || !c.demeritsIfLate) return;
       if (c.onPlan) return;
       if (c.dueDate && daysBetween(c.dueDate, asOf) > (s.policy.dues.graceDays || 0)) {
         paymentDemerits += c.demeritsIfLate;
@@ -357,7 +357,7 @@
 
     var led = ledgerSummary(facts.ledger, s, { asOf: asOf });
     led.charges.forEach(function (c) {
-      if (c.settled || c.waived || !c.demeritsIfLate || c.onPlan) return;
+      if (c.remaining <= 0.005 || c.waived || !c.demeritsIfLate || c.onPlan) return;
       if (c.dueDate && daysBetween(c.dueDate, asOf) > (s.policy.dues.graceDays || 0)) {
         lines.push({ date: c.dueDate, order: 3, kind: 'payment', label: 'Unpaid past due: ' + c.item, detail: 'Removed once it is paid', points: c.demeritsIfLate });
       }
@@ -534,7 +534,9 @@
           c.paid += amt;
           if (!c.settledAt && c.paid + c.waived >= c.amount - 0.005) c.settledAt = e.date || ymd(asOf);
         } else if (e.type === 'waiver') {
-          c.waived += amt || (c.amount - c.paid);
+          // "Waive the rest" (amount 0) also waives the late fee that actually accrued: frozen at settledAt
+          // when the principal was already covered, otherwise up to the waiver date.
+          c.waived += amt || Math.max(0, c.amount + lateFeeFor(c, settings, c.settledAt || e.date || ymd(asOf)) - c.paid - c.waived);
           c.waivedAt = c.waivedAt || e.date || ymd(asOf);
           if (!c.settledAt && c.paid + c.waived >= c.amount - 0.005) c.settledAt = c.waivedAt;
         } else if (e.type === 'plan') {
@@ -549,14 +551,18 @@
     Object.keys(charges).forEach(function (k) {
       var c = charges[k];
       if (c.reversed) return;
-      c.settled = c.paid + c.waived >= c.amount - 0.005;
-      c.onPlan = !!c.planAt && !c.settled && (!c.planDueDate || toDate(c.planDueDate) >= asOf);
-      c.lateFee = c.settled ? lateFeeFor(c, settings, c.settledAt) : lateFeeFor(c, settings, asOf);
-      c.remaining = Math.max(0, c.amount - c.paid - c.waived);
-      c.isLate = !c.settled && !c.onPlan && !!c.dueDate && daysBetween(c.dueDate, asOf) > (withDefaults(settings).policy.dues.graceDays || 0);
-      c.status = c.settled ? (c.waived >= c.amount - 0.005 ? 'waived' : 'paid') : (c.onPlan ? 'plan' : (c.isLate ? 'late' : 'unpaid'));
+      // A late fee is money owed, not a demerit trigger. settledAt = the day the principal was covered:
+      // the fee stops growing then but is still owed until paid or waived.
+      c.lateFee = lateFeeFor(c, settings, c.settledAt || asOf);
+      c.remaining = Math.max(0, c.amount - c.paid - c.waived);                         // principal left
+      c.settled = c.paid + c.waived >= c.amount + c.lateFee - 0.005;                   // principal AND fee covered
+      c.feeOnly = !c.settled && c.remaining <= 0.005;                                  // principal paid, only the fee left
+      c.onPlan = !!c.planAt && !c.settled && !c.feeOnly && (!c.planDueDate || toDate(c.planDueDate) >= asOf);
+      c.owed = c.settled ? 0 : Math.round((c.amount + c.lateFee - c.paid - c.waived) * 100) / 100;
+      c.isLate = c.remaining > 0.005 && !c.onPlan && !!c.dueDate && daysBetween(c.dueDate, asOf) > (withDefaults(settings).policy.dues.graceDays || 0);
+      c.status = c.settled ? (c.waived >= c.amount - 0.005 ? 'waived' : 'paid') : (c.feeOnly ? 'fee' : (c.onPlan ? 'plan' : (c.isLate ? 'late' : 'unpaid')));
       totalCharged += c.amount; totalPaid += c.paid; totalWaived += c.waived; totalLate += c.lateFee;
-      balance += c.remaining + (c.settled ? 0 : c.lateFee);
+      balance += c.owed;
       out.push(c);
     });
     out.sort(function (a, b) { return (toDate(a.dueDate || a.date) || 0) - (toDate(b.dueDate || b.date) || 0); });

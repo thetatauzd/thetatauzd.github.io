@@ -318,7 +318,7 @@
     ],
     ops: [
       { href: 'attendance', label: 'Attendance', perm: ['attendance', 'standards'] },
-      { href: 'standards-board', label: 'Standards Board', perm: ['standards'] },
+      { href: 'standards-board', label: 'Standards Board', perm: ['standards', 'settings'] },
       { href: 'treasurer', label: 'Treasurer', perm: ['finance'] },
       { href: 'service', label: 'Service Hours', perm: ['service'] },
       { href: 'marshal', label: 'Marshal', perm: ['pledges'] },

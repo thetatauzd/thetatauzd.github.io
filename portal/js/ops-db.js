@@ -99,6 +99,7 @@
       else updates['directory/' + uid] = directoryEntry(next);
       // Roster lookup for sign-up autofill.
       var rk = C.rollKey(next.rollNumber);
+      if (cur.name && C.nameKey(cur.name) !== C.nameKey(next.name)) updates['rosterByName/' + C.nameKey(cur.name)] = null;   // renamed: drop the old autofill key
       if (rk && next.name) {
         updates['roster/' + rk] = { name: next.name };
         updates['rosterByName/' + C.nameKey(next.name)] = { roll: rk, name: next.name };
@@ -162,15 +163,30 @@
   }
 
   /** Everything an officer dashboard needs for a term (rules decide which subtrees resolve). */
+  /** Nodes a demerit total depends on. A total computed without one of them is wrong, not partial. */
+  var DEMERIT_NODES = ['events', 'attendance', 'excuseFlags', 'adjustments', 'rollover', 'service', 'ledger'];
+
+  /**
+   * Everything an officer page needs for a term. A node the viewer's position may not read comes back {}
+   * and is listed in out.denied, so a page can tell "empty" from "not allowed".
+   */
   function loadTermFacts(term, wanted) {
     var w = wanted || ['events', 'attendance', 'excuses', 'excuseFlags', 'adjustments', 'rollover', 'ledger', 'service', 'standing'];
+    var denied = [];
     return Promise.all([loadSettings(), loadDirectory()].concat(w.map(function (n) {
-      return db.ref(n + '/' + term).once('value').then(function (s) { return s.val() || {}; }).catch(function () { return {}; });
+      return db.ref(n + '/' + term).once('value').then(function (s) { return s.val() || {}; })
+        .catch(function () { denied.push(n); return {}; });
     }))).then(function (r) {
-      var out = { settings: r[0], directory: r[1] };
+      var out = { settings: r[0], directory: r[1], denied: denied };
       w.forEach(function (n, i) { out[n] = r[i + 2]; });
       return out;
     });
+  }
+
+  /** Call before WRITING anything derived from a demerit total (rollover, buy-out). Throws if a fact is missing. */
+  function requireReadable(all, nodes) {
+    var missing = (nodes || DEMERIT_NODES).filter(function (n) { return !(n in all) || (all.denied || []).indexOf(n) !== -1; });
+    if (missing.length) throw new Error('Your position cannot read ' + missing.join(', ') + ' for this term, so these numbers would be wrong. Ask the Standards Chair or an admin to do this step.');
   }
 
   /** Slice term-wide facts down to one uid for OpsCore.computeDemerits. */
@@ -268,7 +284,7 @@
     loadSettings: loadSettings, saveSettings: saveSettings, currentTerm: currentTerm,
     audit: audit, logChange: logChange,
     loadUsers: loadUsers, loadDirectory: loadDirectory, saveUser: saveUser, migrateUsers: migrateUsers, hasPerm: hasPerm,
-    loadMyFacts: loadMyFacts, loadTermFacts: loadTermFacts, factsFor: factsFor,
+    loadMyFacts: loadMyFacts, loadTermFacts: loadTermFacts, DEMERIT_NODES: DEMERIT_NODES, requireReadable: requireReadable, factsFor: factsFor,
     saveAttendance: saveAttendance, submitExcuses: submitExcuses, withdrawExcuse: withdrawExcuse, decideExcuse: decideExcuse, flagValue: flagValue,
     addLedgerEntry: addLedgerEntry, exportTermJson: exportTermJson
   };

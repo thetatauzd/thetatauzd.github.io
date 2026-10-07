@@ -120,6 +120,7 @@
     if (id === term) return setStatus('nt-status', 'That is the current term.', 'error');
     setStatus('nt-status', 'Computing…');
     PortalOps.loadTermFacts(term).then(function (all) {
+      PortalOps.requireReadable(all);
       var carry = [];
       Object.keys(all.directory).forEach(function (uid) {
         var d = all.directory[uid]; if (!C.isActiveStatus(d.status, S)) return;

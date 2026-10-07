@@ -8,6 +8,7 @@
   var C = global.OpsCore;
   var esc = C.esc, money = C.money;
   var me = null, S = null, term = null, all = null, rowsCache = [];
+  var canEdit = false;   // only Standards (and admins) change demerits; settings holders get a read-only board
 
   function $(id) { return document.getElementById(id); }
   function setStatus(id, msg, kind) { var el = $(id); el.textContent = msg || ''; el.className = 'status-line' + (kind ? ' ' + kind : ''); }
@@ -53,7 +54,7 @@
         '<td>' + r.rolloverPoints + '</td><td>' + r.chapterAbsences + '</td><td>' + r.chapterDemerits + '</td><td>' + r.otherEventDemerits + '</td><td>' + r.paymentDemerits + '</td><td>' + r.adjustmentsTotal + (r.serviceCredit ? ' <span style="color:#2e7d32;">' + r.serviceCredit + '</span>' : '') + '</td>' +
         '<td><strong>' + r.total + '</strong></td><td>' + pill(standingLabel(r.standing), standingCls(r.standing)) + (ov && ov.override ? ' <span title="' + esc(ov.reason || '') + '" style="font-size:0.75rem; color:#999;">override</span>' : '') + '</td>' +
         '<td>' + (r.buyout ? money(r.buyout) : '—') + '</td><td>' + r.service.approvedHours + 'h / ' + r.service.distinctEvents + 'ev</td><td>' + (r.serviceShortfallNext ? '+' + r.serviceShortfallNext : '0') + '</td>' +
-        '<td><button type="button" class="btn-text ov-btn" data-uid="' + esc(r.uid) + '">standing…</button></td></tr>';
+        '<td>' + (canEdit ? '<button type="button" class="btn-text ov-btn" data-uid="' + esc(r.uid) + '">standing…</button>' : '') + '</td></tr>';
     }).join('') : '<tr><td colspan="14" class="section-empty">Nobody matches.</td></tr>';
     $('db-tbody').querySelectorAll('.ov-btn').forEach(function (b) { b.addEventListener('click', function () { overrideStanding(this.getAttribute('data-uid')); }); });
   }
@@ -122,6 +123,11 @@
   }
 
   function renderExcuses() {
+    if ((all.denied || []).indexOf('excuses') !== -1) {
+      $('exc-count').textContent = '';
+      $('exc-list').innerHTML = '<p class="section-empty">Only the Standards Chair can see excuse requests.</p>';
+      return;
+    }
     demCache = {};
     var list = allExcuses();
     var perBrother = {};
@@ -222,7 +228,7 @@
     var ro = all.rollover || {};
     var uids = Object.keys(ro).sort(function (a, b) { return (ro[b].points || 0) - (ro[a].points || 0) || name(a).localeCompare(name(b)); });
     $('ro-tbody').innerHTML = uids.length ? uids.map(function (uid) {
-      return '<tr><td>' + esc(name(uid)) + '</td><td><input type="number" class="field ro-input" data-uid="' + esc(uid) + '" value="' + esc(ro[uid].points || 0) + '" style="max-width:90px; padding:0.25rem 0.4rem;"></td><td>' + esc(ro[uid].from || '') + '</td></tr>';
+      return '<tr><td>' + esc(name(uid)) + '</td><td><input type="number" class="field ro-input" data-uid="' + esc(uid) + '" value="' + esc(ro[uid].points || 0) + '"' + (canEdit ? '' : ' disabled') + ' style="max-width:90px; padding:0.25rem 0.4rem;"></td><td>' + esc(ro[uid].from || '') + '</td></tr>';
     }).join('') : '<tr><td colspan="3" class="section-empty">Nothing carried in.</td></tr>';
     $('ro-tbody').querySelectorAll('.ro-input').forEach(function (inp) {
       var uid = inp.getAttribute('data-uid'), orig = inp.value;
@@ -248,6 +254,8 @@
     PortalAuth.requirePerm(['standards', 'settings']).then(function (profile) {
       if (!profile) return;
       me = profile; PortalAuth.initNav(profile);
+      canEdit = PortalOps.hasPerm(me, 'standards');
+      if (!canEdit) $('btn-adj').closest('.portal-card').classList.add('hidden');
       return PortalOps.loadSettings();
     }).then(function (s) {
       if (!s) return;

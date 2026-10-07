@@ -18,7 +18,7 @@
   function today() { return C.ymd(new Date()); }
 
   function reload() {
-    return Promise.all([PortalOps.loadTermFacts(term, ['ledger', 'adjustments', 'standing', 'events', 'attendance', 'rollover', 'service']), PortalOps.db.ref('terms/' + term).once('value')])
+    return Promise.all([PortalOps.loadTermFacts(term, ['ledger', 'adjustments', 'standing', 'events', 'attendance', 'excuseFlags', 'rollover', 'service']), PortalOps.db.ref('terms/' + term).once('value')])
       .then(function (r) { all = r[0]; S = all.settings; termRec = r[1].val() || {}; renderAll(); });
   }
 
@@ -45,14 +45,19 @@
     var isPnm = kind === 'pnm';
     var targets = people(function (p) { return isPnm ? p.status === 'pnm' : C.isChargedStatus(p.status, S); });
     var key = (isPnm ? 'pnmdues_' : 'dues_') + term;
-    var updates = {}, n = 0;
+    var updates = {}, n = 0, skipped = 0;
+    var duesItem = isPnm ? /pnm/i : /dues/i;
     targets.forEach(function (uid) {
       if ((all.ledger[uid] || {})[key]) return;
+      // An imported or hand-entered dues charge also counts. Reversed charges drop out of ledgerSummary, so they don't block.
+      var already = C.ledgerSummary(all.ledger[uid] || {}, S).charges.some(function (c) { return duesItem.test(c.item || '') && (isPnm || !/pnm/i.test(c.item || '')); });
+      if (already) { skipped++; return; }
       updates['ledger/' + term + '/' + uid + '/' + key] = Object.assign({ type: 'charge', item: isPnm ? 'PNM dues' : 'Dues', amount: isPnm ? d.pnmAmount : d.amount, dueDate: due, date: today(), accruesLate: true, demeritsIfLate: d.demeritsIfLate || 0 }, PortalOps.audit(me));
       n++;
     });
-    if (!n) return setStatus('tr-status', 'Everyone eligible is already charged.', 'success');
-    if (!confirm('Charge ' + money(isPnm ? d.pnmAmount : d.amount) + ' to ' + n + ' ' + (isPnm ? 'PNM' : 'active brother') + (n === 1 ? '' : 's') + ', due ' + fmtDate(due) + '?')) return;
+    if (!n) return setStatus('tr-status', 'Everyone eligible is already charged' + (skipped ? ' (' + skipped + ' have a dues charge from the sheet import or an earlier entry)' : '') + '.', 'success');
+    if (!confirm('Charge ' + money(isPnm ? d.pnmAmount : d.amount) + ' to ' + n + ' ' + (isPnm ? 'PNM' : 'active brother') + (n === 1 ? '' : 's') + ', due ' + fmtDate(due) + '?' +
+      (skipped ? '\n' + skipped + ' already have a dues charge this term (imported or entered earlier) and are skipped.' : ''))) return;
     updates['terms/' + term + '/duesDueDate'] = due;
     if (!isPnm) updates['terms/' + term + '/duesChargedAt'] = new Date().toISOString();
     PortalOps.db.ref().update(updates).then(function () {
@@ -115,7 +120,7 @@
     var collected = 0, outstanding = 0, duesPaid = 0, duesTotal = 0, lateCount = 0;
     rows.forEach(function (r) {
       collected += r.led.totalPaid; outstanding += r.led.balance;
-      var dues = r.led.charges.find(function (c) { return c.key === 'dues_' + term; });
+      var dues = r.led.charges.find(function (c) { return c.key === 'dues_' + term || (/^imp_/.test(c.key) && /dues/i.test(c.item || '') && !/pnm|late/i.test(c.item || '')); });
       if (dues) { duesTotal++; if (dues.settled) duesPaid++; }
       if (r.led.charges.some(function (c) { return c.status === 'late'; })) lateCount++;
     });
@@ -138,19 +143,19 @@
 
   function renderPerson(r) {
     var chips = r.led.charges.map(function (c) {
-      var cls = c.status === 'paid' || c.status === 'waived' ? 'good' : (c.status === 'late' ? 'bad' : (c.status === 'plan' ? 'warn' : ''));
-      return '<span class="rchip ' + cls + '">' + esc(c.item) + ' ' + (c.settled ? '✓' : money(c.remaining + c.lateFee)) + '</span>';
+      var cls = c.status === 'paid' || c.status === 'waived' ? 'good' : (c.status === 'late' ? 'bad' : (c.status === 'plan' || c.status === 'fee' ? 'warn' : ''));
+      return '<span class="rchip ' + cls + '">' + esc(c.item) + ' ' + (c.settled ? '✓' : money(c.owed)) + '</span>';
     }).join('');
     var body = r.led.charges.map(function (c) {
       var hist = c.history.map(function (h) { return '<div class="step-hint" style="margin:0;">' + esc(fmtDate(h.date)) + ' — ' + esc(h.type) + ' ' + (h.amount ? money(h.amount) : '') + (h.method ? ' (' + esc(h.method) + ')' : '') + (h.note ? ' · ' + esc(h.note) : '') + ' <button type="button" class="btn-text rev-btn" data-uid="' + esc(r.uid) + '" data-key="' + esc(h.key) + '">reverse</button></div>'; }).join('');
       var acts = c.settled ? '' :
         '<div class="add-row" style="align-items:center; margin-top:0.35rem;">' +
-        '<input class="field pay-amt" data-key="' + esc(c.key) + '" type="number" step="0.01" placeholder="' + (c.remaining + c.lateFee) + '" style="max-width:110px;">' +
+        '<input class="field pay-amt" data-key="' + esc(c.key) + '" type="number" step="0.01" placeholder="' + c.owed + '" style="max-width:110px;">' +
         '<select class="field pay-method" data-key="' + esc(c.key) + '" style="max-width:120px;"><option>venmo</option><option>cash</option><option>check</option><option>zelle</option><option>other</option></select>' +
         '<button type="button" class="btn btn-primary btn-small act" data-a="payment" data-uid="' + esc(r.uid) + '" data-key="' + esc(c.key) + '" style="margin:0;">Record payment</button>' +
         '<button type="button" class="btn ghost btn-small act" data-a="plan" data-uid="' + esc(r.uid) + '" data-key="' + esc(c.key) + '" style="margin:0;">Payment plan</button>' +
         '<button type="button" class="btn ghost btn-small act" data-a="waiver" data-uid="' + esc(r.uid) + '" data-key="' + esc(c.key) + '" style="margin:0;">Waive</button></div>';
-      return '<div class="rd"><div class="rd-line">' + esc(c.item) + ' · ' + money(c.amount) + (c.dueDate ? ' · due ' + esc(fmtDate(c.dueDate)) : '') + ' · ' + pill(c.status, c.status === 'paid' || c.status === 'waived' ? 'good' : (c.status === 'late' ? 'bad' : 'warn')) +
+      return '<div class="rd"><div class="rd-line">' + esc(c.item) + ' · ' + money(c.amount) + (c.dueDate ? ' · due ' + esc(fmtDate(c.dueDate)) : '') + ' · ' + pill(c.status === 'fee' ? 'late fee owed' : c.status, c.status === 'paid' || c.status === 'waived' ? 'good' : (c.status === 'late' ? 'bad' : 'warn')) +
         (c.lateFee ? ' <span style="color:#c62828; font-size:0.85rem;">+' + money(c.lateFee) + ' late fee</span>' : '') + (c.onPlan && c.planDueDate ? ' <span class="step-hint" style="display:inline;">plan due ' + esc(fmtDate(c.planDueDate)) + '</span>' : '') + '</div>' + hist + acts + '</div>';
     }).join('');
     var buyout = r.dem.standing === 'bad' && r.dem.buyout ? '<div class="rd"><div class="rd-line">Bad standing · buy-out ' + money(r.dem.buyout) + ' resets ' + r.dem.total + ' demerits to 0</div><button type="button" class="btn ghost btn-small act" data-a="buyout" data-uid="' + esc(r.uid) + '" data-amount="' + r.dem.buyout + '" data-total="' + r.dem.total + '" style="margin:0;">Record buy-out paid</button></div>' : '';
@@ -177,6 +182,7 @@
           return write(uid, { type: 'plan', chargeId: key, date: today(), planDueDate: due, note: 'Payment plan' }, 'Payment plan for ' + name(uid) + ' due ' + due);
         }
         if (a === 'buyout') {
+          try { PortalOps.requireReadable(all); } catch (e) { return alert(e.message); }
           var amount = parseFloat(this.getAttribute('data-amount')), total = parseInt(this.getAttribute('data-total'), 10);
           if (!confirm('Record a ' + money(amount) + ' buy-out from ' + name(uid) + '? This charges and pays the fine and resets their ' + total + ' demerits to 0.')) return;
           var k = 'buyout_' + Date.now().toString(36);
