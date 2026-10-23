@@ -120,6 +120,8 @@ imports/{id}              { at, by, counts, unmatched }
 | proof/excuse, proof/service | Standards / Service+Marshal; self | self creates (≤ 400k chars, JPEG data URL) or deletes own; admin clears a term |
 | statusHistory | officers; self | admin, append-only |
 | portalLinks | every member | admin |
+| familyTree/members, photos, meta | every member | admin or `perms/tree` (exec by default); member validate: name ≤ 80, roll a number, LinkedIn URL only; photo ≤ 90k chars JPEG data URL |
+| familyTree/history | every member | `perms/tree`, append-only |
 | ledger entries | | never overwritten (`!data.exists()`), must carry createdBy = auth.uid |
 | pledge nodes | pledges, standards, settings holders; self reads own pledge | pledges |
 | votes / hasVoted / progress | | only `status === 'active'` (or legacy records without a status) |
@@ -135,6 +137,17 @@ imports/{id}              { at, by, counts, unmatched }
 ## Portal home links
 
 `portalLinks/sections/{id} = { title, order, links: { id: { label, url, icon, order, audience, hidden } } }`, `portalLinks/calendarUrl`. Edited at `portal-links.html` (admin), rendered by `js/portal-links-core.js`, which also holds the built-in default set and the icon list. `url` must be `https://…` or a portal page name; audience is `all | active | pnm | officers | admin`.
+
+## Family tree
+
+```
+familyTree/members/{id}   { name, roll, major, pledgeClass, bigId, big2Id, linkedin, mark, note, hasPhoto,
+                            familyName, color }            -- familyName/color only on a family root (no bigId)
+familyTree/photos/{id}    { data: 'data:image/jpeg;base64,…', w: 192, h: 192, bytes, createdAt, by }   -- one square thumbnail per member
+familyTree/meta           { classes: [ 'Alpha', …, 'Omega Beta', … ], title, importedAt, importedBy, source, updatedAt }
+familyTree/history/{push} { action: add|edit|delete|import, memberId, name, before, after, by, byName, at }
+```
+Facts are only "who is whose big"; `js/family-tree-core.js` (pure, tested in `ops-tests.html`) turns them into families, rows per pledge class and a tidy layout, and refuses loops. `family-tree.html` draws it as pannable SVG (one finger pans, two pinch), exports the same drawing to PNG on a canvas (≤ 15 M pixels on iOS, so a phone exports one family at a time), and lets `tree` holders edit in a side panel / bottom sheet. Co-big (`big2Id`) draws a dashed line. The 2026 Canva poster was converted to `portal/data/family-tree-seed.json` (names, majors, roll numbers, classes, lines, photos, LinkedIn links, X/W marks); an admin imports it once from the page while the tree is empty. The same page restores a backup file of the same shape, and editors can download one. Photos: ~116 × 15 KB ≈ 1.7 MB in the database, loaded once after the pills draw. Deleting a member re-attaches their littles to the deleted member's big.
 
 ## Navigation
 
@@ -153,6 +166,7 @@ The three header menus are built by `NAV` in `js/auth.js`. Add a page to the sit
 | semester | settings (+ attendance for scheduling) | new term, bulk event schedule, photo clean-up |
 | settings | settings | every bylaw number, event types, positions, statuses, history |
 | admin, portal-links, import | admin | people, home page links, one-time sheet import |
+| family-tree | everyone (edit: `tree`, exec by default) | big/little lineage: search, families, person cards, PNG export, editor, one-time poster import |
 
 ## Term rollover (Semester Setup page)
 

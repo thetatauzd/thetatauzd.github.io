@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Family Tree</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=28">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending ft-body">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Family Tree</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu"></div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section ft-page">
+    <!-- Toolbar: find, pick a family, jump to me, fit, export, add -->
+    <div class="ft-toolbar">
+      <div class="ft-search-wrap">
+        <input id="ft-search" class="field" type="search" placeholder="Find a brother by name, roll # or major" autocomplete="off" aria-label="Find a brother">
+        <div id="ft-search-results" class="ft-search-results hidden" role="listbox"></div>
+      </div>
+      <select id="ft-family" class="field" aria-label="Show a family"><option value="">Whole chapter</option></select>
+      <div class="ft-toolbar-btns">
+        <button type="button" class="btn ghost btn-small" id="ft-me" title="Find me in the tree">Me</button>
+        <button type="button" class="btn ghost btn-small" id="ft-fit" title="Fit the tree on screen">Fit</button>
+        <button type="button" class="btn ghost btn-small" id="ft-export">Export<span class="ft-long"> picture</span></button>
+        <button type="button" class="btn btn-small hidden" id="ft-add">+ Add<span class="ft-long"> brother</span></button>
+      </div>
+    </div>
+    <p class="step-hint ft-summary" id="ft-summary">Loading the tree…</p>
+
+    <!-- The tree: class labels pinned on the left, the drawing pans and zooms -->
+    <div class="ft-stage" id="ft-stage">
+      <div class="ft-rowlabels" id="ft-rowlabels"></div>
+      <svg id="ft-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Family tree"></svg>
+      <div class="ft-zoom">
+        <button type="button" id="ft-zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="ft-zoom-out" aria-label="Zoom out">−</button>
+      </div>
+      <div class="ft-hint" id="ft-hint">Drag to move · pinch or scroll to zoom · tap a brother</div>
+    </div>
+
+    <!-- First-time import (admins, only while the tree is empty) -->
+    <div class="portal-card hidden" id="ft-empty">
+      <h2>No tree yet</h2>
+      <p class="step-hint" id="ft-empty-text">Nobody has been added to the family tree.</p>
+      <div class="req-actions hidden" id="ft-import-row">
+        <button type="button" class="btn" id="ft-import">Import the Canva poster (one time)</button>
+        <label class="btn ghost btn-small photo-add">Restore from a backup file<input type="file" id="ft-restore" accept="application/json,.json" class="visually-hidden"></label>
+        <span class="status-line" id="ft-import-status"></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Person card / editor: a side panel on desktop, a bottom sheet on phones -->
+  <aside class="ft-panel ops-section hidden" id="ft-panel" aria-live="polite">
+    <div class="ft-panel-head">
+      <button type="button" class="ft-panel-close" id="ft-panel-close" aria-label="Close">×</button>
+    </div>
+    <div class="ft-panel-body" id="ft-panel-body"></div>
+  </aside>
+  <div class="ft-backdrop hidden" id="ft-backdrop"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=28"></script>
+  <script src="js/auth.js?v=28"></script>
+  <script src="js/ops-core.js?v=28"></script>
+  <script src="js/ops-db.js?v=28"></script>
+  <script src="js/ops-photos.js?v=28"></script>
+  <script src="js/family-tree-core.js?v=28"></script>
+  <script src="js/family-tree.js?v=28"></script>
+</body>
+</html>

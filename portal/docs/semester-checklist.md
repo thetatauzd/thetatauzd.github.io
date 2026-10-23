@@ -28,8 +28,10 @@ File locations (old tracker sheets, Budget, form responses, Apps Script projects
 ## Officer change (elections)
 - User Management → edit positions on the old and the new holder. Permissions update the next time each person loads
   a page.
-- If the chapter changed what a position may do (Chapter Settings → Positions), re-save every holder of that position
-  on User Management afterwards. Until then their stored permissions are the old ones.
+- If the chapter changed what a position may do (Chapter Settings → Positions), press **Refresh everyone's
+  permissions** on User Management afterwards. Until then their stored permissions are the old ones.
+- After initiation: the Marshal or any exec officer adds the new class to the Family Tree (menu → Family Tree →
+  open each big → + Add a little). Export a picture for the chapter Instagram and download a backup file.
 - Each new officer reads their section of `portal/docs/officer-guide.md` (Chapter Ops menu → Officer guide).
 
 ## Re-import from the old Google Sheet (before go-live only, never after)

@@ -15,7 +15,7 @@
   var SCHEMA_VERSION = 2;
 
   /** Capabilities the database rules understand. Positions map onto these. */
-  var PERMS = ['finance', 'attendance', 'standards', 'service', 'pledges', 'settings', 'admin'];
+  var PERMS = ['finance', 'attendance', 'standards', 'service', 'pledges', 'settings', 'tree', 'admin'];   // tree: edit the family tree
 
   /**
    * Default settings, seeded from the Fall 2026 bylaws, the Standards Board
@@ -24,13 +24,14 @@
    */
   var DEFAULTS = {
     positions: {
-      regent:                  { label: 'Regent',                  group: 'officer', order: 1,  perms: { settings: true } },   // not standards: excuse reasons stay with the Standards Chair
-      vice_regent:             { label: 'Vice-Regent',             group: 'officer', order: 2,  perms: { settings: true, attendance: true } },
-      scribe:                  { label: 'Scribe',                  group: 'officer', order: 3,  perms: { attendance: true } },
-      treasurer:               { label: 'Treasurer',               group: 'officer', order: 4,  perms: { finance: true, settings: true } },
-      corresponding_secretary: { label: 'Corresponding Secretary', group: 'officer', order: 5,  perms: {} },
-      marshal:                 { label: 'Marshal',                 group: 'officer', order: 6,  perms: { pledges: true } },
-      standards_chair:         { label: 'Standards Chair',         group: 'officer', order: 7,  perms: { standards: true, attendance: true, settings: true } },
+      // Every exec officer may edit the family tree (perm `tree`); chairs get it from Chapter Settings if wanted.
+      regent:                  { label: 'Regent',                  group: 'officer', order: 1,  perms: { settings: true, tree: true } },   // not standards: excuse reasons stay with the Standards Chair
+      vice_regent:             { label: 'Vice-Regent',             group: 'officer', order: 2,  perms: { settings: true, attendance: true, tree: true } },
+      scribe:                  { label: 'Scribe',                  group: 'officer', order: 3,  perms: { attendance: true, tree: true } },
+      treasurer:               { label: 'Treasurer',               group: 'officer', order: 4,  perms: { finance: true, settings: true, tree: true } },
+      corresponding_secretary: { label: 'Corresponding Secretary', group: 'officer', order: 5,  perms: { tree: true } },
+      marshal:                 { label: 'Marshal',                 group: 'officer', order: 6,  perms: { pledges: true, tree: true } },
+      standards_chair:         { label: 'Standards Chair',         group: 'officer', order: 7,  perms: { standards: true, attendance: true, settings: true, tree: true } },
       standards_rep:           { label: 'Standards Class Rep',     group: 'board',   order: 8,  perms: {} },
       academic_chair:          { label: 'Academic Chair',          group: 'chair',   order: 20, perms: {} },
       brotherhood_chair:       { label: 'Brotherhood Chair',       group: 'chair',   order: 21, perms: {} },

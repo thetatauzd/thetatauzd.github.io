@@ -109,13 +109,37 @@ the demerits.
 
 ---
 
+## Every exec officer: Family Tree
+
+- Menu → **Family Tree**. Every brother can look; exec (Regent, Vice-Regent, Scribe, Treasurer, Corresponding
+  Secretary, Marshal, Standards Chair) can edit. Chairs can be given the `tree` capability on Chapter Settings.
+- **After initiation**: open the big, press **+ Add a little**, type the name, roll number, major, choose the new
+  pledge class (**+ New class** adds it once for everyone) and a photo (any phone picture; it is cropped square and
+  shrunk). A brother with two bigs gets a **Co-big** (dashed line).
+- **Fix a line**: open the person → **Edit** → change *Big*. A loop (someone their own grand-big) is refused.
+- **Family names**: open a family's root (the top person) → Edit → *Family name* and *Family colour*.
+- **Export picture**: whole chapter or one family, with a title and background, as a PNG for Instagram, the
+  rush slideshow or a poster. On a phone, export one family at a time (iPhones cannot draw the whole chapter in one
+  picture); use a laptop for the full poster.
+- **Backup**: Export picture → *Download a backup file*, once a semester, to the chapter Drive. The same file
+  restores the tree on the page if it is ever emptied.
+- The poster import flagged a few things to check by eye: duplicated roll numbers (173, 216, 229, 273, 320, 380),
+  12 pairs of Alpha founders drawn one above the other (kept as big → little, as on the poster), Soraya Remaili
+  with no roll number, the X and W marks (the poster never says what they mean), and a few blank black pills that
+  were not imported.
+
+---
+
 ## Technology Chair (admin)
 
 - **User Management**: approve sign-ups, set statuses (the confirm box explains what each one means), edit positions
   after elections, **rename** people.
 - **Portal Links**: change the home-page links (new Google Form each semester, etc.).
-- After changing what a position can do on Chapter Settings, re-save every holder of that position on User
-  Management. Until then they keep their old permissions.
+- After changing what a position can do on Chapter Settings, press **Refresh everyone's permissions** on User
+  Management (or re-save each holder). Until then they keep their old permissions.
+- **Family Tree, first time**: open Family Tree while it is empty and press *Import the Canva poster*. Afterwards
+  delete `portal/data/family-tree-seed.json` from the repository if you do not want the poster photos sitting in a
+  public repo (they are already public on the Canva link, so this is optional).
 - **Admins can read every excuse reason and photo** (deaths, family emergencies). Keep exactly two admins: the
   Technology Chair and the Standards Chair.
 - Follow `semester-checklist.md` each semester, and its admin-succession section before you graduate.
@@ -128,5 +152,7 @@ the demerits.
 - **Request an excuse**: tick every event it covers. For partial absences choose *Arriving late* or *Leaving
   early* (you'll be marked present). Send it 24 h ahead. Only you and Standards can read your reason.
 - **Log service hours**: type the event name, hours and date, add a photo or who can vouch for you.
+- **Family Tree**: find anyone, tap a name for their big, littles and family, press **Me** for your own line.
+  Wrong or missing? Tell any exec officer; they can fix it on the spot.
 - A number looks wrong? Demerits: Standards Chair. Money: Treasurer. Hours: Service Chair. Site problems: Technology
   Chair.

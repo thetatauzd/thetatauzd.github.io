@@ -17,6 +17,7 @@
   <div id="summary">Running…</div>
   <ul id="results"></ul>
   <script src="js/ops-core.js"></script>
+  <script src="js/family-tree-core.js"></script>
   <script>
   (function () {
     var C = window.OpsCore, results = [], pass = 0, fail = 0;
@@ -179,12 +180,12 @@
     eq('pledge: fresh PNM not ready', pr2.ready, false);
 
     // People.
-    eq('perms: treasurer → finance + settings', C.permsFor({ treasurer: true }, S), { finance: true, settings: true });
+    eq('perms: treasurer → finance + settings + tree', C.permsFor({ treasurer: true }, S), { finance: true, settings: true, tree: true });
     eq('legacyRole: standards chair → standards', C.legacyRole({ status: 'active', positions: { standards_chair: true, treasurer: true } }), 'standards');
     eq('legacyRole: plain active → brother', C.legacyRole({ status: 'active', positions: {} }), 'brother');
     eq('legacyRole: pnm', C.legacyRole({ status: 'pnm' }), 'pnm');
     eq('legacyRole: admin stays admin', C.legacyRole({ role: 'admin', status: 'active' }), 'admin');
-    eq('perms: a stored false beats a default true', C.permsFor({ treasurer: true }, { positions: { treasurer: { perms: { finance: true, settings: false } } } }), { finance: true });
+    eq('perms: a stored false beats a default true', C.permsFor({ treasurer: true }, { positions: { treasurer: { perms: { finance: true, settings: false } } } }), { finance: true, tree: true });
     var up = C.upgradeUser({ role: 'regent', name: 'X' }, S);
     eq('upgradeUser: regent → active + regent position + settings perm', [up.status, up.positions.regent, up.perms.settings, up.role], ['active', true, true, 'regent']);
     eq('isActiveStatus: coop is not active', C.isActiveStatus('coop', S), false);
@@ -195,6 +196,44 @@
     eq('money: 1035.5 → $1035.50', C.money(1035.5), '$1035.50');
     eq('withDefaults keeps stored values', C.withDefaults({ policy: { dues: { amount: 300 } } }).policy.dues.amount, 300);
     eq('withDefaults fills missing', C.withDefaults({ policy: { dues: { amount: 300 } } }).policy.dues.graceDays, 1);
+
+    // ── Family tree (js/family-tree-core.js): a small chapter with one family of four and one loner ──
+    var T = window.FamilyTreeCore;
+    var tree = {
+      a: { name: 'Emily Berger', pledgeClass: 'Alpha', roll: 1, color: 'maroon' },
+      b: { name: 'Cory Goodman', pledgeClass: 'Beta', roll: 42, bigId: 'a' },
+      c: { name: 'Ryan Dingman', pledgeClass: 'Gamma', roll: 55, bigId: 'b' },
+      d: { name: 'Josh Breed', pledgeClass: 'Epsilon', roll: 80, bigId: 'b' },
+      e: { name: 'Heather Cole', pledgeClass: 'Alpha', roll: 4 },
+      f: { name: 'Ghost', pledgeClass: 'Zeta', bigId: 'nobody' }
+    };
+    var ti = T.index(tree);
+    eq('tree: roots are those with no big or a missing big', ti.roots, ['a', 'e', 'f']);
+    eq('tree: littles sorted by class then roll', ti.children.b, ['c', 'd']);
+    eq('tree: a missing big is cleared', ti.byId.f.bigId, '');
+    eq('tree: families carry the root colour and size', T.families(ti).map(function (f) { return [f.name, f.color, f.size]; }), [['Emily Berger family', 'maroon', 4], ['Heather Cole family', 'gold', 1], ['Ghost family', 'gold', 1]]);
+    eq('tree: descendants', T.descendants(ti, 'a').sort(), ['b', 'c', 'd']);
+    eq('tree: rootOf', T.rootOf(ti, 'd'), 'a');
+    eq('tree: relations', (function () { var r = T.relations(ti, 'c'); return [r.big.id, r.grandBig.id, r.twins.map(function (t) { return t.id; }), r.littles.length]; })(), ['b', 'a', ['d'], 0]);
+    eq('tree: grand-littles of the root', T.relations(ti, 'a').grandLittles.map(function (g) { return g.id; }), ['c', 'd']);
+    eq('tree: a loop is refused', T.wouldCycle(ti, 'a', 'd'), true);
+    eq('tree: your own big cannot be you', T.wouldCycle(ti, 'a', 'a'), true);
+    eq('tree: a sideways move is fine', T.wouldCycle(ti, 'd', 'e'), false);
+    eq('tree: validate catches the loop and the bad link', T.validate(ti, 'a', { name: 'Emily', bigId: 'd', linkedin: 'http://x' }).length, 2);
+    eq('tree: validate passes a clean record', T.validate(ti, 'b', { name: 'Cory', roll: '42', bigId: 'a', linkedin: 'https://www.linkedin.com/in/cory' }), []);
+    var lo = T.layout(ti);
+    eq('tree: rows come from the pledge class', [lo.pos.a.row, lo.pos.b.row, lo.pos.c.row, lo.pos.d.row], [0, 1, 2, 4]);
+    eq('tree: a big sits centred over the littles', lo.pos.b.x, (lo.pos.c.x + lo.pos.d.x) / 2);
+    eq('tree: families do not overlap', lo.pos.e.x > lo.pos.d.x && lo.pos.f.x > lo.pos.e.x, true);
+    var same = T.index({ a: { name: 'A', pledgeClass: 'Alpha' }, b: { name: 'B', pledgeClass: 'Alpha', bigId: 'a' } });
+    eq('tree: a little in the same class sits beside the big', T.layout(same).pos.b.x < T.layout(same).pos.a.x, true);
+    eq('tree: search by part of a name', T.search(ti, 'dingm').map(function (m) { return m.id; }), ['c']);
+    eq('tree: search by roll number', T.search(ti, '80').map(function (m) { return m.id; }), ['d']);
+    eq('tree: search both names in any order', T.search(ti, 'breed josh')[0].id, 'd');
+    eq('tree: class list order', T.classList(26).slice(22), ['Psi', 'Omega', 'Gamma Beta', 'Delta Beta']);
+    eq('tree: next class after Omega Beta', T.nextClass(T.DEFAULT_CLASSES), 'Gamma Gamma');
+    eq('tree: cleanRecord drops empties and numbers the roll', T.cleanRecord({ name: ' Jo ', roll: '7', major: '', bigId: '', color: 'gold' }), { name: 'Jo', color: 'gold', roll: 7 });
+    eq('tree: stats', (function () { var s = T.stats(ti); return [s.members, s.families, s.classes, s.largest.name]; })(), [6, 3, 5, 'Emily Berger family']);
 
     document.getElementById('results').innerHTML = results.join('');
     var s = document.getElementById('summary');

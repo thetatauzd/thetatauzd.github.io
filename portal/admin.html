@@ -6,7 +6,7 @@
   <title>Admin – Approve brothers & roles</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=27">
+  <link rel="stylesheet" href="css/portal.css?v=28">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -87,6 +87,15 @@
       <span id="migrate-status" class="step-hint"></span>
     </div>
 
+    <details class="portal-card panel-collapse" id="card-perms" style="margin-bottom:1.5rem;">
+      <summary>Refresh everyone's permissions</summary>
+      <p class="step-hint">Permissions are stored on each person when they are saved. After Chapter Settings changes what a position may do (for example giving exec the family tree), press this once instead of re-saving every officer by hand. Nothing else about anyone changes.</p>
+      <div class="req-actions" style="margin:0;">
+        <button type="button" class="btn ghost btn-small" id="btn-perms">Recompute permissions from positions</button>
+        <span id="perms-status" class="step-hint"></span>
+      </div>
+    </details>
+
     <div class="portal-card" id="card-pending">
       <h2>Pending approval <span class="count-pill" id="count-pending"></span></h2>
       <p class="step-hint">New registrations. Approving makes them an <strong>active brother</strong>; choose PNM instead for a pledge.</p>
@@ -119,10 +128,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=27"></script>
-  <script src="js/auth.js?v=27"></script>
-  <script src="js/ops-core.js?v=27"></script>
-  <script src="js/ops-db.js?v=27"></script>
-  <script src="js/admin.js?v=27"></script>
+  <script src="js/firebase-config.js?v=28"></script>
+  <script src="js/auth.js?v=28"></script>
+  <script src="js/ops-core.js?v=28"></script>
+  <script src="js/ops-db.js?v=28"></script>
+  <script src="js/admin.js?v=28"></script>
 </body>
 </html>

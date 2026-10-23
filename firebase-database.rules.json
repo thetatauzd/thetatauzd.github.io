@@ -317,6 +317,29 @@
     "portalLinks": {
       ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
       ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "familyTree": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      "members": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
+        "$id": {
+          ".validate": "!newData.exists() || (newData.hasChildren(['name']) && newData.child('name').isString() && newData.child('name').val().length <= 80 && (!newData.hasChild('roll') || newData.child('roll').isNumber()) && (!newData.hasChild('bigId') || newData.child('bigId').isString()) && (!newData.hasChild('big2Id') || newData.child('big2Id').isString()) && (!newData.hasChild('linkedin') || newData.child('linkedin').val().matches(/^https:\\/\\/(www\\.)?linkedin\\.com\\//)))"
+        }
+      },
+      "photos": {
+        "$id": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
+          ".validate": "!newData.exists() || (newData.hasChildren(['data']) && newData.child('data').isString() && newData.child('data').val().length <= 90000 && newData.child('data').val().matches(/^data:image\\/jpeg;base64,/))"
+        }
+      },
+      "meta": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)"
+      },
+      "history": {
+        "$id": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true) && !data.exists()"
+        }
+      }
     }
   }
 }

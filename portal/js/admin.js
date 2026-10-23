@@ -226,6 +226,15 @@
         PortalOps.migrateUsers(me).then(function(n) { $('migrate-status').textContent = 'Upgraded ' + n + ' records.'; })
           .catch(function(err) { b.disabled = false; $('migrate-status').textContent = 'Failed: ' + err.message; });
       });
+      $('btn-perms').addEventListener('click', function() {
+        var b = this, st = $('perms-status');
+        b.disabled = true; st.textContent = 'Recomputing…';
+        // saveUser with an empty patch re-derives perms + role from positions and re-mirrors directory/.
+        var uids = Object.keys(users).filter(function(uid) { var u = users[uid] || {}; return (u.status || (u.role === 'pending' ? 'pending' : 'active')) !== 'pending'; });
+        uids.reduce(function(p, uid) { return p.then(function() { return PortalOps.saveUser(uid, {}, me); }); }, Promise.resolve())
+          .then(function() { st.textContent = 'Done: ' + uids.length + ' people. They get the new permissions on their next page load.'; b.disabled = false; })
+          .catch(function(err) { b.disabled = false; st.textContent = 'Failed: ' + err.message; });
+      });
       db.ref('users').on('value', function(snap) { users = snap.val() || {}; render(); });
     });
   }

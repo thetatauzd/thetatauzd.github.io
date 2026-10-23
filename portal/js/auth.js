@@ -313,6 +313,7 @@
       { href: 'excuse', label: 'Request an excuse' },
       { href: 'log-service', label: 'Log service hours' },
       { href: 'voting', label: 'Voting' },
+      { href: 'family-tree', label: 'Family Tree' },
       { href: 'timer', label: 'Event Timer', roles: ['rush_chair', 'admin'] },
       { href: '/', label: 'Back to Site' }
     ],

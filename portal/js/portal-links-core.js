@@ -70,6 +70,13 @@
                 "icon": "grid",
                 "order": 4,
                 "audience": "all"
+            },
+            "family-tree": {
+                "label": "Family Tree",
+                "url": "family-tree",
+                "icon": "people",
+                "order": 5,
+                "audience": "all"
             }
         }
     },
