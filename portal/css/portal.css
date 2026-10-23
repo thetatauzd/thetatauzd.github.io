@@ -1467,6 +1467,7 @@ main.ops-section { max-width: 1500px; }
 .ft-offices .field { padding: 0.3rem 0.4rem; font-size: 0.85rem; }
 .ft-signs { font-size: 0.85rem; color: #555; margin: 0.1rem 0 0.2rem; }
 .ft-card-full { color: #777; font-size: 0.85rem; margin: 0; }
+.ft-status-chip { display: inline-block; font: 600 0.72rem Poppins, sans-serif; background: #2b2b2b; color: #eee; padding: 0.1rem 0.5rem; border-radius: 10px; vertical-align: middle; }
 .ft-more { margin: 0.5rem 0 0; border: 1px solid #eee; border-radius: 8px; padding: 0.3rem 0.7rem 0.6rem; }
 .ft-more summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #555; }
 .ft-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 49; }

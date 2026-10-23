@@ -19,12 +19,16 @@
   var familyFilter = '', selectedId = null, editing = null;
   var view = { tx: 0, ty: 0, s: 1 };
   var G = { unit: 168, nodeW: 150, nodeH: 46, rowH: 112, photoR: 25, padX: 60, padY: 30, labelW: 96 };
-  var COLORS = { gold: { fill: '#E6B800', text: '#3a2a00', sub: '#5a4400' }, maroon: { fill: '#8B0000', text: '#fff', sub: '#f3d9d9' } };
+  var COLORS = { gold: { fill: '#E6B800', text: '#3a2a00', sub: '#5a4400' }, maroon: { fill: '#8B0000', text: '#fff', sub: '#f3d9d9' }, gone: { fill: '#2b2b2b', text: '#cfcfcf', sub: '#9a9a9a' } };
 
   function $(id) { return document.getElementById(id); }
   function setStatus(id, text, cls) { var el = $(id); if (!el) return; el.textContent = text || ''; el.className = 'status-line ' + (cls || ''); }
   function initials(name) { return (name || '').split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
-  function colorOf(id) { var root = T.rootOf(fullIdx, id); return COLORS[(fullIdx.byId[root] && fullIdx.byId[root].color) || 'gold'] || COLORS.gold; }
+  function colorOf(id) {
+    var m = fullIdx.byId[id];
+    if (m && m.status) return COLORS.gone;                 // resigned / removed: black pill, as on the poster
+    var root = T.rootOf(fullIdx, id); return COLORS[(fullIdx.byId[root] && fullIdx.byId[root].color) || 'gold'] || COLORS.gold;
+  }
   function subLine(m) { return [m.major, m.roll != null ? '#' + m.roll : ''].filter(Boolean).join(' · '); }
 
   // ── Data ──
@@ -287,7 +291,7 @@
     var fam = T.families(fullIdx).filter(function (f) { return f.rootId === rel.rootId; })[0];
     var html = '<div class="ft-card-head">' +
       (ph && ph.data ? '<img class="ft-card-photo" src="' + ph.data + '" alt="">' : '<div class="ft-card-photo ft-card-initials" style="background:' + col.fill + ';color:' + col.text + '">' + esc(initials(m.name)) + '</div>') +
-      '<div><h2>' + esc(m.name) + '</h2>' +
+      '<div><h2>' + esc(m.name) + (m.status ? ' <span class="ft-status-chip">' + esc(T.STATUSES[m.status] || m.status) + '</span>' : '') + '</h2>' +
       (T.signs(m.offices).length ? '<p class="ft-signs">' + T.signs(m.offices).map(function (s) { return '<span class="ft-mark-chip" title="' + esc(s.label) + '">' + esc(s.sign) + '</span> ' + esc(s.label); }).join(' · ') + '</p>' : '') +
       (m.fullName && m.fullName !== m.name ? '<p class="ft-card-full">' + esc(m.fullName) + '</p>' : '') +
       '<p class="ft-card-sub">' + esc([m.major, m.minor ? 'minor ' + m.minor : '', m.roll != null ? 'Roll #' + m.roll : '', m.pledgeClass ? m.pledgeClass + ' class' : '', m.grad ? 'grad ' + m.grad : ''].filter(Boolean).join(' · ')) + '</p>' +
@@ -392,7 +396,8 @@
       }).join('') + '</div>' +
       '<div class="' + (isRoot ? '' : 'hidden') + '" id="fe-root-fields"><label class="field-label" for="fe-color">Family colour</label><select class="field" id="fe-color"><option value="gold"' + (m.color !== 'maroon' ? ' selected' : '') + '>Gold</option><option value="maroon"' + (m.color === 'maroon' ? ' selected' : '') + '>Maroon</option></select></div>' +
       '<div class="' + (isRoot ? '' : 'hidden') + '" id="fe-family-wrap"><label class="field-label" for="fe-family">Family name (shown above the root)</label><input class="field" id="fe-family" maxlength="60" value="' + esc(m.familyName || '') + '"></div>' +
-      '<label class="field-label" for="fe-note">Note (optional)</label><input class="field" id="fe-note" maxlength="140" value="' + esc(m.note || '') + '">' +
+      '<div class="ft-two"><div><label class="field-label" for="fe-status">Standing</label><select class="field" id="fe-status">' + Object.keys(T.STATUSES).map(function (k) { return '<option value="' + k + '"' + ((m.status || '') === k ? ' selected' : '') + '>' + esc(T.STATUSES[k]) + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="field-label" for="fe-note">Note (optional)</label><input class="field" id="fe-note" maxlength="140" value="' + esc(m.note || '') + '"></div></div>' +
       '<div class="req-actions"><button type="button" class="btn" id="fe-save">Save</button><button type="button" class="btn ghost btn-small" id="fe-cancel">Cancel</button>' +
       (id ? '<button type="button" class="btn danger btn-small" id="fe-delete">Remove</button>' : '') + '</div>' +
       '<p class="status-line" id="fe-status"></p>';
@@ -431,7 +436,7 @@
       var rec = {
         name: $('fe-name').value, roll: $('fe-roll').value.trim(), pledgeClass: $('fe-class').value, major: $('fe-major').value,
         bigId: $('fe-big').getAttribute('data-value'), big2Id: $('fe-big2').getAttribute('data-value'),
-        linkedin: $('fe-linkedin').value, note: $('fe-note').value, offices: {},
+        linkedin: $('fe-linkedin').value, note: $('fe-note').value, offices: {}, status: $('fe-status').value,
         fullName: $('fe-fullname').value, minor: $('fe-minor').value, grad: $('fe-grad').value, roles: $('fe-roles').value, nickname: m.nickname || '',
         familyName: $('fe-family').value, color: $('fe-color').value,
         hasPhoto: newPhoto ? true : (removePhoto ? false : !!m.hasPhoto)

@@ -126,12 +126,14 @@ the demerits.
 - **Offices held** show as the official signs (XX! past Regent, W! current Marshal …) on the pill and the card; set
   them in Edit → *Offices held*. The Brother List details (full name, minor, graduation, exec roles) are under a
   fold in the editor.
+- **Someone resigns or is removed**: Edit → *Standing*. They stay in the tree so their littles keep their big, but
+  the pill turns black (the poster did the same). Never delete them.
 - The import used the Drive **Brother List** as the source of truth, so roll numbers and classes that were wrong on
-  the poster are already fixed. Still check by eye: 10 brothers who are on the Brother List but not on the poster
+  the poster are already fixed. Still check by eye: 7 brothers who are on the Brother List but not on the poster
   were added with no big (Carter Coleman, Austin Hetherington, Quentin Savage, Bethlehem Mersha, Bricen Bennett,
-  Chloe Mulhorn, Ty Phares, Rachel Wayne, Dylan Bawa, Tristan Peyton); Zack Gann (transfer from Eta Gamma) has no
-  roll number; 12 pairs of Alpha founders drawn one above the other on the poster were kept as big → little; a few
-  blank black pills on the poster were not imported.
+  Chloe Mulhorn, Ty Phares); Zack Gann transferred from Eta Gamma, so he has no Zeta Delta roll number; 12 pairs of
+  Alpha founders drawn one above the other on the poster were kept as big → little; the poster's blank black pills
+  were not imported (black now means resigned or removed).
 
 ---
 

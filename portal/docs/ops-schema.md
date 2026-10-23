@@ -144,6 +144,7 @@ imports/{id}              { at, by, counts, unmatched }
 familyTree/members/{id}   { name, roll, major, pledgeClass, bigId, big2Id, linkedin, note, hasPhoto,
                             fullName, nickname, minor, grad, roles,            -- from the Drive "Brother List"
                             offices: { regent: 'past', marshal: 'current' },    -- official signs of office: X! XX! XXX! XXXX!
+                            status: 'resigned' | 'removed',                      -- absent = brother; others stay in the tree, drawn black
                             familyName, color }            -- familyName/color only on a family root (no bigId)
 familyTree/photos/{id}    { data: 'data:image/jpeg;base64,…', w: 192, h: 192, bytes, createdAt, by }   -- one square thumbnail per member
 familyTree/meta           { classes: [ 'Alpha', …, 'Omega Beta', … ], title, importedAt, importedBy, source, updatedAt }

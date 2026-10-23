@@ -67,6 +67,9 @@
   }
   function signText(offices) { return signs(offices).map(function (s) { return s.sign; }).join(' '); }
 
+  /** Standing in the chapter. Anyone not a brother any more stays in the tree (their littles keep their big) but is drawn in black. */
+  var STATUSES = { '': 'Brother', resigned: 'Resigned', removed: 'Removed by Nationals' };
+
   /** The class after the last one in `classes` (so a new class is one tap). */
   function nextClass(classes) {
     var list = classes || DEFAULT_CLASSES;
@@ -283,6 +286,7 @@
     var r = parseInt(m.roll, 10); if (!isNaN(r)) out.roll = r;
     if (m.hasPhoto) out.hasPhoto = true;
     ['fullName', 'nickname', 'grad', 'minor', 'roles'].forEach(function (k) { out[k] = String(m[k] || '').trim(); });
+    if (STATUSES[m.status] && m.status) out.status = m.status;
     var offices = {};
     OFFICES.forEach(function (o) { var v = (m.offices || {})[o.key]; if (OFFICE_LEVELS[v]) offices[o.key] = v; });
     if (Object.keys(offices).length) out.offices = offices;
@@ -299,7 +303,7 @@
   }
 
   global.FamilyTreeCore = {
-    GREEK: GREEK, DEFAULT_CLASSES: DEFAULT_CLASSES, LIMITS: LIMITS, OFFICES: OFFICES, OFFICE_LEVELS: OFFICE_LEVELS,
+    GREEK: GREEK, DEFAULT_CLASSES: DEFAULT_CLASSES, LIMITS: LIMITS, OFFICES: OFFICES, OFFICE_LEVELS: OFFICE_LEVELS, STATUSES: STATUSES,
     classList: classList, nextClass: nextClass, classIndex: classIndex, signs: signs, signText: signText, parseSigns: parseSigns,
     index: index, descendants: descendants, rootOf: rootOf, wouldCycle: wouldCycle, families: families, relations: relations,
     layout: layout, search: search, validate: validate, cleanRecord: cleanRecord, stats: stats

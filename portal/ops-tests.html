@@ -238,6 +238,7 @@
     eq('tree: signs keep the official order and labels', T.signs({ marshal: 'current', regent: 'past' }).map(function (s) { return s.sign + ' ' + s.label; }), ['XX! Past Regent', 'W! Marshal']);
     eq('tree: parseSigns reads the Brother List suffix', T.parseSigns('UUXX'), { outer_guard: 'past', regent: 'past' });
     eq('tree: parseSigns single letter = current, triple = grand', T.parseSigns('Y VVV'), { vice_regent: 'current', scribe: 'grand' });
+    eq('tree: cleanRecord keeps a known status and drops an unknown one', [T.cleanRecord({ name: 'A', status: 'removed' }).status, T.cleanRecord({ name: 'A', status: 'ghost' }).status], ['removed', undefined]);
     eq('tree: cleanRecord keeps offices and the Brother List fields', T.cleanRecord({ name: 'Jo', offices: { regent: 'past', bogus: 'past', scribe: 'maybe' }, fullName: ' Jo Ann Smith ', grad: 'May 2024' }), { name: 'Jo', fullName: 'Jo Ann Smith', grad: 'May 2024', offices: { regent: 'past' } });
     eq('tree: stats', (function () { var s = T.stats(ti); return [s.members, s.families, s.classes, s.largest.name]; })(), [6, 3, 5, 'Emily Berger family']);
 
