@@ -123,10 +123,15 @@ the demerits.
   picture); use a laptop for the full poster.
 - **Backup**: Export picture → *Download a backup file*, once a semester, to the chapter Drive. The same file
   restores the tree on the page if it is ever emptied.
-- The poster import flagged a few things to check by eye: duplicated roll numbers (173, 216, 229, 273, 320, 380),
-  12 pairs of Alpha founders drawn one above the other (kept as big → little, as on the poster), Soraya Remaili
-  with no roll number, the X and W marks (the poster never says what they mean), and a few blank black pills that
-  were not imported.
+- **Offices held** show as the official signs (XX! past Regent, W! current Marshal …) on the pill and the card; set
+  them in Edit → *Offices held*. The Brother List details (full name, minor, graduation, exec roles) are under a
+  fold in the editor.
+- The import used the Drive **Brother List** as the source of truth, so roll numbers and classes that were wrong on
+  the poster are already fixed. Still check by eye: 10 brothers who are on the Brother List but not on the poster
+  were added with no big (Carter Coleman, Austin Hetherington, Quentin Savage, Bethlehem Mersha, Bricen Bennett,
+  Chloe Mulhorn, Ty Phares, Rachel Wayne, Dylan Bawa, Tristan Peyton); Zack Gann (transfer from Eta Gamma) has no
+  roll number; 12 pairs of Alpha founders drawn one above the other on the poster were kept as big → little; a few
+  blank black pills on the poster were not imported.
 
 ---
 

@@ -141,13 +141,15 @@ imports/{id}              { at, by, counts, unmatched }
 ## Family tree
 
 ```
-familyTree/members/{id}   { name, roll, major, pledgeClass, bigId, big2Id, linkedin, mark, note, hasPhoto,
+familyTree/members/{id}   { name, roll, major, pledgeClass, bigId, big2Id, linkedin, note, hasPhoto,
+                            fullName, nickname, minor, grad, roles,            -- from the Drive "Brother List"
+                            offices: { regent: 'past', marshal: 'current' },    -- official signs of office: X! XX! XXX! XXXX!
                             familyName, color }            -- familyName/color only on a family root (no bigId)
 familyTree/photos/{id}    { data: 'data:image/jpeg;base64,…', w: 192, h: 192, bytes, createdAt, by }   -- one square thumbnail per member
 familyTree/meta           { classes: [ 'Alpha', …, 'Omega Beta', … ], title, importedAt, importedBy, source, updatedAt }
 familyTree/history/{push} { action: add|edit|delete|import, memberId, name, before, after, by, byName, at }
 ```
-Facts are only "who is whose big"; `js/family-tree-core.js` (pure, tested in `ops-tests.html`) turns them into families, rows per pledge class and a tidy layout, and refuses loops. `family-tree.html` draws it as pannable SVG (one finger pans, two pinch), exports the same drawing to PNG on a canvas (≤ 15 M pixels on iOS, so a phone exports one family at a time), and lets `tree` holders edit in a side panel / bottom sheet. Co-big (`big2Id`) draws a dashed line. The 2026 Canva poster was converted to `portal/data/family-tree-seed.json` (names, majors, roll numbers, classes, lines, photos, LinkedIn links, X/W marks); an admin imports it once from the page while the tree is empty. The same page restores a backup file of the same shape, and editors can download one. Photos: ~116 × 15 KB ≈ 1.7 MB in the database, loaded once after the pills draw. Deleting a member re-attaches their littles to the deleted member's big.
+Facts are only "who is whose big"; `js/family-tree-core.js` (pure, tested in `ops-tests.html`) turns them into families, rows per pledge class and a tidy layout, and refuses loops. `family-tree.html` draws it as pannable SVG (one finger pans, two pinch), exports the same drawing to PNG on a canvas (≤ 15 M pixels on iOS, so a phone exports one family at a time), and lets `tree` holders edit in a side panel / bottom sheet. Co-big (`big2Id`) draws a dashed line. `portal/data/family-tree-seed.json` is the 2026 Canva poster (lines, photos, LinkedIn links, everyday names) reconciled against the Drive **Brother List** sheet, which wins on who exists, roll numbers, pledge classes (`Beta Gamma`, not `Gamma Beta`), majors, minors, graduation, exec roles and the signs of office typed after roll numbers (`1XX` = roll 1, past Regent). `name` is the everyday name, `fullName` the Brother List's legal name; both are searchable. An admin imports the seed once from the page while the tree is empty. Office signs follow the national list: Regent X, Vice Regent Y, Scribe V, Treasurer Z, Corresponding Secretary R, Marshal W, Inner Guard T, Outer Guard U; doubled = past, tripled = grand (`FamilyTreeCore.OFFICES`, `signs`, `parseSigns`). The same page restores a backup file of the same shape, and editors can download one. Photos: ~116 × 15 KB ≈ 1.7 MB in the database, loaded once after the pills draw. Deleting a member re-attaches their littles to the deleted member's big.
 
 ## Navigation
 

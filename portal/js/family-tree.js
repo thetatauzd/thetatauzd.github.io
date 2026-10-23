@@ -131,7 +131,8 @@
       g += '<rect class="ft-pill" x="0" y="0" width="' + G.nodeW + '" height="' + G.nodeH + '" rx="' + (G.nodeH / 2) + '" fill="' + col.fill + '"/>' +
            '<text class="ft-name" x="' + (G.nodeW / 2) + '" y="19" text-anchor="middle" fill="' + col.text + '">' + esc(clip(m.name, 20)) + '</text>' +
            '<text class="ft-sub" x="' + (G.nodeW / 2) + '" y="35" text-anchor="middle" fill="' + col.sub + '">' + esc(clip(subLine(m), 24)) + '</text>';
-      if (m.mark) g += '<text class="ft-mark" x="' + (G.nodeW - 6) + '" y="' + (G.nodeH + 2) + '" text-anchor="end">' + esc(String(m.mark).slice(0, 3)) + '</text>';
+      var sg = T.signText(m.offices);
+      if (sg) g += '<text class="ft-mark" x="' + (G.nodeW - 6) + '" y="' + (G.nodeH + 2) + '" text-anchor="end">' + esc(sg) + '</text>';
       g += '</g>';
       parts.push(g);
     });
@@ -286,8 +287,11 @@
     var fam = T.families(fullIdx).filter(function (f) { return f.rootId === rel.rootId; })[0];
     var html = '<div class="ft-card-head">' +
       (ph && ph.data ? '<img class="ft-card-photo" src="' + ph.data + '" alt="">' : '<div class="ft-card-photo ft-card-initials" style="background:' + col.fill + ';color:' + col.text + '">' + esc(initials(m.name)) + '</div>') +
-      '<div><h2>' + esc(m.name) + (m.mark ? ' <span class="ft-mark-chip">' + esc(m.mark) + '</span>' : '') + '</h2>' +
-      '<p class="ft-card-sub">' + esc([m.major, m.roll != null ? 'Roll #' + m.roll : '', m.pledgeClass ? m.pledgeClass + ' class' : ''].filter(Boolean).join(' · ')) + '</p>' +
+      '<div><h2>' + esc(m.name) + '</h2>' +
+      (T.signs(m.offices).length ? '<p class="ft-signs">' + T.signs(m.offices).map(function (s) { return '<span class="ft-mark-chip" title="' + esc(s.label) + '">' + esc(s.sign) + '</span> ' + esc(s.label); }).join(' · ') + '</p>' : '') +
+      (m.fullName && m.fullName !== m.name ? '<p class="ft-card-full">' + esc(m.fullName) + '</p>' : '') +
+      '<p class="ft-card-sub">' + esc([m.major, m.minor ? 'minor ' + m.minor : '', m.roll != null ? 'Roll #' + m.roll : '', m.pledgeClass ? m.pledgeClass + ' class' : '', m.grad ? 'grad ' + m.grad : ''].filter(Boolean).join(' · ')) + '</p>' +
+      (m.roles ? '<p class="ft-card-sub">Exec: ' + esc(m.roles) + '</p>' : '') +
       (m.linkedin ? '<a class="ft-linkedin" href="' + esc(m.linkedin) + '" target="_blank" rel="noopener">LinkedIn ↗</a>' : '') +
       '</div></div>';
     if (m.note) html += '<p class="ft-note">' + esc(m.note) + '</p>';
@@ -370,14 +374,23 @@
       '<div class="ft-two"><div><label class="field-label" for="fe-roll">Roll #</label><input class="field" id="fe-roll" inputmode="numeric" value="' + esc(m.roll != null ? m.roll : '') + '"></div>' +
       '<div><label class="field-label" for="fe-class">Pledge class</label><select class="field" id="fe-class">' + classOpts + '</select></div></div>' +
       '<label class="field-label" for="fe-major">Major</label><input class="field" id="fe-major" maxlength="60" value="' + esc(m.major || '') + '">' +
+      '<details class="ft-more"><summary>Brother List details (full name, minor, graduation, exec roles)</summary>' +
+      '<label class="field-label" for="fe-fullname">Full name (as on the Brother List)</label><input class="field" id="fe-fullname" maxlength="80" value="' + esc(m.fullName || '') + '">' +
+      '<div class="ft-two"><div><label class="field-label" for="fe-minor">Minor(s)</label><input class="field" id="fe-minor" maxlength="60" value="' + esc(m.minor || '') + '"></div>' +
+      '<div><label class="field-label" for="fe-grad">Graduation</label><input class="field" id="fe-grad" maxlength="20" placeholder="May 2027" value="' + esc(m.grad || '') + '"></div></div>' +
+      '<label class="field-label" for="fe-roles">Exec roles (text, e.g. Regent - 2024)</label><input class="field" id="fe-roles" maxlength="120" value="' + esc(m.roles || '') + '"></details>' +
       personPicker('fe-big', 'Big', m.bigId, id) +
       personPicker('fe-big2', 'Co-big (only if two people share a little)', m.big2Id, id) +
       '<div class="ft-photo-row"><div class="ft-card-photo ft-card-initials" id="fe-photo-preview"' + (ph && ph.data ? ' style="background-image:url(' + ph.data + ')"' : '') + '>' + (ph && ph.data ? '' : esc(initials(m.name))) + '</div>' +
       '<div><label class="btn ghost btn-small photo-add">Choose photo<input type="file" id="fe-photo" accept="image/*" class="visually-hidden"></label> ' +
       '<button type="button" class="btn ghost btn-small' + (ph ? '' : ' hidden') + '" id="fe-photo-remove">Remove photo</button><p class="step-hint">Square crop, shrunk to 192 px. Any phone photo works.</p></div></div>' +
       '<label class="field-label" for="fe-linkedin">LinkedIn (optional)</label><input class="field" id="fe-linkedin" placeholder="https://www.linkedin.com/in/…" value="' + esc(m.linkedin || '') + '">' +
-      '<div class="ft-two"><div><label class="field-label" for="fe-mark">Mark (optional)</label><input class="field" id="fe-mark" maxlength="3" placeholder="X, W…" value="' + esc(m.mark || '') + '"></div>' +
-      '<div class="' + (isRoot ? '' : 'hidden') + '" id="fe-root-fields"><label class="field-label" for="fe-color">Family colour</label><select class="field" id="fe-color"><option value="gold"' + (m.color !== 'maroon' ? ' selected' : '') + '>Gold</option><option value="maroon"' + (m.color === 'maroon' ? ' selected' : '') + '>Maroon</option></select></div></div>' +
+      '<p class="field-label">Offices held (official signs: X! now, XX! past)</p><div class="ft-offices">' + T.OFFICES.map(function (o) {
+        var v = (m.offices || {})[o.key] || '';
+        var opts = Object.keys(T.OFFICE_LEVELS).map(function (k) { var lv = T.OFFICE_LEVELS[k], sg = ''; for (var i = 0; i < lv[0]; i++) sg += o.sign; return '<option value="' + k + '"' + (v === k ? ' selected' : '') + '>' + sg + '! ' + (lv[1] || 'now ').trim().toLowerCase() + '</option>'; }).join('');
+        return '<label><span>' + esc(o.label) + '</span><select class="field fe-office" data-office="' + o.key + '"><option value="">—</option>' + opts + '</select></label>';
+      }).join('') + '</div>' +
+      '<div class="' + (isRoot ? '' : 'hidden') + '" id="fe-root-fields"><label class="field-label" for="fe-color">Family colour</label><select class="field" id="fe-color"><option value="gold"' + (m.color !== 'maroon' ? ' selected' : '') + '>Gold</option><option value="maroon"' + (m.color === 'maroon' ? ' selected' : '') + '>Maroon</option></select></div>' +
       '<div class="' + (isRoot ? '' : 'hidden') + '" id="fe-family-wrap"><label class="field-label" for="fe-family">Family name (shown above the root)</label><input class="field" id="fe-family" maxlength="60" value="' + esc(m.familyName || '') + '"></div>' +
       '<label class="field-label" for="fe-note">Note (optional)</label><input class="field" id="fe-note" maxlength="140" value="' + esc(m.note || '') + '">' +
       '<div class="req-actions"><button type="button" class="btn" id="fe-save">Save</button><button type="button" class="btn ghost btn-small" id="fe-cancel">Cancel</button>' +
@@ -418,10 +431,12 @@
       var rec = {
         name: $('fe-name').value, roll: $('fe-roll').value.trim(), pledgeClass: $('fe-class').value, major: $('fe-major').value,
         bigId: $('fe-big').getAttribute('data-value'), big2Id: $('fe-big2').getAttribute('data-value'),
-        linkedin: $('fe-linkedin').value, mark: $('fe-mark').value, note: $('fe-note').value,
+        linkedin: $('fe-linkedin').value, note: $('fe-note').value, offices: {},
+        fullName: $('fe-fullname').value, minor: $('fe-minor').value, grad: $('fe-grad').value, roles: $('fe-roles').value, nickname: m.nickname || '',
         familyName: $('fe-family').value, color: $('fe-color').value,
         hasPhoto: newPhoto ? true : (removePhoto ? false : !!m.hasPhoto)
       };
+      document.querySelectorAll('.fe-office').forEach(function (sel) { if (sel.value) rec.offices[sel.getAttribute('data-office')] = sel.value; });
       if (rec.bigId) { rec.familyName = ''; rec.color = ''; }       // only a root carries family fields
       if (rec.pledgeClass === '__new') rec.pledgeClass = m.pledgeClass || '';
       var errs = T.validate(fullIdx, id || '', rec);
@@ -580,7 +595,8 @@
           roundRect(ctx, p.x, p.y, G.nodeW, G.nodeH, G.nodeH / 2); ctx.fillStyle = col.fill; ctx.fill();
           ctx.fillStyle = col.text; ctx.font = '700 13px Poppins, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(clip(m.name, 20), p.x + G.nodeW / 2, p.y + 19);
           ctx.fillStyle = col.sub; ctx.font = '500 10.5px Poppins, Arial, sans-serif'; ctx.fillText(clip(subLine(m), 24), p.x + G.nodeW / 2, p.y + 35);
-          if (m.mark) { ctx.fillStyle = col.fill === COLORS.gold.fill ? '#8B0000' : '#E6B800'; ctx.font = '900 16px Georgia, serif'; ctx.textAlign = 'right'; ctx.fillText(String(m.mark).slice(0, 3), p.x + G.nodeW - 4, p.y + G.nodeH + 2); }
+          var sg = T.signText(m.offices);
+          if (sg) { ctx.fillStyle = col.fill === COLORS.gold.fill ? '#8B0000' : '#E6B800'; ctx.font = '900 14px Georgia, serif'; ctx.textAlign = 'right'; ctx.fillText(sg, p.x + G.nodeW - 4, p.y + G.nodeH + 2); }
         });
         return new Promise(function (res, rej) { c.toBlob(function (b) { b ? res(b) : rej(new Error('the picture is too big for this device — try one family')); }, 'image/png'); });
       });

@@ -1433,7 +1433,7 @@ main.ops-section { max-width: 1500px; }
 .ft-photo-ring { fill: #fbf8f3; }
 .ft-name { font: 700 13px Poppins, sans-serif; pointer-events: none; }
 .ft-sub { font: 500 10.5px Poppins, sans-serif; pointer-events: none; }
-.ft-mark { font: 900 16px Georgia, serif; fill: var(--color-maroon); }
+.ft-mark { font: 900 13px Georgia, serif; fill: var(--color-maroon); }
 .ft-rowlabels { position: absolute; left: 0; top: 0; bottom: 0; width: 96px; overflow: hidden; pointer-events: none; z-index: 2; background: linear-gradient(90deg, rgba(251,248,243,0.97) 70%, rgba(251,248,243,0)); }
 .ft-rowlabel { position: absolute; left: 0; width: 96px; display: flex; align-items: center; justify-content: center; text-align: center; font-family: Georgia, serif; font-weight: 600; color: #222; padding: 0 4px; box-sizing: border-box; overflow: hidden; }
 .ft-zoom { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 3; }
@@ -1462,6 +1462,13 @@ main.ops-section { max-width: 1500px; }
 .ft-picker-clear { position: absolute; right: 6px; top: 6px; width: 28px; height: 28px; border: none; border-radius: 50%; background: #eee; cursor: pointer; font-size: 1rem; color: #555; }
 .ft-picker .ft-search-results { top: calc(100% + 2px); }
 .ft-photo-row { display: flex; gap: 0.8rem; align-items: center; margin-top: 0.6rem; }
+.ft-offices { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.6rem; }
+.ft-offices label { display: flex; flex-direction: column; font-size: 0.78rem; color: #555; }
+.ft-offices .field { padding: 0.3rem 0.4rem; font-size: 0.85rem; }
+.ft-signs { font-size: 0.85rem; color: #555; margin: 0.1rem 0 0.2rem; }
+.ft-card-full { color: #777; font-size: 0.85rem; margin: 0; }
+.ft-more { margin: 0.5rem 0 0; border: 1px solid #eee; border-radius: 8px; padding: 0.3rem 0.7rem 0.6rem; }
+.ft-more summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #555; }
 .ft-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 49; }
 .ft-overlay-hint { color: #fff; font-size: 0.85rem; position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; }
 @media (max-width: 768px) {

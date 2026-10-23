@@ -13,19 +13,59 @@
   var GREEK = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda', 'Mu',
     'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega'];
 
-  /** Pledge classes in order: Alpha … Omega, then Gamma Beta … Omega Beta, then Gamma Gamma … */
+  /** Pledge classes in order: Alpha … Omega, then Beta Gamma … Beta Omega (the Brother List's names), then Gamma Gamma … */
   function classList(count) {
     var out = [], series = 0;
     while (out.length < count) {
       for (var i = 0; i < GREEK.length && out.length < count; i++) {
-        if (series > 0 && i < 2) continue;              // the second series starts at Gamma Beta
-        out.push(series === 0 ? GREEK[i] : GREEK[i] + ' ' + GREEK[series]);
+        if (series > 0 && i < 2) continue;              // the second series starts at Beta Gamma
+        out.push(series === 0 ? GREEK[i] : GREEK[series] + ' ' + GREEK[i]);
       }
       series++;
     }
     return out;
   }
-  var DEFAULT_CLASSES = classList(46);                  // Alpha … Omega Beta, as on the 2026 poster
+  var DEFAULT_CLASSES = classList(46);                  // Alpha … Beta Omega
+
+  /**
+   * Theta Tau's official signs of office (the letters after roll numbers in the
+   * Brother List): a current holder signs X!, a past holder XX!, national (grand)
+   * officers XXX! / XXXX!. member.offices = { regent: 'past', marshal: 'current' }.
+   */
+  var OFFICE_LEVELS = { current: [1, ''], past: [2, 'Past '], grand: [3, 'Grand '], pastGrand: [4, 'Past Grand '] };
+  var OFFICES = [
+    { key: 'regent', label: 'Regent', sign: 'X' },
+    { key: 'vice_regent', label: 'Vice Regent', sign: 'Y' },
+    { key: 'scribe', label: 'Scribe', sign: 'V' },
+    { key: 'treasurer', label: 'Treasurer', sign: 'Z' },
+    { key: 'corresponding_secretary', label: 'Corresponding Secretary', sign: 'R' },
+    { key: 'marshal', label: 'Marshal', sign: 'W' },
+    { key: 'inner_guard', label: 'Inner Guard', sign: 'T' },
+    { key: 'outer_guard', label: 'Outer Guard', sign: 'U' }
+  ];
+  /** [{ sign: 'XX!', label: 'Past Regent' }, …] in official order. */
+  function signs(offices) {
+    var out = [];
+    OFFICES.forEach(function (o) {
+      var v = (offices || {})[o.key]; if (v === true) v = 'past';
+      var lv = OFFICE_LEVELS[v]; if (!lv) return;
+      var s = ''; for (var i = 0; i < lv[0]; i++) s += o.sign;
+      out.push({ key: o.key, sign: s + '!', label: lv[1] + o.label });
+    });
+    return out;
+  }
+  /** 'UUXX' (as typed after a roll number) → { outer_guard: 'past', regent: 'past' }. */
+  function parseSigns(text) {
+    var out = {}, runs = String(text || '').toUpperCase().replace(/[^A-Z]/g, '').match(/(.)\1*/g) || [];
+    runs.forEach(function (run) {
+      var o = OFFICES.filter(function (x) { return x.sign === run.charAt(0); })[0];
+      if (!o) return;
+      var level = Object.keys(OFFICE_LEVELS).filter(function (k) { return OFFICE_LEVELS[k][0] === Math.min(run.length, 4); })[0];
+      out[o.key] = level;
+    });
+    return out;
+  }
+  function signText(offices) { return signs(offices).map(function (s) { return s.sign; }).join(' '); }
 
   /** The class after the last one in `classes` (so a new class is one tap). */
   function nextClass(classes) {
@@ -200,14 +240,15 @@
   function search(idx, q, limit) {
     var n = norm(q); if (!n) return [];
     var hits = idx.list.map(function (m) {
-      var name = norm(m.name), score = 0;
+      var name = norm(m.name), full = norm((m.fullName || '') + ' ' + (m.nickname || '')), score = 0;
       if (name === n) score = 100;
       else if (name.indexOf(n) === 0) score = 80;
       else if (name.indexOf(n) !== -1) score = 60;
       else if (String(m.roll || '') === n) score = 90;
+      else if (full.indexOf(n) !== -1) score = 55;
       else if (norm(m.major).indexOf(n) === 0) score = 30;
       else if (norm(m.pledgeClass) === n) score = 20;
-      else if (n.split(' ').every(function (w) { return name.indexOf(w) !== -1; })) score = 50;
+      else if (n.split(' ').every(function (w) { return name.indexOf(w) !== -1 || full.indexOf(w) !== -1; })) score = 50;
       return { m: m, score: score };
     }).filter(function (h) { return h.score > 0; });
     hits.sort(function (a, b) { return b.score - a.score || (a.m.name || '').localeCompare(b.m.name || ''); });
@@ -236,11 +277,15 @@
     var out = {
       name: String(m.name || '').trim(), pledgeClass: String(m.pledgeClass || '').trim(),
       major: String(m.major || '').trim(), bigId: m.bigId || '', big2Id: m.big2Id || '',
-      linkedin: String(m.linkedin || '').trim(), note: String(m.note || '').trim(), mark: m.mark || '',
+      linkedin: String(m.linkedin || '').trim(), note: String(m.note || '').trim(),
       familyName: String(m.familyName || '').trim(), color: m.color || ''
     };
     var r = parseInt(m.roll, 10); if (!isNaN(r)) out.roll = r;
     if (m.hasPhoto) out.hasPhoto = true;
+    ['fullName', 'nickname', 'grad', 'minor', 'roles'].forEach(function (k) { out[k] = String(m[k] || '').trim(); });
+    var offices = {};
+    OFFICES.forEach(function (o) { var v = (m.offices || {})[o.key]; if (OFFICE_LEVELS[v]) offices[o.key] = v; });
+    if (Object.keys(offices).length) out.offices = offices;
     Object.keys(out).forEach(function (k) { if (out[k] === '' || out[k] === false) delete out[k]; });
     return out;
   }
@@ -254,8 +299,8 @@
   }
 
   global.FamilyTreeCore = {
-    GREEK: GREEK, DEFAULT_CLASSES: DEFAULT_CLASSES, LIMITS: LIMITS,
-    classList: classList, nextClass: nextClass, classIndex: classIndex,
+    GREEK: GREEK, DEFAULT_CLASSES: DEFAULT_CLASSES, LIMITS: LIMITS, OFFICES: OFFICES, OFFICE_LEVELS: OFFICE_LEVELS,
+    classList: classList, nextClass: nextClass, classIndex: classIndex, signs: signs, signText: signText, parseSigns: parseSigns,
     index: index, descendants: descendants, rootOf: rootOf, wouldCycle: wouldCycle, families: families, relations: relations,
     layout: layout, search: search, validate: validate, cleanRecord: cleanRecord, stats: stats
   };

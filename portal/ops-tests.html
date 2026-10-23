@@ -230,9 +230,15 @@
     eq('tree: search by part of a name', T.search(ti, 'dingm').map(function (m) { return m.id; }), ['c']);
     eq('tree: search by roll number', T.search(ti, '80').map(function (m) { return m.id; }), ['d']);
     eq('tree: search both names in any order', T.search(ti, 'breed josh')[0].id, 'd');
-    eq('tree: class list order', T.classList(26).slice(22), ['Psi', 'Omega', 'Gamma Beta', 'Delta Beta']);
-    eq('tree: next class after Omega Beta', T.nextClass(T.DEFAULT_CLASSES), 'Gamma Gamma');
+    eq('tree: class list order', T.classList(26).slice(22), ['Psi', 'Omega', 'Beta Gamma', 'Beta Delta']);
+    eq('tree: next class after Beta Kappa', T.nextClass(T.classList(32)), 'Beta Lambda');
+    eq('tree: next class after Beta Omega', T.nextClass(T.DEFAULT_CLASSES), 'Gamma Gamma');
     eq('tree: cleanRecord drops empties and numbers the roll', T.cleanRecord({ name: ' Jo ', roll: '7', major: '', bigId: '', color: 'gold' }), { name: 'Jo', color: 'gold', roll: 7 });
+    eq('tree: signs of office', T.signText({ regent: 'past', marshal: 'current', scribe: 'grand' }), 'XX! VVV! W!');
+    eq('tree: signs keep the official order and labels', T.signs({ marshal: 'current', regent: 'past' }).map(function (s) { return s.sign + ' ' + s.label; }), ['XX! Past Regent', 'W! Marshal']);
+    eq('tree: parseSigns reads the Brother List suffix', T.parseSigns('UUXX'), { outer_guard: 'past', regent: 'past' });
+    eq('tree: parseSigns single letter = current, triple = grand', T.parseSigns('Y VVV'), { vice_regent: 'current', scribe: 'grand' });
+    eq('tree: cleanRecord keeps offices and the Brother List fields', T.cleanRecord({ name: 'Jo', offices: { regent: 'past', bogus: 'past', scribe: 'maybe' }, fullName: ' Jo Ann Smith ', grad: 'May 2024' }), { name: 'Jo', fullName: 'Jo Ann Smith', grad: 'May 2024', offices: { regent: 'past' } });
     eq('tree: stats', (function () { var s = T.stats(ti); return [s.members, s.families, s.classes, s.largest.name]; })(), [6, 3, 5, 'Emily Berger family']);
 
     document.getElementById('results').innerHTML = results.join('');
