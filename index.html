@@ -5,18 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <title>Theta Tau Zeta Delta – University of South Carolina</title>
-    <link rel="icon" type="image/x-icon" href="./Images/ThetaTau.png"/>
-    <link rel="canonical" href="/"/>
+    <link rel="icon" type="image/png" href="/Images/ThetaTau.png"/>
+    <link rel="apple-touch-icon" href="/Images/ThetaTau.png"/>
+    <link rel="canonical" href="https://www.thetatauzd.org/"/>
     <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
     <meta property="og:title" content="Theta Tau Zeta Delta – University of South Carolina"/>
-    <meta property="og:url" content="/"/>
+    <meta property="og:url" content="https://www.thetatauzd.org/"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships."/>
-    <meta property="og:image" content="./Images/ThetaTau.png"/>
-    <meta name="description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships." />
+    <meta property="og:description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Founded in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
+    <meta property="og:image" content="https://www.thetatauzd.org/Images/og-cover.jpg"/>
+    <meta property="og:image:width" content="1200"/>
+    <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="Theta Tau Zeta Delta brothers in front of the Swearingen Engineering Center"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Founded in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap">
     <link rel="stylesheet" type="text/css" href="./css/site.css">
     <link rel="stylesheet" type="text/css" href="./css/static.css">
     <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
@@ -126,7 +131,7 @@
     
     .btn-primary {
         background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-        color: white;
+        color: #1a1a1a;
         padding: 15px 30px;
         border: none;
         border-radius: 50px;
@@ -381,7 +386,7 @@
     /* Call to Action */
     .cta-section {
         background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-        color: white;
+        color: #1a1a1a;
         text-align: center;
         padding: 100px 4vw;
     }
@@ -395,6 +400,12 @@
         font-size: 1.2rem;
         margin-bottom: 2rem;
         opacity: 0.9;
+    }
+
+    .cta-section .btn-secondary {
+        color: #1a1a1a;
+        border-color: #1a1a1a;
+        opacity: 1;
     }
     
     /* Footer */
@@ -466,6 +477,14 @@
         backface-visibility: hidden;
     }
     </style>
+<style>
+    .footer-tagline { color: var(--color-gold); font-weight: 600; }
+    .footer-fineprint { grid-column: 1 / -1; flex-basis: 100%; width: 100%; font-size: 0.8rem; color: #9a9a9a; margin-top: 1.5rem !important; }
+    .footer-fineprint a { color: #bdbdbd; }
+    .footer-section a { min-height: 24px; display: inline-block; }
+    .header-skip-link { color: #1a1a1a !important; background: var(--color-gold) !important; font-weight: 600; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+    </style>
 </head>
 
 <body>
@@ -509,7 +528,7 @@
                                             <a href="/newsletter">Newsletters</a>
                                         </div>
                                         <div class="header-nav-item header-nav-item--push-right">
-                                            <a href="/portal" style="color:var(--color-gold); font-weight:600;">Brother Portal</a>
+                                            <a href="/portal">Brother Portal</a>
                                         </div>
                                     </nav>
                                 </div>
@@ -519,7 +538,7 @@
                         <div class="header-actions header-actions--right"></div>
                         
                         <div class="header-burger menu-overlay-has-visible-non-navigation-items">
-                            <button class="header-burger-btn burger" data-test="header-burger">
+                            <button class="header-burger-btn burger" data-test="header-burger" aria-label="Open menu" aria-haspopup="true">
                                 <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
                                 <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
                                 <div class="burger-box">
@@ -561,7 +580,7 @@
                                         <a href="/newsletter"><div class="header-menu-nav-item-content">Newsletters</div></a>
                                     </div>
                                     <div class="container header-menu-nav-item">
-                                        <a href="/portal" style="color:var(--color-gold);"><div class="header-menu-nav-item-content" style="color:var(--color-gold);">Brother Portal</div></a>
+                                        <a href="/portal"><div class="header-menu-nav-item-content">Brother Portal</div></a>
                                     </div>
                                 </div>
                             </div>
@@ -599,9 +618,9 @@
                 <div class="section-content">
                     <div style="max-width: 720px; margin: 0 auto; text-align: center;">
                         <h2>Welcome to Theta Tau Zeta Delta</h2>
-                        <p>We are the University of South Carolina's premier professional engineering fraternity, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
+                        <p>Founded in 2011, we are the coed professional engineering fraternity at the University of South Carolina, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
                         <p>We are a chapter of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau</a>, the national fraternity for engineers. The purpose of Theta Tau is to develop and maintain a high standard of professional interest among its members, and to unite them in a strong bond of fraternal fellowship.</p>
-                        <p><em>The Foremost Fraternity for Engineers</em> — engineering leaders for Service, Profession, and Brotherhood. <a href="https://thetatau.org/" target="_blank" rel="noopener">Visit thetatau.org</a> for national news, resources, and more.</p>
+                        <p><em>Engineering Leaders for Service, Profession, and Brotherhood.</em> <a href="https://thetatau.org/" target="_blank" rel="noopener">Visit thetatau.org</a> for national news, resources, and more.</p>
                     </div>
                 </div>
             </section>
@@ -636,7 +655,7 @@
                         <div class="section-text">
                             <h4>Lifelong Relationships</h4>
                             <h2>Build Lasting Friendships</h2>
-                            <p>From social events and away weekends to study groups and philantropic events, our brotherhood creates memories that last a lifetime. Join a community that supports you through every challenge.</p>
+                            <p>From social events and away weekends to study groups and philanthropic events, our brotherhood creates memories that last a lifetime. Join a community that supports you through every challenge.</p>
                             <a href="/brotherhood" class="btn-primary">Join Brotherhood</a>
                         </div>
                         <div></div>
@@ -670,10 +689,11 @@
                     <div class="stats-grid">
                         <div class="stat-item">
                             <div class="stat-number">460+</div>
-                            <div class="stat-label">Brothers</div>
+                            <div class="stat-label">Brothers Initiated</div>
+                            <div class="stat-label">Since 2011</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number">3000+</div>
+                            <div class="stat-number">2,500+</div>
                             <div class="stat-label">Lives Impacted</div>
                             <div class="stat-label">Through Service</div>
                         </div>
@@ -684,7 +704,7 @@
                         <div class="stat-item">
                             <div class="stat-number">900+</div>
                             <div class="stat-label">Service Hours</div>
-                            <div class="stat-label">Per Semester</div>
+                            <div class="stat-label">Last Semester</div>
                         </div>
                     </div>
                 </div>
@@ -708,7 +728,8 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Theta Tau Zeta Delta</h3>
-                    <p>Theta Tau Zeta Delta is the University of South Carolina's premier professional engineering fraternity, fostering leadership in profession, service, and brotherhood.</p>
+                    <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Founded in 2011.</p>
+                    <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
                 </div>
                 
                 <div class="footer-section">
@@ -717,6 +738,7 @@
                     <p><strong>Vice Regent:</strong> Nicole Hoeker</p>
                     <p><strong>Rush Chairs:</strong> Bradley Alford, Kaylee Molitor</p>
                     <p><strong>Alumni Correspondent:</strong> Carlos Arenas</p>
+                    <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Message us on Instagram</a></p>
                 </div>
                 
                 
@@ -724,11 +746,13 @@
                     <h3>Connect</h3>
                     <p><a href="/newsletter">Newsletters</a></p>
                     <p><a href="https://thetatau.org/" target="_blank" rel="noopener">National Theta Tau</a></p>
-                    <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
-                    <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank">LinkedIn</a></p>
-                    <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank">Facebook</a></p>
-                    <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" style="color:var(--color-gold);">Donate</a></p>
+                    <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Instagram</a></p>
+                    <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank" rel="noopener">LinkedIn</a></p>
+                    <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank" rel="noopener">Facebook</a></p>
+                    <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener" style="color:var(--color-gold);">Donate</a></p>
+                    <p><a href="/portal">Brother Portal</a></p>
                 </div>
+                <p class="footer-fineprint">Theta Tau Zeta Delta is a registered student organization at the University of South Carolina and is not an agent of the university. Theta Tau, its Greek letters and its Coat of Arms are trademarks of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau Fraternity</a>.</p>
             </div>
         </footer>
     </div>

@@ -1,25 +1,32 @@
 /**
- * Rush page config — single place to open/close rush and set semester text.
+ * Rush page config — the single place to open/close rush and set semester text.
  *
  * HOW TO UPDATE:
- * - When rush CLOSES: set isOpen to false, set nextSemester (e.g. "Spring 2026").
- * - When rush OPENS (start of semester, usually within first month of classes):
- *   set isOpen to true, set rushTitle (e.g. "Spring 2026 Rush"), set ctaLine, and set
- *   rushLinkUrl to the new GroupMe invite. Leave rushLinkUrl blank to hide the join button.
+ * - When rush CLOSES: set isOpen to false and nextSemester (e.g. "Fall 2027").
+ *   The schedule graphics and the GroupMe section hide themselves.
+ * - When rush OPENS (start of semester, usually within the first month of classes):
+ *   set isOpen to true, rushTitle (e.g. "Spring 2027 Rush"), ctaLine, and
+ *   rushLinkUrl to the NEW GroupMe invite (leave "" to hide the join button).
+ *   Then swap the poster and event cards in rush.html (Images/rush/f26/ → the new folder).
+ * - interestFormUrl: a Google Form (name, email, major, year) shown in the closed
+ *   banner all year so people can sign up before rush starts. Leave "" to hide it.
  */
 window.RUSH_CONFIG = {
-  /** true = show full rush + signup; false = show "Rush closed, check back next semester" at top */
-  isOpen: true,
+  /** true = show the schedule, signup and GroupMe; false = "Rush has closed" banner */
+  isOpen: false,
 
-  /** Shown when closed: "Check back at the start of next semester" + this (e.g. "Spring 2026") */
-  nextSemester: "Fall 2026",
+  /** Shown when closed: "Next rush: " + this */
+  nextSemester: "Spring 2027",
 
-  /** When open: main rush heading (e.g. "Fall 2025 Rush", "Spring 2026 Rush") */
-  rushTitle: "Fall 2026 Rush",
+  /** When open: main rush heading */
+  rushTitle: "Spring 2027 Rush",
 
-  /** When open: line under the title (e.g. "Join The Rush GroupMe! | Schedule a Coffee Chat!") */
+  /** When open: line under the title */
   ctaLine: "Join the Rush GroupMe to keep up with every event.",
 
-  /** When open: optional URL for the LinkTree/signup image (leave "" if image has no link) */
-  rushLinkUrl: "https://groupme.com/join_group/116606986/LysZqBXC"
+  /** When open: the current GroupMe invite. "" hides the button. Replace every semester. */
+  rushLinkUrl: "",
+
+  /** All year: interest-list Google Form. "" hides the button. */
+  interestFormUrl: ""
 };

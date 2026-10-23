@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /portal/
+
+Sitemap: https://www.thetatauzd.org/sitemap.xml

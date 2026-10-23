@@ -5,18 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <title>Rush &mdash; Theta Tau Zeta Delta – University of South Carolina</title>
-    <link rel="icon" type="image/x-icon" href="./Images/ThetaTau.png"/>
-    <link rel="canonical" href="/rush"/>
+    <link rel="icon" type="image/png" href="/Images/ThetaTau.png"/>
+    <link rel="apple-touch-icon" href="/Images/ThetaTau.png"/>
+    <link rel="canonical" href="https://www.thetatauzd.org/rush"/>
     <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
     <meta property="og:title" content="Rush &mdash; Theta Tau Zeta Delta – University of South Carolina"/>
-    <meta property="og:url" content="/rush"/>
+    <meta property="og:url" content="https://www.thetatauzd.org/rush"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships."/>
-    <meta property="og:image" content="./Images/ThetaTau.png"/>
-    <meta name="description" content="Theta Tau Zeta Delta – University of South Carolina fosters leadership in profession, service, and brotherhood. Join us to connect with a network of innovative minds, enhance your skills, and build lasting relationships." />
+    <meta property="og:description" content="Rush Theta Tau Zeta Delta at the University of South Carolina: dates, events and how to join the coed professional engineering fraternity. Open to engineering and computing students."/>
+    <meta property="og:image" content="https://www.thetatauzd.org/Images/og-cover.jpg"/>
+    <meta property="og:image:width" content="1200"/>
+    <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="Theta Tau Zeta Delta brothers in front of the Swearingen Engineering Center"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="description" content="Rush Theta Tau Zeta Delta at the University of South Carolina: dates, events and how to join the coed professional engineering fraternity. Open to engineering and computing students."/>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap">
     <link rel="stylesheet" type="text/css" href="./css/site.css">
     <link rel="stylesheet" type="text/css" href="./css/static.css">
     <link rel="stylesheet" type="text/css" href="./css/brotherhood_cards.css">
@@ -149,6 +154,20 @@
         margin-top: 0.75rem !important;
         font-weight: 600;
     }
+    .rush-status-banner .rush-closed-actions {
+        margin-top: 1.25rem !important;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.5rem;
+        justify-content: center;
+        align-items: center;
+    }
+    .rush-status-banner .rush-closed-link {
+        color: var(--color-gold);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
 
     /* Clear fixed navbar: push main content below header on rush page */
     body.page-rush main#page {
@@ -156,7 +175,7 @@
         background: linear-gradient(135deg, var(--color-maroon) 0%, var(--color-maroon-dark) 100%);
     }
 
-    /* Tighten space between "Spring 2026 Rush" heading and timeline/pictures */
+    /* Tighten space between the rush heading and timeline/pictures */
     body.page-rush .page-section.section-height--large:first-of-type .content-wrapper {
         padding-top: 0 !important;
     }
@@ -669,8 +688,6 @@
     </style>
     <!-- Preload critical images -->
     <link rel="preload" as="image" href="./Images/ThetaTau.png" fetchpriority="high">
-    <link rel="preload" as="image" href="./Images/MountainWeekend.webp" fetchpriority="high">
-    <link rel="preload" as="image" href="./Images/Carowinds.webp" fetchpriority="high">
     <!-- Preload brotherhood images for smooth loading -->
     <link rel="preload" as="image" href="./Images/optimized/BeachWeekend.webp" fetchpriority="high">
     <link rel="preload" as="image" href="./Images/optimized/MountainWeekend.webp" fetchpriority="high">
@@ -697,6 +714,14 @@
       });
     </script>
     <script src="./js/nav.js"></script>
+<style>
+    .footer-tagline { color: var(--color-gold); font-weight: 600; }
+    .footer-fineprint { grid-column: 1 / -1; flex-basis: 100%; width: 100%; font-size: 0.8rem; color: #9a9a9a; margin-top: 1.5rem !important; }
+    .footer-fineprint a { color: #bdbdbd; }
+    .footer-section a { min-height: 24px; display: inline-block; }
+    .header-skip-link { color: #1a1a1a !important; background: var(--color-gold) !important; font-weight: 600; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+    </style>
 </head>
 
 <body id="collection-60f39ee3ec5ad00cc0939b34" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons page-rush">
@@ -750,7 +775,7 @@
                           <a href="/newsletter">Newsletters</a>
                       </div>
                       <div class="header-nav-item header-nav-item--push-right">
-                        <a href="/portal" style="color:var(--color-gold); font-weight:600;">Brother Portal</a>
+                        <a href="/portal">Brother Portal</a>
                       </div>
                     </nav>
                   </div>
@@ -762,7 +787,7 @@
 
               <!-- Burger Menu for Mobile -->
               <div class="header-burger menu-overlay-has-visible-non-navigation-items">
-                <button class="header-burger-btn burger" data-test="header-burger">
+                <button class="header-burger-btn burger" data-test="header-burger" aria-label="Open menu" aria-haspopup="true">
                   <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
                   <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
                   <div class="burger-box">
@@ -814,7 +839,7 @@
                           <a href="/newsletter">Newsletters</a>
                       </div>
                       <div class="header-nav-item header-nav-item--push-right">
-                        <a href="/portal" style="color:var(--color-gold); font-weight:600;">Brother Portal</a>
+                        <a href="/portal">Brother Portal</a>
                       </div>
                     </nav>
                   </div>
@@ -870,7 +895,7 @@
                         <a href="/newsletter"><div class="header-menu-nav-item-content">Newsletters</div></a>
                     </div>
                     <div class="container header-menu-nav-item">
-                      <a href="/portal" style="color:var(--color-gold);"><div class="header-menu-nav-item-content" style="color:var(--color-gold);">Brother Portal</div></a>
+                      <a href="/portal"><div class="header-menu-nav-item-content">Brother Portal</div></a>
                     </div>
                   </div>
                 </div>
@@ -891,13 +916,18 @@
         <h2>Rush has closed for this semester</h2>
         <p>Check back at the start of next semester—we typically run rush within the first month of classes.</p>
         <p class="rush-next">Next rush: <span id="rush-next-semester">next semester</span></p>
+        <p class="rush-closed-actions">
+          <a class="rush-groupme-btn" id="rush-interest-link" href="#" target="_blank" rel="noopener" style="display:none;">Join the interest list</a>
+          <a class="rush-closed-link" href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Follow @thetatauzd for dates</a>
+          <a class="rush-closed-link" href="#rush-why">Why rush Theta Tau?</a>
+        </p>
       </div>
 
       <!-- ============================================================
            FALL 2026 RUSH GRAPHICS
            Swap the files in Images/rush/f26/ each semester and update the
-           captions below. Shown whether or not rush is open, so the schedule
-           stays readable to anyone who lands here.
+           captions below. Shown only while RUSH_CONFIG.isOpen is true; when
+           rush is closed the banner above takes its place.
            ============================================================ -->
       <style>
         .rush-graphics { padding: 4rem 4vw; background: #111; }
@@ -937,7 +967,7 @@
         .rush-groupme-btn {
           display: inline-block;
           background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-          color: #fff;
+          color: #1a1a1a;
           padding: 1rem 2.25rem;
           border-radius: 50px;
           font-weight: 700;
@@ -949,7 +979,7 @@
         .rush-groupme-btn:hover {
           transform: translateY(-2px);
           box-shadow: 0 10px 24px rgba(0,0,0,0.35);
-          color: #fff;
+          color: #1a1a1a;
         }
       </style>
 
@@ -1024,94 +1054,9 @@
         </div>
       </section>
 
-      <!-- ============================================================
-           RUSH EVENTS SECTION — COMMENTED OUT (rush is closed)
-           Uncomment this entire block when rush is active again.
-           ============================================================ -->
-      <!--
-      <section class="page-section background-width--full-bleed section-height--large content-width--wide horizontal-alignment--center vertical-alignment--middle has-background black">
-        <div class="section-border">
-          <div class="section-background">
-            <picture>
-                              <source srcset="./Images/rush/ThetaTauRush.webp" type="image/webp">
-                <img src="./Images/rush/ThetaTauRush.webp" alt="Theta Tau Rush Background" style="display:block;object-position: 50% 50%" loading="lazy">
-            </picture>
-            <div class="section-background-overlay" style="opacity: 0.2;"></div>
-          </div>
-        </div>
-        
-        <div class="content-wrapper">
-          <div class="content">
-            <div class="sqs-layout sqs-grid-12 columns-12">
-              <div class="row sqs-row">
-                <div class="col sqs-col-12 span-12">
-                  <div class="sqs-block html-block sqs-block-html">
-                    <div class="sqs-block-content">
-                      <div class="sqs-html-content">
-                        <h2 class="rush-hero-title" style="text-align: center; color: #fff; margin: 0 0 0.25rem 0; font-size: 3.5rem; font-weight: 700;">Spring 2026 Rush</h2>
-                        <div class="rush-header-container">
-                          <div class="rush-timeline-section">
-                            <img src="./Images/rush/RushTimeline.webp" alt="Rush Timeline" class="rush-timeline-image" loading="lazy">
-                          </div>
-                          
-                          <div class="comic-graphics-section">
-                            <div class="comic-panel">
-                              <img src="./Images/rush/InfoNights.webp" alt="Info Nights" loading="lazy">
-                              <div class="comic-panel-overlay">
-                                <div class="comic-panel-title">Info Nights</div>
-                                <div class="comic-panel-description">Learn about Theta Tau and meet our brothers</div>
-                              </div>
-                            </div>
-                            <div class="comic-panel">
-                              <img src="./Images/rush/PDWorkshop.webp" alt="Professional Development Workshop" loading="lazy">
-                              <div class="comic-panel-overlay">
-                                <div class="comic-panel-title">PD Workshop</div>
-                                <div class="comic-panel-description">Career development skills</div>
-                              </div>
-                            </div>
-                            <div class="comic-panel">
-                              <img src="./Images/rush/InsideThetaTau.webp" alt="Inside Theta Tau" loading="lazy">
-                              <div class="comic-panel-overlay">
-                                <div class="comic-panel-title">Inside Theta Tau</div>
-                                <div class="comic-panel-description">See our chairs and culture</div>
-                              </div>
-                            </div>
-                            <div class="comic-panel">
-                              <img src="./Images/rush/ProfessionalMixer.webp" alt="Professional Mixer" loading="lazy">
-                              <div class="comic-panel-overlay">
-                                <div class="comic-panel-title">Professional Mixer</div>
-                                <div class="comic-panel-description">Network with brothers and gain professional experience</div>
-                              </div>
-                            </div>
-                            <div class="comic-panel">
-                              <img src="./Images/rush/SpeedDating.webp" alt="Speed Dating" loading="lazy">
-                              <div class="comic-panel-overlay">
-                                <div class="comic-panel-title">Speed Dating</div>
-                                <div class="comic-panel-description">Quick conversations with brothers</div>
-                              </div>
-                            </div>
-                            <div class="comic-panel">
-                              <img src="./Images/rush/ProfessionalDinner.webp" alt="Professional Dinner" loading="lazy">
-                              <div class="comic-panel-overlay">
-                                <div class="comic-panel-title">Professional Dinner</div>
-                                <div class="comic-panel-description">Formal networking event</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      END RUSH EVENTS SECTION -->
 
       <!-- Why Rush Section -->
-      <section class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background black" style="display: flex; align-items: center; justify-content: center;">
+      <section id="rush-why" class="page-section background-width--full-bleed section-height--medium-small content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background black" style="display: flex; align-items: center; justify-content: center;">
         <div class="section-border">
           <div class="section-background">
                           <picture>
@@ -1453,8 +1398,8 @@
                       <div class="sqs-block html-block sqs-block-html">
                         <div class="sqs-block-content">
                           <div class="sqs-html-content">
-                            <h2 id="rush-title" style="white-space:pre-wrap; margin-bottom: 2rem;">Fall 2025 Rush</h2>
-                            <p id="rush-cta-line" style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem;">Join The Rush GroupMe! | Schedule a Coffee Chat!</p>
+                            <h2 id="rush-title" style="white-space:pre-wrap; margin-bottom: 2rem;">Rush Theta Tau</h2>
+                            <p id="rush-cta-line" style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem;">Join the Rush GroupMe to keep up with every event.</p>
                           </div>
                         </div>
                       </div>
@@ -1482,7 +1427,8 @@
         <div class="footer-content">
           <div class="footer-section">
             <h3>Theta Tau Zeta Delta</h3>
-            <p>Theta Tau Zeta Delta is the University of South Carolina's premier professional engineering fraternity, fostering leadership in profession, service, and brotherhood.</p>
+            <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Founded in 2011.</p>
+                    <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
           </div>
           
           <div class="footer-section">
@@ -1491,6 +1437,7 @@
             <p><strong>Vice Regent:</strong> Nicole Hoeker</p>
             <p><strong>Rush Chairs:</strong> Bradley Alford, Kaylee Molitor</p>
             <p><strong>Alumni Correspondent:</strong> Carlos Arenas</p>
+                    <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Message us on Instagram</a></p>
           </div>
           
           
@@ -1498,11 +1445,13 @@
             <h3>Connect</h3>
             <p><a href="/newsletter">Newsletters</a></p>
             <p><a href="https://thetatau.org/" target="_blank" rel="noopener">National Theta Tau</a></p>
-            <p><a href="https://www.instagram.com/thetatauzd/" target="_blank">Instagram</a></p>
-            <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank">LinkedIn</a></p>
-            <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank">Facebook</a></p>
-            <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" style="color:var(--color-gold);">Donate</a></p>
+            <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Instagram</a></p>
+            <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank" rel="noopener">LinkedIn</a></p>
+            <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank" rel="noopener">Facebook</a></p>
+            <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener" style="color:var(--color-gold);">Donate</a></p>
+                    <p><a href="/portal">Brother Portal</a></p>
           </div>
+                <p class="footer-fineprint">Theta Tau Zeta Delta is a registered student organization at the University of South Carolina and is not an agent of the university. Theta Tau, its Greek letters and its Coat of Arms are trademarks of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau Fraternity</a>.</p>
         </div>
       </footer>
     </div>
@@ -1516,9 +1465,17 @@
         var ctaEl = document.getElementById('rush-cta-line');
         var linkWrapper = document.getElementById('rush-link-wrapper');
         var groupMeLink = document.getElementById('rush-groupme-link');
+        var graphics = document.getElementById('rush-graphics');
+        var interestLink = document.getElementById('rush-interest-link');
+
+        if (interestLink && config.interestFormUrl) {
+          interestLink.href = config.interestFormUrl;
+          interestLink.style.display = '';
+        }
 
         if (config.isOpen) {
           if (banner) banner.style.display = 'none';
+          if (graphics) graphics.style.display = '';
           if (signupSection) signupSection.style.display = '';
           if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
           if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
@@ -1536,6 +1493,7 @@
             banner.style.display = 'block';
             if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
           }
+          if (graphics) graphics.style.display = 'none';
           if (signupSection) signupSection.style.display = 'none';
         }
       })();

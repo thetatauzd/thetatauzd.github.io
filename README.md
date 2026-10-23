@@ -1,15 +1,16 @@
 # Theta Tau Zeta Delta — University of South Carolina
 
-Official website for the Zeta Delta chapter of Theta Tau Professional Engineering Fraternity at USC. Hosted on GitHub Pages at [thetatauzd.org](https://thetatauzd.org).
+Official website for the Zeta Delta chapter of Theta Tau Professional Engineering Fraternity at USC. Hosted on GitHub Pages at [www.thetatauzd.org](https://www.thetatauzd.org).
 
 ---
 
 ## Running Locally
 
-No build tools needed. Just serve the repo root with any static server:
+No build tools needed. `dev-server.py` serves the repo root the way GitHub Pages does (extensionless
+paths such as `/rush` work):
 
 ```bash
-python3 -m http.server 8080
+python3 dev-server.py 8080
 # then open http://localhost:8080
 ```
 
@@ -32,8 +33,8 @@ python3 -m http.server 8080
 │   └── navigation-animations.css
 │
 ├── js/
-│   ├── components.js        # Shared nav/footer components
-│   └── rush-config.js       # Rush open/closed status (edit each semester)
+│   ├── nav.js               # Mobile menu
+│   └── rush-config.js       # Rush open/closed status, GroupMe and interest-form links (edit each semester)
 │
 ├── Images/
 │   ├── rush/                # All rush-specific images (event photos, backgrounds)
@@ -53,9 +54,9 @@ python3 -m http.server 8080
 
 | What | Where |
 |---|---|
-| **Rush open/closed & next semester** | `js/rush-config.js` — set `isOpen`, `nextSemester`, `rushTitle` |
+| **Rush open/closed & next semester** | `js/rush-config.js` — set `isOpen`, `nextSemester`, `rushTitle`, `rushLinkUrl` (new GroupMe) and `interestFormUrl` (Google Form shown while closed) |
 | **Rush event photos** | `Images/rush/` — drop in new photos, update paths in `rush.html` |
-| **Rush event section** (timeline, comic panels) | `rush.html` — find the `<!-- RUSH EVENTS START -->` comment block and uncomment/re-comment |
+| **Rush schedule graphics** | `rush.html` — the `FALL 2026 RUSH GRAPHICS` block: swap `Images/rush/f26/` for the new folder and edit the captions. It only shows while `isOpen` is true. |
 | **Leadership contacts** (Regent, VR, Rush Chairs, etc.) | Footer on every page: `index.html`, `brotherhood.html`, `profession.html`, `rush.html`, `service.html` |
 | **Company logos** | `Images/Companies/` |
 | **Brotherhood / service / profession photos** | `Images/` and `Images/optimized/` |

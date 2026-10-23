@@ -2,14 +2,10 @@
   "name": "thetatauzd-website",
   "version": "1.0.0",
   "description": "Theta Tau Zeta Delta - University of South Carolina Website",
-  "main": "server.js",
+  "main": "dev-server.py",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node dev.js",
-    "serve": "npx http-server -p 8080 -o",
-    "serve-8080": "PORT=8080 node server.js",
-    "open": "echo 'Server will auto-open browser when started'",
-    "start-open": "node server.js"
+    "start": "python3 dev-server.py 8080",
+    "dev": "python3 dev-server.py 8080"
   },
   "keywords": ["theta-tau", "fraternity", "usc", "university-of-south-carolina"],
   "author": "Theta Tau Zeta Delta",
