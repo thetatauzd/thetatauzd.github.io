@@ -136,7 +136,7 @@
            '<text class="ft-name" x="' + (G.nodeW / 2) + '" y="19" text-anchor="middle" fill="' + col.text + '">' + esc(clip(m.name, 20)) + '</text>' +
            '<text class="ft-sub" x="' + (G.nodeW / 2) + '" y="35" text-anchor="middle" fill="' + col.sub + '">' + esc(clip(subLine(m), 24)) + '</text>';
       var sg = T.signText(m.offices);
-      if (sg) g += '<text class="ft-mark" x="' + (G.nodeW - 6) + '" y="' + (G.nodeH + 2) + '" text-anchor="end">' + esc(sg) + '</text>';
+      if (sg) g += '<text class="ft-mark" x="' + (G.nodeW - 6) + '" y="' + (G.nodeH + 2) + '" text-anchor="end" fill="' + (col === COLORS.gold ? '#8B0000' : '#FFCC33') + '">' + esc(sg) + '</text>';
       g += '</g>';
       parts.push(g);
     });
@@ -601,7 +601,7 @@
           ctx.fillStyle = col.text; ctx.font = '700 13px Poppins, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(clip(m.name, 20), p.x + G.nodeW / 2, p.y + 19);
           ctx.fillStyle = col.sub; ctx.font = '500 10.5px Poppins, Arial, sans-serif'; ctx.fillText(clip(subLine(m), 24), p.x + G.nodeW / 2, p.y + 35);
           var sg = T.signText(m.offices);
-          if (sg) { ctx.fillStyle = col.fill === COLORS.gold.fill ? '#8B0000' : '#E6B800'; ctx.font = '900 14px Georgia, serif'; ctx.textAlign = 'right'; ctx.fillText(sg, p.x + G.nodeW - 4, p.y + G.nodeH + 2); }
+          if (sg) { ctx.fillStyle = col === COLORS.gold ? '#8B0000' : '#FFCC33'; ctx.font = '900 14px Georgia, serif'; ctx.textAlign = 'right'; ctx.fillText(sg, p.x + G.nodeW - 4, p.y + G.nodeH + 2); }
         });
         return new Promise(function (res, rej) { c.toBlob(function (b) { b ? res(b) : rej(new Error('the picture is too big for this device — try one family')); }, 'image/png'); });
       });

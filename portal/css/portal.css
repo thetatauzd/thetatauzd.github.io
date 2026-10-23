@@ -1433,7 +1433,7 @@ main.ops-section { max-width: 1500px; }
 .ft-photo-ring { fill: #fbf8f3; }
 .ft-name { font: 700 13px Poppins, sans-serif; pointer-events: none; }
 .ft-sub { font: 500 10.5px Poppins, sans-serif; pointer-events: none; }
-.ft-mark { font: 900 13px Georgia, serif; fill: var(--color-maroon); }
+.ft-mark { font: 900 13px Georgia, serif; }   /* fill set per pill: gold on maroon, maroon on gold */
 .ft-rowlabels { position: absolute; left: 0; top: 0; bottom: 0; width: 96px; overflow: hidden; pointer-events: none; z-index: 2; background: linear-gradient(90deg, rgba(251,248,243,0.97) 70%, rgba(251,248,243,0)); }
 .ft-rowlabel { position: absolute; left: 0; width: 96px; display: flex; align-items: center; justify-content: center; text-align: center; font-family: Georgia, serif; font-weight: 600; color: #222; padding: 0 4px; box-sizing: border-box; overflow: hidden; }
 .ft-zoom { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 3; }
