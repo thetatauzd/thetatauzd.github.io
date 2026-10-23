@@ -130,12 +130,12 @@ the demerits.
   the pill turns black (the poster did the same). Never delete them.
 - The import used the Drive **Brother List** as the source of truth, so roll numbers and classes that were wrong on
   the poster are already fixed, and the Drive big/little match sheets (Spring 2022 to Fall 2025) confirmed the
-  lines. Still check by eye: nobody has recorded a big for James Thurlow (Chi) or Jackson Zazzaro (Psi); 7 brothers
-  who are on the Brother List but not on the poster were added with no big (Carter Coleman, Austin Hetherington,
-  Quentin Savage, Bethlehem Mersha, Bricen Bennett, Chloe Mulhorn, Ty Phares); Zack Gann transferred from Eta Gamma,
-  so he has no Zeta Delta roll number; 12 pairs of
-  Alpha founders drawn one above the other on the poster were kept as big → little; the poster's blank black pills
-  were not imported (black now means resigned or removed).
+  lines. The poster's two blank black pills are the Brother List's blank rows 298 and 339 (removed brothers, names
+  withheld): they are in the tree as "Brother #298" and "Brother #339" so James Thurlow's and Watts Liddle's lines
+  stay whole; rename them if the chapter wants the names shown. Still check by eye: 7 brothers who are on the Brother
+  List but not on the poster were added with no big (Carter Coleman, Austin Hetherington, Quentin Savage, Bethlehem
+  Mersha, Bricen Bennett, Chloe Mulhorn, Ty Phares); Zack Gann transferred from Eta Gamma, so he has no Zeta Delta
+  roll number; 12 pairs of Alpha founders drawn one above the other on the poster were kept as big → little.
 
 ---
 
