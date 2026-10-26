@@ -181,7 +181,7 @@
     var counterEl = document.getElementById('regent-counter');
     var bannerEl = document.getElementById('regent-banner-complete');
     if (counterEl) counterEl.textContent = '';
-    if (listEl) listEl.innerHTML = '<li style="font-style:italic; color:#999;">Closed vote — details hidden</li>';
+    if (listEl) listEl.innerHTML = '<li style="font-style:italic; color:#999;">Closed vote, details hidden</li>';
     if (bannerEl) bannerEl.classList.add('hidden');
   }
 

@@ -4,12 +4,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
-    <title>Rush &mdash; Theta Tau Zeta Delta – University of South Carolina</title>
+    <title>Rush | Theta Tau Zeta Delta at the University of South Carolina</title>
     <link rel="icon" type="image/png" href="/Images/ThetaTau.png"/>
     <link rel="apple-touch-icon" href="/Images/ThetaTau.png"/>
     <link rel="canonical" href="https://www.thetatauzd.org/rush"/>
     <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
-    <meta property="og:title" content="Rush &mdash; Theta Tau Zeta Delta – University of South Carolina"/>
+    <meta property="og:title" content="Rush | Theta Tau Zeta Delta at the University of South Carolina"/>
     <meta property="og:url" content="https://www.thetatauzd.org/rush"/>
     <meta property="og:type" content="website"/>
     <meta property="og:description" content="Rush Theta Tau Zeta Delta at the University of South Carolina: dates, events and how to join the coed professional engineering fraternity. Open to engineering and computing students."/>
@@ -914,7 +914,7 @@
       <!-- Rush status banner: shown when RUSH_CONFIG.isOpen is false -->
       <div id="rush-closed-banner" class="rush-status-banner rush-closed" role="status" aria-live="polite" style="display: none;">
         <h2>Rush has closed for this semester</h2>
-        <p>Check back at the start of next semester—we typically run rush within the first month of classes.</p>
+        <p>Check back at the start of next semester. We usually run rush within the first month of classes.</p>
         <p class="rush-next">Next rush: <span id="rush-next-semester">next semester</span></p>
         <p class="rush-closed-actions">
           <a class="rush-groupme-btn" id="rush-interest-link" href="#" target="_blank" rel="noopener" style="display:none;">Join the interest list</a>
@@ -986,7 +986,7 @@
       <section class="rush-graphics" id="rush-graphics">
         <div class="rush-graphics-inner">
           <h2>Fall 2026 Rush</h2>
-          <p class="rg-sub">Come find out what Theta Tau is about — all events are open unless marked invite only.</p>
+          <p class="rg-sub">Come find out what Theta Tau is about. Every event is open unless it says invite only.</p>
 
           <div class="rush-graphics-hero">
             <picture>
@@ -1010,7 +1010,7 @@
             <figure class="rg-card">
               <picture>
                 <source srcset="./Images/rush/f26/info-night.webp" type="image/webp">
-                <img src="./Images/rush/f26/info-night.jpg" alt="Info Night 1 and 2 — September 1st and 2nd, Amoco Hall at 7:30 PM" loading="lazy" width="1000" height="1245">
+                <img src="./Images/rush/f26/info-night.jpg" alt="Info Night 1 and 2, September 1st and 2nd, Amoco Hall at 7:30 PM" loading="lazy" width="1000" height="1245">
               </picture>
               <figcaption class="rg-caption">
                 <h3>Info Nights #1 &amp; #2</h3>
@@ -1021,7 +1021,7 @@
             <figure class="rg-card">
               <picture>
                 <source srcset="./Images/rush/f26/pd-workshop.webp" type="image/webp">
-                <img src="./Images/rush/f26/pd-workshop.jpg" alt="PD Workshop — September 8th, 300 Main at 7:30 PM, business casual" loading="lazy" width="1000" height="1245">
+                <img src="./Images/rush/f26/pd-workshop.jpg" alt="PD Workshop, September 8th, 300 Main at 7:30 PM, business casual" loading="lazy" width="1000" height="1245">
               </picture>
               <figcaption class="rg-caption">
                 <h3>PD Workshop</h3>
@@ -1032,7 +1032,7 @@
             <figure class="rg-card">
               <picture>
                 <source srcset="./Images/rush/f26/speed-dating.webp" type="image/webp">
-                <img src="./Images/rush/f26/speed-dating.jpg" alt="Speed Dating — September 10th, Swearingen Lobby at 7:00 PM" loading="lazy" width="1000" height="1245">
+                <img src="./Images/rush/f26/speed-dating.jpg" alt="Speed Dating, September 10th, Swearingen Lobby at 7:00 PM" loading="lazy" width="1000" height="1245">
               </picture>
               <figcaption class="rg-caption">
                 <h3>Speed Dating</h3>
@@ -1381,7 +1381,7 @@
 
           
           
-          <!-- Rush Information Section (signup CTA — hidden when rush closed) -->
+          <!-- Rush Information Section (signup CTA, hidden when rush closed) -->
           <section id="rush-signup-section" class="page-section background-width--full-bleed section-height--medium content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background dark">
             <div class="section-border">
               <div class="section-background">
@@ -1455,9 +1455,11 @@
         </div>
       </footer>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="./portal/js/firebase-config.js"></script>
     <script>
       (function() {
-        var config = window.RUSH_CONFIG || {};
         var banner = document.getElementById('rush-closed-banner');
         var nextSpan = document.getElementById('rush-next-semester');
         var signupSection = document.getElementById('rush-signup-section');
@@ -1468,34 +1470,87 @@
         var graphics = document.getElementById('rush-graphics');
         var interestLink = document.getElementById('rush-interest-link');
 
-        if (interestLink && config.interestFormUrl) {
-          interestLink.href = config.interestFormUrl;
-          interestLink.style.display = '';
+        function escapeHtml(str) {
+          var d = document.createElement('div');
+          d.textContent = str == null ? '' : String(str);
+          return d.innerHTML;
         }
 
-        if (config.isOpen) {
-          if (banner) banner.style.display = 'none';
-          if (graphics) graphics.style.display = '';
-          if (signupSection) signupSection.style.display = '';
-          if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
-          if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
-
-          // Hide the join button rather than shipping a dead link if no URL is set.
-          if (groupMeLink) {
-            if (config.rushLinkUrl) {
-              groupMeLink.href = config.rushLinkUrl;
-            } else if (linkWrapper) {
-              linkWrapper.style.display = 'none';
+        // Show the open or closed state from a config object (the static file,
+        // or the one admins save on the portal's Website page).
+        function applyState(config) {
+          if (interestLink) {
+            if (config.interestFormUrl) { interestLink.href = config.interestFormUrl; interestLink.style.display = ''; }
+            else { interestLink.style.display = 'none'; }
+          }
+          if (config.isOpen) {
+            if (banner) banner.style.display = 'none';
+            if (graphics) graphics.style.display = '';
+            if (signupSection) signupSection.style.display = '';
+            if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
+            if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
+            // Hide the join button rather than shipping a dead link if no URL is set.
+            if (groupMeLink) {
+              if (config.rushLinkUrl) { groupMeLink.href = config.rushLinkUrl; if (linkWrapper) linkWrapper.style.display = ''; }
+              else if (linkWrapper) { linkWrapper.style.display = 'none'; }
             }
+          } else {
+            if (banner) {
+              banner.style.display = 'block';
+              if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
+            }
+            if (graphics) graphics.style.display = 'none';
+            if (signupSection) signupSection.style.display = 'none';
           }
-        } else {
-          if (banner) {
-            banner.style.display = 'block';
-            if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
-          }
-          if (graphics) graphics.style.display = 'none';
-          if (signupSection) signupSection.style.display = 'none';
         }
+
+        // Rebuild the poster and event cards from what admins saved.
+        function renderGraphics(saved) {
+          if (!graphics) return;
+          var events = saved.events || [];
+          if (!Array.isArray(events)) {
+            events = Object.keys(events).sort(function (a, b) { return Number(a) - Number(b); }).map(function (k) { return saved.events[k]; });
+          }
+          events = events.filter(function (ev) { return ev && ev.title; });
+          if (!saved.heroImage && !events.length) return;   // nothing saved: keep the cards in the file
+          var h2 = graphics.querySelector('h2');
+          var sub = graphics.querySelector('.rg-sub');
+          if (h2 && saved.rushTitle) h2.textContent = saved.rushTitle;
+          if (sub && saved.subtitle) sub.textContent = saved.subtitle;
+          var hero = graphics.querySelector('.rush-graphics-hero');
+          if (hero) {
+            hero.innerHTML = saved.heroImage
+              ? '<img src="' + saved.heroImage + '" alt="' + escapeHtml(saved.heroAlt || saved.rushTitle || 'Rush poster') + '" loading="lazy">'
+              : '';
+          }
+          var grid = graphics.querySelector('.rush-graphics-grid');
+          if (grid) {
+            grid.innerHTML = events.map(function (ev) {
+              var detail = escapeHtml(ev.detail || '') + (ev.inviteOnly ? (ev.detail ? ' · ' : '') + 'Invite only' : '');
+              return '<figure class="rg-card">' +
+                (ev.image ? '<img src="' + ev.image + '" alt="' + escapeHtml(ev.title) + (ev.detail ? ', ' + escapeHtml(ev.detail) : '') + '" loading="lazy">' : '') +
+                '<figcaption class="rg-caption"><h3>' + escapeHtml(ev.title) + '</h3>' +
+                (detail ? '<p>' + detail + '</p>' : '') + '</figcaption></figure>';
+            }).join('');
+            grid.style.display = events.length ? '' : 'none';
+          }
+        }
+
+        var config = window.RUSH_CONFIG || {};
+        applyState(config);
+
+        // What admins save on the portal's Website page wins over the file.
+        if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
+        var settled = false;
+        var timeout = setTimeout(function () { settled = true; }, 6000);
+        firebase.database().ref('site/rush').once('value').then(function (snap) {
+          if (settled) return;
+          clearTimeout(timeout);
+          var saved = snap.val();
+          if (!saved) return;
+          renderGraphics(saved);
+          applyState(saved);
+        }).catch(function () { clearTimeout(timeout); });
       })();
     </script>
   </body>

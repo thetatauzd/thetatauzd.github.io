@@ -113,7 +113,7 @@
                   '. Keep what you entered if that is you.', 'ok');
             }
           } else if (res.ambiguous) {
-            say('More than one brother has that name — enter your roll number instead.', 'error');
+            say('More than one brother has that name. Enter your roll number instead.', 'error');
           } else {
             say(fromRoll
               ? "That roll number isn't on the chapter roll. Check it, or just type your name."

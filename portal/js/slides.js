@@ -309,7 +309,7 @@
     var onProgress = opts.onProgress || function () {};
 
     if (typeof JSZip === 'undefined') {
-      return Promise.reject(new Error('JSZip failed to load — check your connection and reload.'));
+      return Promise.reject(new Error('JSZip failed to load. Check your connection and reload.'));
     }
 
     return JSZip.loadAsync(file).then(function (zip) {

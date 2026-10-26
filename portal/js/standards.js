@@ -155,7 +155,7 @@
   var ballotSource = null;   // 'slides' | 'manual'
 
   var BALLOT_HINTS = {
-    slides: 'Every candidate comes straight off the deck — photo, number and info included.',
+    slides: 'Every candidate comes straight off the deck with photo, number and info.',
     manual: 'You will type poll names into the queue once the room is open. Good for motions and one-off votes.'
   };
 
@@ -246,7 +246,7 @@
 
   var PACING_HINTS = {
     self: 'One poll holding everyone. Brothers go through the candidates at their own speed, can go back, and submit all their answers at the end.',
-    standards: 'One poll per candidate. Nobody can vote ahead — you open each candidate and close them when the room has voted.'
+    standards: 'One poll per candidate. Nobody can vote ahead: you open each candidate and close them when the room has voted.'
   };
 
   function initPacingPicker() {
@@ -303,7 +303,7 @@
       var nameInput = document.createElement('input');
       nameInput.className = 'nm';
       nameInput.value = c.name || '';
-      nameInput.placeholder = 'Name missing — type it here';
+      nameInput.placeholder = 'Name missing, type it here';
       nameInput.addEventListener('input', function() {
         parsedRoster[i].name = nameInput.value.trim();
       });
@@ -401,7 +401,7 @@
           slidesStatus('No candidate slides found in that deck.', 'error');
         } else if (missing) {
           slidesStatus(candidates.length + ' candidates found. ' + missing +
-            ' have no name — fill them in or remove them below.', 'error');
+            ' have no name. Fill them in or remove them below.', 'error');
         } else {
           slidesStatus(candidates.length + ' candidates ready.', 'ok');
         }
@@ -502,7 +502,7 @@
       if (title) updates['sessions/' + sid + '/meta/sessionTitle'] = title;
       return db.ref().update(updates);
     }).then(function() {
-      slidesStatus('Deck uploaded — ' + roster.length + ' candidates queued.', 'ok');
+      slidesStatus('Deck uploaded: ' + roster.length + ' candidates queued.', 'ok');
     });
   }
 
@@ -749,7 +749,7 @@
         }).catch(function(err) {
           var ov = $('ending-overlay');
           if (ov) ov.remove();
-          alert('Warning: session ended but history failed to save — ' + err.message);
+          alert('Warning: session ended but history failed to save. ' + err.message);
         });
       });
     }).catch(function(err) {
@@ -1062,7 +1062,7 @@
       else if (nrKind === 'score') {
         var src = sourcePolls()[0];
         label.textContent = 'Advance at a total score of at least'; cutoff.value = (src && src.minimumScore != null) ? src.minimumScore : 0; cutoff.disabled = false;
-      } else { label.textContent = 'No Yes/No or score data — pick by hand'; cutoff.value = ''; cutoff.disabled = true; }
+      } else { label.textContent = 'No Yes/No or score data, pick by hand'; cutoff.value = ''; cutoff.disabled = true; }
       applyRoundCutoff();
       $('nr-builder').classList.remove('hidden');
       $('btn-build-round').classList.add('hidden');
@@ -1271,7 +1271,7 @@
 
     var hints = {
       upcoming: 'Brothers see this the moment you open it.',
-      open: 'Brothers are voting. Close it when the room is done — results lock in then.',
+      open: 'Brothers are voting. Close it when the room is done. Results lock in then.',
       closed: isLast ? 'Results are locked. That was the last poll.' : 'Results are locked. Move on when you are ready.'
     };
     $('ap-hint').textContent = hints[status] || '';
@@ -1506,14 +1506,14 @@
         var pass = pct >= thresh;
         summary.innerHTML = '<span style="color:' + (pass ? '#2e7d32' : '#c62828') + '">' +
           'Yes: ' + agg.yes + ' &middot; No: ' + agg.no + ' &middot; Abstain: ' + (agg.abstain || 0) +
-          ' &mdash; ' + pct + '% Yes (need ' + thresh + '%) &mdash; <strong>' + (pass ? 'PASS' : 'FAIL') + '</strong></span>';
+          ': ' + pct + '% Yes (need ' + thresh + '%), <strong>' + (pass ? 'PASS' : 'FAIL') + '</strong></span>';
       } else if (p.type === 'pnm_depledge') {
         var dt = (agg.yes || 0) + (agg.no || 0);
         var dp = dt ? Math.round(100 * agg.yes / dt) : 0;
         var depledge = dp > 50;
         summary.innerHTML = '<span style="color:' + (depledge ? '#c62828' : '#2e7d32') + '">' +
           'Yes (de-pledge): ' + agg.yes + ' &middot; No (stay): ' + agg.no +
-          ' &mdash; ' + dp + '% &mdash; <strong>' + (depledge ? 'DE-PLEDGE' : 'REMAIN') + '</strong></span>';
+          ': ' + dp + '%, <strong>' + (depledge ? 'DE-PLEDGE' : 'REMAIN') + '</strong></span>';
       } else {
         summary.innerHTML = '';
       }

@@ -1,6 +1,6 @@
-# Brother Portal — Technical Documentation
+# Brother Portal: Technical Documentation
 
-The Brother Portal is a Firebase-backed private member portal for active brothers of Theta Tau Zeta Delta. It lives in the `/portal/` directory and is hosted on GitHub Pages alongside the main site — no server required.
+The Brother Portal is a Firebase-backed private member portal for active brothers of Theta Tau Zeta Delta. It lives in the `/portal/` directory and is hosted on GitHub Pages alongside the main site, no server required.
 
 ---
 
@@ -34,14 +34,14 @@ The Brother Portal is a Firebase-backed private member portal for active brother
 4. **Apply security rules**
    - Realtime Database → Rules tab. Paste the full contents of `firebase-database.rules.json` (repo root) and click **Publish**.
 
-   Note: newsletters intentionally do **not** use Firebase Storage — Cloud Storage for Firebase now requires the paid Blaze plan even within the free-tier quota, and this project stays on the free Spark plan. Newsletter PDFs live in Google Drive; only a share link is stored in the database. See [Newsletters](#newsletters).
+   Note: newsletters intentionally do **not** use Firebase Storage, Cloud Storage for Firebase now requires the paid Blaze plan even within the free-tier quota, and this project stays on the free Spark plan. Newsletter PDFs live in Google Drive; only a share link is stored in the database. See [Newsletters](#newsletters).
 
 5. **Get your web config**
    - Project Settings (gear icon) → Your apps → Add app → Web. Register the app, then copy the `firebaseConfig` object.
 
 6. **Add config to the portal**
    - Open `portal/js/firebase-config.js` and replace the placeholder values with your Firebase project's config.
-   - The `apiKey` in Firebase is safe to include in a public repo as long as you restrict it by domain — see step 8.
+   - The `apiKey` in Firebase is safe to include in a public repo as long as you restrict it by domain, see step 8.
 
 7. **Authorize your domain**
    - Authentication → Settings → Authorized domains. Add your GitHub Pages domain (e.g. `thetatauzd.github.io`) and any custom domain (e.g. `thetatauzd.org`).
@@ -55,10 +55,10 @@ The Brother Portal is a Firebase-backed private member portal for active brother
 
 Firebase has no built-in admin bootstrap. Set up the first admin manually:
 
-1. Open the portal and sign in with Google. Submit the registration form with your name and roll number — this creates your user record in the database with `role: "pending"`.
+1. Open the portal and sign in with Google. Submit the registration form with your name and roll number, this creates your user record in the database with `role: "pending"`.
 2. In the Firebase console, go to **Realtime Database → users → {your-uid}**.
 3. Change `role` from `"pending"` to `"admin"`.
-4. Refresh the portal — you will be redirected to the portal home with full admin access.
+4. Refresh the portal, you will be redirected to the portal home with full admin access.
 
 From there you can approve other brothers and assign roles from the **Admin** panel.
 
@@ -73,7 +73,7 @@ Rules are in `firebase-database.rules.json` at the repo root. Key principles:
 - Only `admin` and `standards` roles can create/close polls.
 - Only `admin` and `rush_chair` roles can control the event timer.
 - `sessionHistory` is readable and writable only by `admin`.
-- Connected brothers presence node (`connectedBrothers/$uid`) is writable only by that UID, readable only by that UID — used for kick detection.
+- Connected brothers presence node (`connectedBrothers/$uid`) is writable only by that UID, readable only by that UID, used for kick detection.
 - `newsletters` is publicly readable (powers the public `/newsletter` page) but writable only by `admin`.
 
 **Every time you modify the rules file, re-publish them in the Firebase console.**
@@ -100,7 +100,7 @@ portal/
 │   └── portal.css        # All portal styles (colors, layout, components)
 │
 └── js/
-    ├── firebase-config.js  # Firebase project config — EDIT THIS with your keys
+    ├── firebase-config.js  # Firebase project config, EDIT THIS with your keys
     ├── auth.js             # Auth state, role checks, nav init, sign-in/out
     ├── db.js               # Realtime Database helpers (refs, vote submission, aggregation)
     ├── voting.js           # Brother voting page logic
@@ -155,20 +155,20 @@ Thresholds are **not adjustable during an active vote**. They are fixed at poll 
 ### Standards (session creator)
 
 1. Go to **Standards** and choose a session type:
-   - **Ranked Scorecard** — for Rush Prelim (add candidate list).
-   - **Regular Vote** — choose Yes/No, Yes/No/IDK, or custom options.
+   - **Ranked Scorecard**, for Rush Prelim (add candidate list).
+   - **Regular Vote**, choose Yes/No, Yes/No/IDK, or custom options.
 2. Enter an access code (e.g. `CHAPTER26`) and click **Create session**.
 3. Add polls to the queue (name + type). Hit **Enter** or the Add button.
 4. Click **Open poll** to start voting. Brothers see the poll live.
-5. Click **Close poll** — votes are locked, aggregation is saved, next poll auto-advances.
-6. Click **End session** — all brothers are disconnected, session data is saved to history.
+5. Click **Close poll**, votes are locked, aggregation is saved, next poll auto-advances.
+6. Click **End session**, all brothers are disconnected, session data is saved to history.
 
 If the page is accidentally refreshed, the session auto-reconnects using the same code.
 
 ### Brothers (voters)
 
 1. Go to **Voting** and enter the session code.
-2. Wait for a poll to open — the waiting screen shows "Up next" and a poll counter.
+2. Wait for a poll to open, the waiting screen shows "Up next" and a poll counter.
 3. Vote. Confirmation shown immediately. Individual votes are anonymous to other brothers.
 4. If kicked by Standards, a kicked screen appears and they are removed from the session.
 5. When Standards ends the session, an "ended" screen appears.
@@ -236,10 +236,10 @@ Session history is saved automatically when Standards clicks **End session**. It
 **History page features:**
 - Click any session card to expand it.
 - **Yes/No Vote Summary** card at the top: all yes/no polls in one table, sorted by yes%.
-- Individual poll cards show vote counts and yes percentage (no pass/fail judgment — just the numbers).
+- Individual poll cards show vote counts and yes percentage (no pass/fail judgment, just the numbers).
 - **What-if min score**: for ranked/prelim polls, adjust the cutoff score and recalculate the leaderboard live.
 - **What-if threshold**: in the summary card, change the threshold for all yes/no polls at once.
-- **Show Chapter**: opens `chapter-results.html` — alphabetical pass/fail list without percentages, suitable for chapter display.
+- **Show Chapter**: opens `chapter-results.html`, alphabetical pass/fail list without percentages, suitable for chapter display.
 - **Export Excel**: downloads `.xlsx` with an **Overview** tab first (poll name, yes, no, abstain, yes%), then one tab per poll with individual votes.
 - **Delete**: permanently removes the session from history.
 
@@ -249,7 +249,7 @@ Session history is saved automatically when Standards clicks **End session**. It
 
 The synchronized event timer at `/portal/timer.html` is controlled by admins and rush chairs. All connected devices see the same countdown in real time.
 
-- **Start / Pause / Resume / Stop** — admin/rush_chair only.
+- **Start / Pause / Resume / Stop**, admin/rush_chair only.
 - Supports decimal minutes (e.g. `2.5` = 2 minutes 30 seconds).
 - Uses Firebase server time offset to stay synchronized across devices.
 - Audio beeps on phase transitions.
@@ -258,23 +258,39 @@ Timer state is stored in `timers/active` in the Realtime Database.
 
 ---
 
+## Website settings (rush page)
+
+Admins open **Admin → Website** (`portal/site-admin.html`, `portal/js/site-admin.js`) to run the public rush page
+without touching code: open or close rush, set the title, the next semester, the GroupMe invite and an interest-form
+link, upload the poster and one picture per event card, and reorder or remove cards.
+
+- Everything is saved as one object under `site/rush` (public read, admin write; see the rules file). Pictures are
+  shrunk in the browser to JPEG data URLs of at most 200,000 characters each, so the project stays on the Spark plan.
+- `rush.html` shows `js/rush-config.js` and the pictures in `Images/rush/` first, then reads `site/rush` and, if
+  anything is saved there, re-renders from it. "Clear everything saved here" on the Website page removes the node and
+  the page goes back to the files.
+- New semester: press "Start from the Fall 2026 cards" once if the list is empty, swap the pictures, fix the dates,
+  switch rush to open, save. When rush ends, switch it to closed and set the next semester.
+- The `site` rules must be published (`firebase deploy --only database`, or paste the rules file into the Firebase
+  console) before the first save works; until then saving fails with "permission denied".
+
 ## Newsletters
 
-Chapter newsletters are published by admins from `/portal/newsletters-admin.html` and shown publicly (no login required) at `/newsletter` — the main site's newsletter archive.
+Chapter newsletters are published by admins from `/portal/newsletters-admin.html` and shown publicly (no login required) at `/newsletter`, the main site's newsletter archive.
 
-**Deliberately does not use Firebase Storage.** As of late 2024, Cloud Storage for Firebase requires the paid Blaze plan even to stay within the free-tier quota. To keep this project on the free Spark plan (no billing, no card on file), newsletter PDFs live in **Google Drive** instead — only a share link is stored in Firebase.
+**Deliberately does not use Firebase Storage.** As of late 2024, Cloud Storage for Firebase requires the paid Blaze plan even to stay within the free-tier quota. To keep this project on the free Spark plan (no billing, no card on file), newsletter PDFs live in **Google Drive** instead, only a share link is stored in Firebase.
 
 **Admin publish flow** (`portal/newsletters-admin.html` + `portal/js/newsletters.js`):
 1. Admin uploads the PDF to Drive and sets sharing to "Anyone with the link" (Viewer).
 2. Admin pastes the Drive link into the form, along with a title, issue date, and optional description.
 3. A metadata record is written to Realtime Database under `newsletters/{pushId}`: `title`, `date`, `description`, `fileURL` (the Drive link), `uploadedBy`, `uploadedAt`.
-4. **Delete** removes the database record (the file itself stays in Drive — delete it there separately if you want it fully gone).
+4. **Delete** removes the database record (the file itself stays in Drive, delete it there separately if you want it fully gone).
 
 **Public page** (`/newsletter.html`, repo root): reads the `newsletters` node directly (public read, no auth) and lists newsletters newest-first with a link to each PDF.
 
-**Security model:** the Realtime Database `newsletters` node is publicly readable but only `admin`-writable (see [Security Rules](#security-rules)). Since there's no file upload, there's no separate Storage rules concern — the RTDB rule alone gates who can publish.
+**Security model:** the Realtime Database `newsletters` node is publicly readable but only `admin`-writable (see [Security Rules](#security-rules)). Since there's no file upload, there's no separate Storage rules concern, the RTDB rule alone gates who can publish.
 
-If you'd rather have one-click file uploads instead of a Drive-link paste step, that's possible by switching back to Firebase Storage — it just requires upgrading the Firebase project to the Blaze plan (billing stays $0/month at this scale, but a card must be on file).
+If you'd rather have one-click file uploads instead of a Drive-link paste step, that's possible by switching back to Firebase Storage, it just requires upgrading the Firebase project to the Blaze plan (billing stays $0/month at this scale, but a card must be on file).
 
 ---
 
@@ -284,7 +300,7 @@ If you'd rather have one-click file uploads instead of a Drive-link paste step, 
 |---|---|
 | Firebase API keys | `portal/js/firebase-config.js` |
 | Security rules | `firebase-database.rules.json` → republish in Firebase console |
-| Embedded Google Calendar | `portal/index.html` — replace the `<iframe>` src |
-| Portal resource links (bylaws, absence form, etc.) | `portal/index.html` — the resource cards section |
-| Standards report form URL | `portal/index.html` — Standards Report Form link |
+| Embedded Google Calendar | `portal/index.html`, replace the `<iframe>` src |
+| Portal resource links (bylaws, absence form, etc.) | `portal/index.html`, the resource cards section |
+| Standards report form URL | `portal/index.html`, Standards Report Form link |
 | Authorized sign-in domains | Firebase console → Authentication → Authorized domains |

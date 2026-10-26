@@ -96,6 +96,33 @@
       "$id": {
         ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
+    },
+    "site": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "rush": {
+        "isOpen":          { ".validate": "newData.isBoolean()" },
+        "nextSemester":    { ".validate": "newData.isString() && newData.val().length <= 60" },
+        "rushTitle":       { ".validate": "newData.isString() && newData.val().length <= 80" },
+        "subtitle":        { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "ctaLine":         { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "rushLinkUrl":     { ".validate": "newData.isString() && newData.val().length <= 500 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
+        "interestFormUrl": { ".validate": "newData.isString() && newData.val().length <= 500 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
+        "heroImage":       { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().beginsWith('data:image/jpeg;base64,'))" },
+        "heroAlt":         { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "updatedAt":       { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "updatedBy":       { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "events": {
+          "$i": {
+            "title":      { ".validate": "newData.isString() && newData.val().length <= 80" },
+            "detail":     { ".validate": "newData.isString() && newData.val().length <= 160" },
+            "inviteOnly": { ".validate": "newData.isBoolean()" },
+            "image":      { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().beginsWith('data:image/jpeg;base64,'))" },
+            "$other":     { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
     }
   }
 }

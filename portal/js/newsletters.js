@@ -47,7 +47,7 @@
       btn.addEventListener('click', function () {
         var id = this.getAttribute('data-id');
         var title = this.getAttribute('data-title');
-        if (!confirm('Delete "' + title + '"? This removes it from the public page immediately (the file itself stays in Drive — delete it there separately if you want it fully gone).')) return;
+        if (!confirm('Delete "' + title + '"? This removes it from the public page immediately (the file itself stays in Drive; delete it there separately if you want it fully gone).')) return;
         db.ref('newsletters/' + id).remove().catch(function (err) {
           alert(err.message || 'Failed to delete newsletter.');
         });
@@ -73,11 +73,11 @@
       return;
     }
     if (!/^https?:\/\//i.test(fileURL)) {
-      setStatus('That doesn\'t look like a valid link — it should start with https://', 'error');
+      setStatus('That doesn\'t look like a valid link. It should start with https://', 'error');
       return;
     }
     if (fileURL.indexOf('drive.google.com') === -1) {
-      // Not a hard block — other hosts work fine too — just a nudge.
+      // Not a hard block, other hosts work fine too. Just a nudge.
       if (!confirm('That link doesn\'t look like a Google Drive link. Publish it anyway?')) return;
     }
 

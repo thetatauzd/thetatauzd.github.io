@@ -1,4 +1,4 @@
-# Theta Tau Zeta Delta — University of South Carolina
+# Theta Tau Zeta Delta at the University of South Carolina
 
 Official website for the Zeta Delta chapter of Theta Tau Professional Engineering Fraternity at USC. Hosted on GitHub Pages at [www.thetatauzd.org](https://www.thetatauzd.org).
 
@@ -54,9 +54,9 @@ python3 dev-server.py 8080
 
 | What | Where |
 |---|---|
-| **Rush open/closed & next semester** | `js/rush-config.js` — set `isOpen`, `nextSemester`, `rushTitle`, `rushLinkUrl` (new GroupMe) and `interestFormUrl` (Google Form shown while closed) |
-| **Rush event photos** | `Images/rush/` — drop in new photos, update paths in `rush.html` |
-| **Rush schedule graphics** | `rush.html` — the `FALL 2026 RUSH GRAPHICS` block: swap `Images/rush/f26/` for the new folder and edit the captions. It only shows while `isOpen` is true. |
+| **Rush open/closed, title, GroupMe link, interest form, poster and event cards** | Portal → Admin → **Website** (no code). Saved under `site/rush` in Firebase and read by `rush.html`. If nothing has been saved there, the page falls back to `js/rush-config.js` and the pictures in `Images/rush/`. |
+| **Rush event photos** | `Images/rush/`: drop in new photos, update paths in `rush.html` |
+| **Rush schedule graphics (fallback only)** | `rush.html`: the `FALL 2026 RUSH GRAPHICS` block, used only when nothing is saved on the Website page. |
 | **Leadership contacts** (Regent, VR, Rush Chairs, etc.) | Footer on every page: `index.html`, `brotherhood.html`, `profession.html`, `rush.html`, `service.html` |
 | **Company logos** | `Images/Companies/` |
 | **Brotherhood / service / profession photos** | `Images/` and `Images/optimized/` |
@@ -69,7 +69,7 @@ const rushConfig = {
   isOpen: false,
   nextSemester: 'Fall 2026',
   rushTitle: 'Spring 2026 Rush',
-  ctaLine: 'Applications are open — join us!',
+  ctaLine: 'Applications are open. Join us!',
   rushLinkUrl: 'https://...'
 };
 ```
@@ -92,7 +92,7 @@ Defined as CSS variables in `css/site.css`.
 
 ## Deployment
 
-Hosted on **GitHub Pages** — every push to `main` deploys automatically. The `CNAME` file sets the custom domain `thetatauzd.org`.
+Hosted on **GitHub Pages**: every push to `main` deploys automatically. The `CNAME` file sets the custom domain `thetatauzd.org`.
 
 No build step required. All files are static HTML/CSS/JS.
 

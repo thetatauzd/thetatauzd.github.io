@@ -708,7 +708,7 @@
 
     var h = document.createElement('p');
     h.className = 'quiz-counter';
-    h.textContent = 'Review — ' + rated + ' of ' + total + ' ' + quizVerb();
+    h.textContent = 'Review: ' + rated + ' of ' + total + ' ' + quizVerb();
     host.appendChild(h);
 
     // Plenty of brothers stopped here thinking they were done. Say it plainly.

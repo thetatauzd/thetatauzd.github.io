@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Website: Rush page settings</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=25">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+  <style>
+    .site-form label { display: block; margin-bottom: 0.9rem; font-weight: 500; }
+    .site-form label input[type="text"], .site-form label input[type="url"] {
+      display: block; width: 100%; margin-top: 0.25rem; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font: inherit; font-weight: 400;
+    }
+    .site-form .site-help { font-weight: 400; font-size: 0.85rem; color: #777; margin: -0.5rem 0 0.9rem; }
+    .site-toggle { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .site-toggle label { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; margin: 0; }
+    .site-toggle input { accent-color: var(--color-maroon); }
+    .site-toggle label:has(input:checked) { border-color: var(--color-maroon); background: #fff7f7; }
+    .site-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.25rem; }
+    @media (max-width: 640px) { .site-two { grid-template-columns: 1fr; } }
+    .site-hero { display: flex; gap: 1.25rem; align-items: flex-start; flex-wrap: wrap; }
+    .site-hero-preview { width: 180px; min-height: 120px; border: 1px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fafafa; }
+    .site-hero-preview img { width: 100%; height: auto; display: block; }
+    .site-hero-fields { flex: 1 1 260px; }
+    .site-noimg { color: #888; font-size: 0.85rem; padding: 0.75rem; text-align: center; }
+    .site-file { display: inline-block; margin: 0.5rem 0 0; }
+    .site-file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .site-file span { display: inline-block; padding: 0.45rem 0.9rem; border: 1px solid var(--color-maroon); color: var(--color-maroon); border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
+    .site-file:focus-within span { outline: 2px solid var(--color-gold); }
+    .site-event { display: grid; grid-template-columns: 150px 1fr; gap: 1rem; padding: 1rem 0; border-top: 1px solid #eee; }
+    @media (max-width: 560px) { .site-event { grid-template-columns: 1fr; } }
+    .site-event-img { text-align: center; }
+    .site-event-img img { width: 100%; height: auto; border-radius: 6px; display: block; }
+    .site-event-fields label { display: block; margin-bottom: 0.6rem; font-weight: 500; font-size: 0.9rem; }
+    .site-event-fields label input[type="text"] { display: block; width: 100%; margin-top: 0.2rem; padding: 0.5rem 0.7rem; border: 1px solid #ddd; border-radius: 8px; font: inherit; }
+    .site-check { display: flex !important; align-items: center; gap: 0.4rem; }
+    .site-check input { accent-color: var(--color-maroon); }
+    .site-event-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .site-event-actions button, .site-actions button, .site-actions a { font: inherit; font-size: 0.9rem; padding: 0.45rem 0.9rem; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; color: #333; text-decoration: none; }
+    .site-event-actions button:disabled { opacity: 0.4; cursor: default; }
+    .site-event-actions button.danger { color: #c62828; border-color: #e5b4b4; }
+    .site-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+    .site-actions .primary { background: var(--color-gold); color: var(--color-maroon); border-color: var(--color-gold); font-weight: 600; padding: 0.7rem 1.4rem; font-size: 1rem; }
+    .site-actions .primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .site-actions .danger { color: #c62828; border-color: #e5b4b4; margin-left: auto; }
+    .site-status { margin-top: 0.6rem; font-size: 0.9rem; min-height: 1.2em; }
+    .site-status.error { color: #c62828; }
+    .site-status.ok { color: #2e7d32; }
+    .site-savebar { position: sticky; bottom: 0; background: #fff; padding: 0.75rem 1.5rem; margin: 0 -1.5rem -1.5rem; border-top: 1px solid #eee; border-radius: 0 0 12px 12px; }
+  </style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Website</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu">
+          <a href="admin">User Management</a>
+          <a href="newsletters-admin">Newsletters</a>
+          <a href="site-admin">Website</a>
+          <div class="dd-section-label">Voting</div>
+          <a href="standards">Standards</a>
+          <a href="regent">Regent View</a>
+          <a href="history">Session History</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="/portal">Portal home</a>
+          <a href="voting">Voting</a>
+          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/">Back to Site</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div class="portal-card">
+      <h2>Rush page</h2>
+      <p style="color:#666;">What the public <a href="/rush" target="_blank" rel="noopener">rush page</a> shows. Changes go live when you press Save, no code needed.</p>
+      <p id="site-source" style="color:#999; font-size:0.85rem;"></p>
+
+      <div class="site-form">
+        <div class="site-toggle" role="radiogroup" aria-label="Rush status">
+          <label><input type="radio" name="rush-state" id="f-open" value="open"> Rush is open: show the poster, the event cards and the GroupMe button</label>
+          <label><input type="radio" name="rush-state" id="f-closed" value="closed"> Rush is closed: show "Rush has closed" with the next semester</label>
+        </div>
+
+        <div class="site-two">
+          <div>
+            <label>Title while open<input type="text" id="f-title" maxlength="80" placeholder="Spring 2027 Rush"></label>
+            <label>Line under the title<input type="text" id="f-subtitle" maxlength="200" placeholder="Come find out what Theta Tau is about."></label>
+            <label>GroupMe invite link<input type="url" id="f-groupme" maxlength="500" placeholder="https://groupme.com/join_group/..."></label>
+            <p class="site-help">Leave empty to hide the GroupMe button. Make a new invite every semester.</p>
+            <label>Line above the GroupMe button<input type="text" id="f-cta" maxlength="200" placeholder="Join the Rush GroupMe to keep up with every event."></label>
+          </div>
+          <div>
+            <label>Next semester, shown while closed<input type="text" id="f-next" maxlength="60" placeholder="Spring 2027"></label>
+            <label>Interest list link (Google Form)<input type="url" id="f-interest" maxlength="500" placeholder="https://forms.gle/..."></label>
+            <p class="site-help">Shown all year in the closed banner so people can sign up before rush starts. Leave empty to hide it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="portal-card">
+      <h2>Poster</h2>
+      <div class="site-hero">
+        <div class="site-hero-preview" id="hero-preview"></div>
+        <div class="site-hero-fields site-form">
+          <label class="site-file"><input type="file" id="f-hero" accept="image/*"><span>Choose poster picture</span></label>
+          <button type="button" id="btn-hero-remove" class="hidden" style="margin-left:0.5rem; font:inherit; font-size:0.9rem; background:none; border:none; color:#c62828; cursor:pointer;">Remove</button>
+          <p class="site-help" style="margin-top:0.75rem;">Any picture from your phone or Canva works. It is shrunk before it is saved.</p>
+          <label>Description for screen readers<input type="text" id="f-hero-alt" maxlength="200" placeholder="Theta Tau Spring 2027 Rush poster"></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="portal-card">
+      <h2>Event cards <span class="sec-count" id="event-count"></span></h2>
+      <p style="color:#666;">One card per event, shown in this order while rush is open. Put the date, place, time and dress code in the second line so people can read it without opening the picture.</p>
+      <div id="event-list"></div>
+      <div class="site-actions">
+        <button type="button" id="btn-add-event">Add an event</button>
+        <button type="button" id="btn-load-static">Start from the Fall 2026 cards</button>
+      </div>
+    </div>
+
+    <div class="portal-card">
+      <div class="site-actions">
+        <button type="button" id="btn-save" class="primary">Save changes</button>
+        <a id="link-preview" href="/rush" target="_blank" rel="noopener">Open the rush page</a>
+        <button type="button" id="btn-clear" class="danger">Clear everything saved here</button>
+      </div>
+      <div class="site-status" id="site-status"></div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=25"></script>
+  <script src="js/auth.js?v=25"></script>
+  <script src="../js/rush-config.js?v=25"></script>
+  <script src="js/site-admin.js?v=25"></script>
+</body>
+</html>
