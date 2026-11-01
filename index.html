@@ -12,13 +12,13 @@
     <meta property="og:title" content="Theta Tau Zeta Delta at the University of South Carolina"/>
     <meta property="og:url" content="https://www.thetatauzd.org/"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Founded in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
+    <meta property="og:description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Chartered in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
     <meta property="og:image" content="https://www.thetatauzd.org/Images/og-cover.jpg"/>
     <meta property="og:image:width" content="1200"/>
     <meta property="og:image:height" content="630"/>
     <meta property="og:image:alt" content="Theta Tau Zeta Delta brothers in front of the Swearingen Engineering Center"/>
     <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Founded in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
+    <meta name="description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Chartered in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap">
@@ -361,9 +361,9 @@
     
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 3rem;
-        max-width: 1000px;
+        max-width: 900px;
         margin: 0 auto;
     }
     
@@ -383,6 +383,20 @@
         opacity: 0.8;
     }
     
+    /* Awards */
+    .awards-section { text-align: center; background: #fff; color: #1a1a1a; }
+    .awards-section h2 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 0.5rem; }
+    .awards-intro { color: #666; margin-bottom: 2.5rem; }
+    .awards-list { max-width: 760px; margin: 0 auto; text-align: left; }
+    .award-row { display: grid; grid-template-columns: 110px 1fr; gap: 1rem 1.5rem; padding: 1rem 0; border-top: 1px solid #e4e4e4; align-items: baseline; }
+    .award-row:last-child { border-bottom: 1px solid #e4e4e4; }
+    .award-year { font-size: 1.6rem; font-weight: 700; color: var(--color-maroon); line-height: 1.1; }
+    .award-names { list-style: none; margin: 0; padding: 0; }
+    .award-names li { padding: 0.2rem 0; font-size: 1.05rem; }
+    @media (max-width: 600px) {
+        .award-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    }
+
     /* Call to Action */
     .cta-section {
         background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
@@ -618,7 +632,7 @@
                 <div class="section-content">
                     <div style="max-width: 720px; margin: 0 auto; text-align: center;">
                         <h2>Welcome to Theta Tau Zeta Delta</h2>
-                        <p>Founded in 2011, we are the coed professional engineering fraternity at the University of South Carolina, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
+                        <p>Chartered on February 5, 2011, we are the coed professional engineering fraternity at the University of South Carolina, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
                         <p>We are a chapter of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau</a>, the national fraternity for engineers. The purpose of Theta Tau is to develop and maintain a high standard of professional interest among its members, and to unite them in a strong bond of fraternal fellowship.</p>
                         <p><em>Engineering Leaders for Service, Profession, and Brotherhood.</em> <a href="https://thetatau.org/" target="_blank" rel="noopener">Visit thetatau.org</a> for national news, resources, and more.</p>
                     </div>
@@ -688,24 +702,44 @@
                     <h2 style="margin-bottom: 3rem; font-size: clamp(2rem, 5vw, 3rem);">Our Impact</h2>
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-number">460+</div>
-                            <div class="stat-label">Brothers Initiated</div>
-                            <div class="stat-label">Since 2011</div>
+                            <div class="stat-number" data-stat="brothersAllTime">480+</div>
+                            <div class="stat-label">Brothers</div>
+                            <div class="stat-label">All-time</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number">2,500+</div>
-                            <div class="stat-label">Lives Impacted</div>
-                            <div class="stat-label">Through Service</div>
+                            <div class="stat-number" data-stat="activeMembers">67</div>
+                            <div class="stat-label">Active Members</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number" id="years-at-usc"></div>
+                            <div class="stat-number" data-stat="yearsAtUSC">15</div>
                             <div class="stat-label">Years at USC</div>
+                            <div class="stat-label">Chartered <span data-stat="charteredText">February 5, 2011</span></div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number">900+</div>
+                            <div class="stat-number" data-stat="serviceHoursPerSemester">900+</div>
                             <div class="stat-label">Service Hours</div>
-                            <div class="stat-label">Last Semester</div>
+                            <div class="stat-label">Per Semester</div>
                         </div>
+                        <div class="stat-item">
+                            <div class="stat-number" data-stat="averageGpa">3.8</div>
+                            <div class="stat-label">Average GPA</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" data-stat="studentsReached">1,000+</div>
+                            <div class="stat-label">K-12 Students Reached</div>
+                            <div class="stat-label" data-stat="studentsReachedEvent">STEM Extravaganza 2026</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Awards -->
+            <section class="content-section awards-section" id="awards">
+                <div class="section-content">
+                    <h2>Awards &amp; Recognition</h2>
+                    <p class="awards-intro">Theta Tau national chapter awards.</p>
+                    <div class="awards-list" id="awards-list">
+                        <noscript><p>2026: Outstanding DEI Program, Outstanding Philanthropy Event. 2025: Outstanding DEI Program, Outstanding Professional Development Program, Outstanding Philanthropy Program, Outstanding Chapter Officer (Rachel Wayne). 2024: Outstanding Video. 2023: 700 Club. 2022: Outstanding Philanthropy Event. 2014-16: Schrader Award.</p></noscript>
                     </div>
                 </div>
             </section>
@@ -728,7 +762,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Theta Tau Zeta Delta</h3>
-                    <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Founded in 2011.</p>
+                    <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Chartered February 5, 2011.</p>
                     <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
                 </div>
                 
@@ -773,9 +807,6 @@
             window.addEventListener('scroll', updateHeader);
             updateHeader();
 
-            var uscEl = document.getElementById('years-at-usc');
-            if (uscEl) uscEl.textContent = new Date().getFullYear() - 2011;
-            
             // Smooth scroll function
             window.scrollToSection = function(sectionId) {
                 const element = document.getElementById(sectionId);
@@ -800,7 +831,7 @@
             }, observerOptions);
             
             // Observe all sections for animation
-            document.querySelectorAll('.content-section, .stats-section, .cta-section').forEach(section => {
+            document.querySelectorAll('.content-section, .stats-section, .awards-section, .cta-section').forEach(section => {
                 section.style.opacity = '0';
                 section.style.transform = 'translateY(30px)';
                 section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -809,6 +840,8 @@
             
         });
     </script>
+    <script src="./js/site-stats.js"></script>
+    <script src="./js/awards.js"></script>
     <script src="./js/nav.js"></script>
 </body>
 </html>

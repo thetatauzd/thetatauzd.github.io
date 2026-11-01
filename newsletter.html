@@ -344,7 +344,7 @@
         <div class="footer-content">
           <div class="footer-section">
             <h3>Theta Tau Zeta Delta</h3>
-            <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Founded in 2011.</p>
+            <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Chartered February 5, 2011.</p>
                     <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
           </div>
 
@@ -401,6 +401,15 @@
           var errorEl = document.getElementById('newsletter-error');
           var gridEl = document.getElementById('newsletter-grid');
 
+          // Exactly one of loading / empty / error / grid is visible at a time.
+          function setState(state) {
+            loadingEl.style.display = state === 'loading' ? 'block' : 'none';
+            emptyEl.style.display = state === 'empty' ? 'block' : 'none';
+            errorEl.style.display = state === 'error' ? 'block' : 'none';
+            gridEl.style.display = state === 'list' ? '' : 'none';
+          }
+          setState('loading');
+
           function escapeHtml(str) {
             var div = document.createElement('div');
             div.textContent = str || '';
@@ -415,11 +424,12 @@
           }
 
           function renderNewsletters(list) {
-            loadingEl.style.display = 'none';
             if (!list.length) {
-              emptyEl.style.display = 'block';
+              gridEl.innerHTML = '';
+              setState('empty');
               return;
             }
+            setState('list');
             gridEl.innerHTML = list.map(function (item) {
               return '' +
                 '<article class="newsletter-card">' +
@@ -432,8 +442,7 @@
           }
 
           if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
-            loadingEl.style.display = 'none';
-            errorEl.style.display = 'block';
+            setState('error');
             return;
           }
 
@@ -452,8 +461,7 @@
             })
             .catch(function (err) {
               console.error('Failed to load newsletters', err);
-              loadingEl.style.display = 'none';
-              errorEl.style.display = 'block';
+              setState('error');
             });
         })();
       </script>
