@@ -34,3 +34,11 @@ yarn-error.log*
 
 # Pages to exclude from production
 brothers.html
+# Local Claude Code permission settings
+.claude/settings.local.json
+
+# arena skill runs (local tournaments, never committed)
+.arena/
+
+# Firebase CLI (firepit) debug log
+firepit-log.txt

@@ -16,7 +16,7 @@
     .site-form label input[type="text"], .site-form label input[type="url"] {
       display: block; width: 100%; margin-top: 0.25rem; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font: inherit; font-weight: 400;
     }
-    .site-form .site-help { font-weight: 400; font-size: 0.85rem; color: #777; margin: -0.5rem 0 0.9rem; }
+    .site-form .site-help { font-weight: 400; font-size: 0.85rem; color: #666; margin: -0.5rem 0 0.9rem; }
     .site-toggle { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .site-toggle label { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; margin: 0; }
     .site-toggle input { accent-color: var(--color-maroon); }
@@ -27,11 +27,11 @@
     .site-hero-preview { width: 180px; min-height: 120px; border: 1px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fafafa; }
     .site-hero-preview img { width: 100%; height: auto; display: block; }
     .site-hero-fields { flex: 1 1 260px; }
-    .site-noimg { color: #888; font-size: 0.85rem; padding: 0.75rem; text-align: center; }
+    .site-noimg { color: #666; font-size: 0.85rem; padding: 0.75rem; text-align: center; }
     .site-file { display: inline-block; margin: 0.5rem 0 0; }
     .site-file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
     .site-file span { display: inline-block; padding: 0.45rem 0.9rem; border: 1px solid var(--color-maroon); color: var(--color-maroon); border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
-    .site-file:focus-within span { outline: 2px solid var(--color-gold); }
+    .site-file:focus-within span { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
     .site-event { display: grid; grid-template-columns: 150px 1fr; gap: 1rem; padding: 1rem 0; border-top: 1px solid #eee; }
     @media (max-width: 560px) { .site-event { grid-template-columns: 1fr; } }
     .site-event-img { text-align: center; }
@@ -89,7 +89,7 @@
     <div class="portal-card">
       <h2>Rush page</h2>
       <p style="color:#666;">What the public <a href="/rush" target="_blank" rel="noopener">rush page</a> shows. Changes go live when you press Save, no code needed.</p>
-      <p id="site-source" style="color:#999; font-size:0.85rem;"></p>
+      <p id="site-source" style="color:#666; font-size:0.85rem;"></p>
 
       <div class="site-form">
         <div class="site-toggle" role="radiogroup" aria-label="Rush status">
@@ -134,7 +134,9 @@
       <div class="site-actions">
         <button type="button" id="btn-add-event">Add an event</button>
         <button type="button" id="btn-load-static">Start from the Fall 2026 cards</button>
+        <span class="site-help" id="add-limit" style="margin:0;"></span>
       </div>
+      <p class="site-help" style="margin-top:0.75rem;">Every picture saved here is downloaded by everyone who opens the rush page, even while rush is closed, and that counts against the free database plan. Save pictures only while rush is open, and press "Clear everything saved here" once rush closes.</p>
     </div>
 
     <div class="portal-card">

@@ -14,6 +14,9 @@
   var REF = 'site/rush';
   var MAX_IMAGE_CHARS = 190000;   // about 140 KB of JPEG; the database rule allows 200000
   var MAX_SIDE = 1000;            // posters are shown at most ~600px wide, 1000px is plenty
+  var MAX_EVENTS = 10;            // the database rule accepts cards 0 to 9
+  // Pictures are only ever shown if they are real JPEG data URLs (the rule checks the same).
+  var JPEG_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/]+=*$/;
 
   // The Fall 2026 cards that ship with the site, so the first save can start
   // from them instead of from nothing.
@@ -49,10 +52,21 @@
 
   function $(id) { return document.getElementById(id); }
 
+  /** Escape text for HTML, quotes included, so it is safe inside attribute values too. */
   function esc(str) {
-    var d = document.createElement('div');
-    d.textContent = str == null ? '' : String(str);
-    return d.innerHTML;
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /** Put a saved picture into a box, only if it is a real JPEG data URL. */
+  function showPicture(box, src) {
+    if (!box || !src || !JPEG_RE.test(src)) return false;
+    var img = document.createElement('img');
+    img.alt = '';
+    img.src = src;
+    box.insertBefore(img, box.firstChild);
+    return true;
   }
 
   function say(msg, kind) {
@@ -121,8 +135,8 @@
     $('f-hero-alt').value = state.heroAlt || '';
 
     var hero = $('hero-preview');
-    if (state.heroImage) {
-      hero.innerHTML = '<img src="' + state.heroImage + '" alt="">';
+    hero.textContent = '';
+    if (showPicture(hero, state.heroImage)) {
       $('btn-hero-remove').classList.remove('hidden');
     } else {
       hero.innerHTML = '<span class="site-noimg">No poster saved. The page shows the Fall 2026 poster from the site files.</span>';
@@ -137,7 +151,7 @@
         return '' +
           '<div class="site-event" data-i="' + i + '">' +
             '<div class="site-event-img">' +
-              (ev.image ? '<img src="' + ev.image + '" alt="">' : '<span class="site-noimg">No picture</span>') +
+              (ev.image && JPEG_RE.test(ev.image) ? '' : '<span class="site-noimg">No picture</span>') +
               '<label class="site-file"><input type="file" accept="image/*" data-act="image" data-i="' + i + '"><span>Choose picture</span></label>' +
             '</div>' +
             '<div class="site-event-fields">' +
@@ -152,7 +166,14 @@
             '</div>' +
           '</div>';
       }).join('');
+      // Pictures go in as properties after the JPEG check, never as HTML.
+      state.events.forEach(function (ev, i) {
+        var box = list.querySelector('.site-event[data-i="' + i + '"] .site-event-img');
+        showPicture(box, ev.image);
+      });
     }
+    $('add-limit').textContent = state.events.length >= MAX_EVENTS ? 'The page holds at most ' + MAX_EVENTS + ' cards.' : '';
+    $('btn-add-event').disabled = state.events.length >= MAX_EVENTS;
     $('event-count').textContent = state.events.length ? '(' + state.events.length + ')' : '';
   }
 
@@ -213,6 +234,7 @@
 
   function addEvent() {
     readForm();
+    if (state.events.length >= MAX_EVENTS) { say('The page holds at most ' + MAX_EVENTS + ' cards.', 'error'); return; }
     state.events.push({ title: '', detail: '', inviteOnly: false, image: '' });
     markDirty();
     render();
@@ -222,6 +244,7 @@
 
   function loadStaticCards() {
     readForm();
+    if (state.events.length && !confirm('Replace the ' + state.events.length + ' cards here with the Fall 2026 cards from the site files?')) return;
     say('Loading the Fall 2026 pictures…');
     var jobs = STATIC_CARDS.events.map(function (ev) {
       return fetchAsFile(ev.image).then(compress).then(function (dataUrl) {
@@ -231,7 +254,7 @@
     var heroJob = fetchAsFile(STATIC_CARDS.hero.image).then(compress);
     Promise.all([heroJob, Promise.all(jobs)]).then(function (res) {
       if (!state.heroImage) { state.heroImage = res[0]; state.heroAlt = STATIC_CARDS.hero.alt; }
-      state.events = state.events.concat(res[1]);
+      state.events = res[1];
       markDirty();
       render();
       say('Loaded. Edit anything you like, then press Save changes.', 'ok');
@@ -247,8 +270,13 @@
     for (var k = 0; k < urls.length; k++) {
       if (urls[k] && !/^https:\/\//.test(urls[k])) return 'Links must start with https://';
     }
+    if (state.events.length > MAX_EVENTS) return 'The page holds at most ' + MAX_EVENTS + ' cards. Remove ' + (state.events.length - MAX_EVENTS) + '.';
     for (var i = 0; i < state.events.length; i++) {
       if (!state.events[i].title) return 'Event ' + (i + 1) + ' needs a title.';
+    }
+    if (state.heroImage && !JPEG_RE.test(state.heroImage)) return 'The poster picture is not a JPEG. Choose it again.';
+    for (var j = 0; j < state.events.length; j++) {
+      if (state.events[j].image && !JPEG_RE.test(state.events[j].image)) return 'The picture on event ' + (j + 1) + ' is not a JPEG. Choose it again.';
     }
     return '';
   }
@@ -260,7 +288,7 @@
     var btn = $('btn-save');
     btn.disabled = true;
     say('Saving…');
-    var user = firebase.auth().currentUser;
+    // No name or email is saved: site/rush can be read by anyone on the internet.
     var payload = {
       isOpen: state.isOpen,
       nextSemester: state.nextSemester,
@@ -274,8 +302,7 @@
       events: state.events.map(function (ev) {
         return { title: ev.title || '', detail: ev.detail || '', inviteOnly: !!ev.inviteOnly, image: ev.image || '' };
       }),
-      updatedAt: new Date().toISOString(),
-      updatedBy: (user && user.email) || ''
+      updatedAt: new Date().toISOString()
     };
     db.ref(REF).set(payload).then(function () {
       dirty = false;
@@ -304,7 +331,7 @@
         events: toList(v.events)
       };
       var when = v.updatedAt ? new Date(v.updatedAt).toLocaleString() : '';
-      $('site-source').textContent = 'Last saved ' + when + (v.updatedBy ? ' by ' + v.updatedBy : '') + '.';
+      $('site-source').textContent = 'Last saved ' + when + '.';
     });
   }
 

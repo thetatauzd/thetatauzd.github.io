@@ -114,13 +114,11 @@ a:hover {
   z-index: 2;
 }
 
-/* Prevent border on focused elements */
-:focus {
-  outline: none;
-}
-
+/* Keyboard focus: a dark ring with a white halo, visible on gold, white and black alike. */
 :focus-visible {
-  outline: 2px solid #d4af37;
+  outline: 3px solid #1a1a1a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #fff !important;
 }
 
 /* Custom burger menu animation */

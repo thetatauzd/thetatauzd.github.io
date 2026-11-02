@@ -1506,14 +1506,14 @@
         var pass = pct >= thresh;
         summary.innerHTML = '<span style="color:' + (pass ? '#2e7d32' : '#c62828') + '">' +
           'Yes: ' + agg.yes + ' &middot; No: ' + agg.no + ' &middot; Abstain: ' + (agg.abstain || 0) +
-          ': ' + pct + '% Yes (need ' + thresh + '%), <strong>' + (pass ? 'PASS' : 'FAIL') + '</strong></span>';
+          ' &middot; ' + pct + '% yes (need ' + thresh + '%) &middot; <strong>' + (pass ? 'PASS' : 'FAIL') + '</strong></span>';
       } else if (p.type === 'pnm_depledge') {
         var dt = (agg.yes || 0) + (agg.no || 0);
         var dp = dt ? Math.round(100 * agg.yes / dt) : 0;
         var depledge = dp > 50;
         summary.innerHTML = '<span style="color:' + (depledge ? '#c62828' : '#2e7d32') + '">' +
           'Yes (de-pledge): ' + agg.yes + ' &middot; No (stay): ' + agg.no +
-          ': ' + dp + '%, <strong>' + (depledge ? 'DE-PLEDGE' : 'REMAIN') + '</strong></span>';
+          ' &middot; ' + dp + '% for de-pledge (over 50% needed) &middot; <strong>' + (depledge ? 'DE-PLEDGE' : 'REMAIN') + '</strong></span>';
       } else {
         summary.innerHTML = '';
       }

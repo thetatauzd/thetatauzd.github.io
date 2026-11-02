@@ -1,10 +1,11 @@
 {
   "rules": {
     "users": {
-      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards')",
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('service').val() === true || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true)",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && ((auth.uid === $uid && (!data.exists() || data.child('role').val() === 'pending')) || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "auth != null && ((auth.uid === $uid && (!data.exists() || data.child('role').val() === 'pending')) || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "(root.child('users').child(auth.uid).child('role').val() === 'admin') || (newData.child('role').val() === 'pending' && !newData.hasChild('positions') && !newData.hasChild('perms') && (!newData.hasChild('status') || newData.child('status').val() === 'pending'))"
       }
     },
     "sessionByCode": {
@@ -32,32 +33,50 @@
           ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'regent')",
           "$pollId": {
             ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-            "name":         { ".read": "auth != null" },
-            "type":         { ".read": "auth != null" },
-            "candidates":   { ".read": "auth != null" },
-            "options":      { ".read": "auth != null" },
-            "rosterIndex":  { ".read": "auth != null" },
-            "useRoster":    { ".read": "auth != null" },
-            "threshold":    { ".read": "auth != null" },
-            "minimumScore": { ".read": "auth != null" },
-            "status":       { ".read": "auth != null" },
+            "name": {
+              ".read": "auth != null"
+            },
+            "type": {
+              ".read": "auth != null"
+            },
+            "candidates": {
+              ".read": "auth != null"
+            },
+            "options": {
+              ".read": "auth != null"
+            },
+            "rosterIndex": {
+              ".read": "auth != null"
+            },
+            "useRoster": {
+              ".read": "auth != null"
+            },
+            "threshold": {
+              ".read": "auth != null"
+            },
+            "minimumScore": {
+              ".read": "auth != null"
+            },
+            "status": {
+              ".read": "auth != null"
+            },
             "votes": {
               ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
               "$voteUid": {
                 ".read": "auth != null && auth.uid === $voteUid",
-                ".write": "auth != null && auth.uid === $voteUid && root.child('users').child(auth.uid).child('role').val() !== 'pending'"
+                ".write": "auth != null && auth.uid === $voteUid && (root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))"
               }
             },
             "hasVoted": {
               ".read": "auth != null",
               "$uid": {
-                ".write": "auth != null && auth.uid === $uid"
+                ".write": "auth != null && auth.uid === $uid && (root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))"
               }
             },
             "progress": {
               ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'regent' || root.child('users').child(auth.uid).child('role').val() === 'standards' || root.child('users').child(auth.uid).child('role').val() === 'admin')",
               "$uid": {
-                ".write": "auth != null && auth.uid === $uid"
+                ".write": "auth != null && auth.uid === $uid && (root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))"
               }
             },
             "aggregation": {
@@ -97,10 +116,236 @@
         ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     },
+    "directory": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "roster": {
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$roll": {
+        ".read": "auth != null"
+      }
+    },
+    "rosterByName": {
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$key": {
+        ".read": "auth != null"
+      }
+    },
+    "meta": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    },
+    "settings": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+      "history": {
+        "$id": {
+          ".write": "auth != null && ((root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('settings').val() === true) && !data.exists())"
+        }
+      }
+    },
+    "terms": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('settings').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true)"
+    },
+    "events": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)"
+      }
+    },
+    "attendance": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)"
+      }
+    },
+    "myAttendance": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+    "excuses": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$id": {
+            ".write": "auth != null && auth.uid === $uid && ((root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))) || root.child('users').child(auth.uid).child('status').val() === 'pnm') && (!data.exists() || data.child('status').val() === 'pending') && (!newData.exists() || newData.child('status').val() === 'pending')",
+            ".validate": "!newData.exists() || (newData.hasChild('status') && (!newData.hasChild('reason') || (newData.child('reason').isString() && newData.child('reason').val().length <= 4000)))"
+          }
+        }
+      }
+    },
+    "adjustments": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+    "rollover": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+    "standing": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+    "ledger": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$id": {
+            ".write": "auth != null && ((root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('finance').val() === true) && !data.exists())",
+            ".validate": "newData.hasChildren(['type','createdBy','createdAt']) && newData.child('createdBy').val() === auth.uid"
+          }
+        },
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin' && !newData.exists()"
+      }
+    },
+    "service": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('service').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('service').val() === true)",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$id": {
+            ".write": "auth != null && auth.uid === $uid && ((root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))) || root.child('users').child(auth.uid).child('status').val() === 'pnm') && (!data.exists() || data.child('status').val() === 'pending') && (!newData.exists() || newData.child('status').val() === 'pending')",
+            ".validate": "!newData.exists() || (newData.hasChild('status') && newData.child('hours').isNumber() && newData.child('hours').val() >= 0 && newData.child('hours').val() <= 200)"
+          }
+        }
+      }
+    },
+    "pledgeClasses": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true)"
+    },
+    "pledges": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true)",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "pledgeAttendance": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true)"
+    },
+    "changeLog": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('service').val() === true || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('service').val() === true || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)"
+      }
+    },
+    "imports": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin')",
+      ".indexOn": [
+        "term"
+      ]
+    },
+    "excuseFlags": {
+      "$termId": {
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+        "$eventId": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && ((root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))) || root.child('users').child(auth.uid).child('status').val() === 'pnm') && (!data.exists() || !data.val().matches(/approved$/)) && (!newData.exists() || newData.val().matches(/^(late_|early_)?pending$/))",
+            ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^(late_|early_)?(pending|approved|denied)$/))"
+          }
+        }
+      }
+    },
+    "proof": {
+      "excuse": {
+        "$termId": {
+          ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true)",
+          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            "$photoId": {
+              ".write": "auth != null && auth.uid === $uid && ((root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))) || root.child('users').child(auth.uid).child('status').val() === 'pnm') && (!data.exists() || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.hasChildren(['data','createdAt']) && newData.child('data').isString() && newData.child('data').val().length <= 400000 && newData.child('data').val().matches(/^data:image\\/jpeg;base64,/))"
+            }
+          }
+        }
+      },
+      "service": {
+        "$termId": {
+          ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('service').val() === true || root.child('users').child(auth.uid).child('perms').child('pledges').val() === true)",
+          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            "$photoId": {
+              ".write": "auth != null && auth.uid === $uid && ((root.child('users').child(auth.uid).child('status').val() === 'active' || (!root.child('users').child(auth.uid).child('status').exists() && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending'))) || root.child('users').child(auth.uid).child('status').val() === 'pnm') && (!data.exists() || !newData.exists())",
+              ".validate": "!newData.exists() || (newData.hasChildren(['data','createdAt']) && newData.child('data').isString() && newData.child('data').val().length <= 400000 && newData.child('data').val().matches(/^data:image\\/jpeg;base64,/))"
+            }
+          }
+        }
+      }
+    },
+    "statusHistory": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('standards').val() === true || root.child('users').child(auth.uid).child('perms').child('attendance').val() === true || root.child('users').child(auth.uid).child('perms').child('finance').val() === true || root.child('users').child(auth.uid).child('perms').child('settings').val() === true)",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$id": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin' && !data.exists()"
+        }
+      }
+    },
+    "portalLinks": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "familyTree": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).exists() && root.child('users').child(auth.uid).child('role').val() !== 'pending')",
+      "members": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
+        "$id": {
+          ".validate": "!newData.exists() || (newData.hasChildren(['name']) && newData.child('name').isString() && newData.child('name').val().length <= 80 && (!newData.hasChild('roll') || newData.child('roll').isNumber()) && (!newData.hasChild('bigId') || newData.child('bigId').isString()) && (!newData.hasChild('big2Id') || newData.child('big2Id').isString()) && (!newData.hasChild('linkedin') || newData.child('linkedin').val().matches(/^https:\\/\\/(www\\.)?linkedin\\.com\\//)))"
+        }
+      },
+      "photos": {
+        "$id": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
+          ".validate": "!newData.exists() || (newData.hasChildren(['data']) && newData.child('data').isString() && newData.child('data').val().length <= 90000 && newData.child('data').val().matches(/^data:image\\/jpeg;base64,/))"
+        }
+      },
+      "meta": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)"
+      },
+      "history": {
+        "$id": {
+          ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true) && !data.exists()"
+        }
+      }
+    },
     "site": {
-      ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "rush": {
+        ".read": true,
+        ".validate": "newData.hasChildren(['isOpen'])",
         "isOpen":          { ".validate": "newData.isBoolean()" },
         "nextSemester":    { ".validate": "newData.isString() && newData.val().length <= 60" },
         "rushTitle":       { ".validate": "newData.isString() && newData.val().length <= 80" },
@@ -108,21 +353,22 @@
         "ctaLine":         { ".validate": "newData.isString() && newData.val().length <= 200" },
         "rushLinkUrl":     { ".validate": "newData.isString() && newData.val().length <= 500 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
         "interestFormUrl": { ".validate": "newData.isString() && newData.val().length <= 500 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
-        "heroImage":       { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().beginsWith('data:image/jpeg;base64,'))" },
+        "heroImage":       { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/]+=*$/))" },
         "heroAlt":         { ".validate": "newData.isString() && newData.val().length <= 200" },
         "updatedAt":       { ".validate": "newData.isString() && newData.val().length <= 40" },
-        "updatedBy":       { ".validate": "newData.isString() && newData.val().length <= 120" },
         "events": {
           "$i": {
+            ".validate": "$i.matches(/^[0-9]$/) && newData.hasChildren(['title'])",
             "title":      { ".validate": "newData.isString() && newData.val().length <= 80" },
             "detail":     { ".validate": "newData.isString() && newData.val().length <= 160" },
             "inviteOnly": { ".validate": "newData.isBoolean()" },
-            "image":      { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().beginsWith('data:image/jpeg;base64,'))" },
+            "image":      { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/]+=*$/))" },
             "$other":     { ".validate": false }
           }
         },
         "$other": { ".validate": false }
-      }
+      },
+      "$other": { ".validate": false }
     }
   }
 }

@@ -16,7 +16,8 @@
     <meta property="og:image" content="https://www.thetatauzd.org/Images/og-cover.jpg"/>
     <meta property="og:image:width" content="1200"/>
     <meta property="og:image:height" content="630"/>
-    <meta property="og:image:alt" content="Theta Tau Zeta Delta brothers in front of the Swearingen Engineering Center"/>
+    <meta property="og:image:alt" content="About seventy Theta Tau Zeta Delta brothers in black Theta Tau polos standing together on curved outdoor steps"/>
+    <meta name="twitter:image:alt" content="About seventy Theta Tau Zeta Delta brothers in black Theta Tau polos standing together on curved outdoor steps"/>
     <meta name="twitter:card" content="summary_large_image"/>
     <meta name="description" content="Rush Theta Tau Zeta Delta at the University of South Carolina: dates, events and how to join the coed professional engineering fraternity. Open to engineering and computing students."/>
 
@@ -27,6 +28,20 @@
     <link rel="stylesheet" type="text/css" href="./css/brotherhood_cards.css">
     <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
     <script src="./js/rush-config.js"></script>
+    <script>
+      // Decide open or closed before the page draws, so the wrong state never flashes.
+      // The saved Website-page setting (read at the bottom of the page) can switch it later.
+      document.documentElement.className += (window.RUSH_CONFIG && window.RUSH_CONFIG.isOpen) ? ' rush-open' : ' rush-closed';
+    </script>
+    <style>
+    /* Rush state. Default (no script, or closed): the "Rush has closed" banner shows and the
+       schedule, sign-up section and join button stay hidden. html.rush-open flips that. */
+    #rush-graphics, #rush-signup-section, #rush-link-wrapper { display: none !important; }
+    html.rush-open #rush-closed-banner { display: none !important; }
+    html.rush-open #rush-graphics { display: block !important; }
+    html.rush-open #rush-signup-section { display: flex !important; }
+    html.rush-open.rush-has-link #rush-link-wrapper { display: block !important; }
+    </style>
     <style>
     /* Basic styling */
     body {
@@ -548,6 +563,11 @@
         color: #ffffff !important;
     }
 
+    /* The gold buttons need dark text; the "all text white" rule above would otherwise win. */
+    .rush-groupme-btn, .rush-groupme-btn:hover, .rush-groupme-btn:focus, .rush-groupme-btn:visited {
+        color: #1a1a1a !important;
+    }
+
     /* Responsive adjustments for medium screens */
     @media (max-width: 1200px) {
       .user-items-list-item-container {
@@ -912,10 +932,14 @@
         <article class="sections" id="sections" data-page-sections="60f39ee3ec5ad00cc0939b35">
 
       <!-- Rush status banner: shown when RUSH_CONFIG.isOpen is false -->
-      <div id="rush-closed-banner" class="rush-status-banner rush-closed" role="status" aria-live="polite" style="display: none;">
+      <div id="rush-closed-banner" class="rush-status-banner rush-closed" role="status" aria-live="polite">
         <h2>Rush has closed for this semester</h2>
         <p>Check back at the start of next semester. We usually run rush within the first month of classes.</p>
         <p class="rush-next">Next rush: <span id="rush-next-semester">next semester</span></p>
+        <script>
+          // Fill in the semester as soon as the banner exists, before the rest of the page loads.
+          (function () { var s = document.getElementById('rush-next-semester'); if (s && window.RUSH_CONFIG && window.RUSH_CONFIG.nextSemester) s.textContent = window.RUSH_CONFIG.nextSemester; })();
+        </script>
         <p class="rush-closed-actions">
           <a class="rush-groupme-btn" id="rush-interest-link" href="#" target="_blank" rel="noopener" style="display:none;">Join the interest list</a>
           <a class="rush-closed-link" href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Follow @thetatauzd for dates</a>
@@ -1455,58 +1479,67 @@
         </div>
       </footer>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="./portal/js/firebase-config.js"></script>
     <script>
       (function() {
-        var banner = document.getElementById('rush-closed-banner');
+        // The portal's Website page saves to site/rush, which anyone may read. It is fetched
+        // with one plain HTTPS request (no Firebase SDK and no open connection, so public
+        // visitors never use up the connection limit the portal's voting needs).
+        var SAVED_URL = 'https://thetatauzd-2ab25-default-rtdb.firebaseio.com/site/rush.json';
+        // Only real JPEG data URLs are ever shown as pictures.
+        var JPEG_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/]+=*$/;
+        var HTTPS_RE = /^https:\/\/[^\s"'<>]+$/;
+
+        var root = document.documentElement;
         var nextSpan = document.getElementById('rush-next-semester');
-        var signupSection = document.getElementById('rush-signup-section');
         var titleEl = document.getElementById('rush-title');
         var ctaEl = document.getElementById('rush-cta-line');
-        var linkWrapper = document.getElementById('rush-link-wrapper');
         var groupMeLink = document.getElementById('rush-groupme-link');
         var graphics = document.getElementById('rush-graphics');
         var interestLink = document.getElementById('rush-interest-link');
 
-        function escapeHtml(str) {
-          var d = document.createElement('div');
-          d.textContent = str == null ? '' : String(str);
-          return d.innerHTML;
+        function setOpen(isOpen) {
+          root.className = root.className.replace(/\s*\brush-(open|closed)\b/g, '') + (isOpen ? ' rush-open' : ' rush-closed');
         }
 
         // Show the open or closed state from a config object (the static file,
-        // or the one admins save on the portal's Website page).
+        // or the one admins save on the portal's Website page). Text only: textContent and href.
         function applyState(config) {
           if (interestLink) {
-            if (config.interestFormUrl) { interestLink.href = config.interestFormUrl; interestLink.style.display = ''; }
+            if (config.interestFormUrl && HTTPS_RE.test(config.interestFormUrl)) { interestLink.href = config.interestFormUrl; interestLink.style.display = ''; }
             else { interestLink.style.display = 'none'; }
           }
+          if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
           if (config.isOpen) {
-            if (banner) banner.style.display = 'none';
-            if (graphics) graphics.style.display = '';
-            if (signupSection) signupSection.style.display = '';
             if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
             var gh2 = graphics && graphics.querySelector('h2');
             if (gh2 && config.rushTitle) gh2.textContent = config.rushTitle;
             if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
-            // Hide the join button rather than shipping a dead link if no URL is set.
-            if (groupMeLink) {
-              if (config.rushLinkUrl) { groupMeLink.href = config.rushLinkUrl; if (linkWrapper) linkWrapper.style.display = ''; }
-              else if (linkWrapper) { linkWrapper.style.display = 'none'; }
-            }
-          } else {
-            if (banner) {
-              banner.style.display = 'block';
-              if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
-            }
-            if (graphics) graphics.style.display = 'none';
-            if (signupSection) signupSection.style.display = 'none';
+            // No GroupMe link set: hide the button rather than ship a dead link.
+            var hasLink = !!(groupMeLink && config.rushLinkUrl && HTTPS_RE.test(config.rushLinkUrl));
+            if (hasLink) groupMeLink.href = config.rushLinkUrl;
+            root.className = root.className.replace(/\s*\brush-has-link\b/g, '') + (hasLink ? ' rush-has-link' : '');
           }
+          setOpen(!!config.isOpen);
         }
 
-        // Rebuild the poster and event cards from what admins saved.
+        function el(tag, className, text) {
+          var n = document.createElement(tag);
+          if (className) n.className = className;
+          if (text != null) n.textContent = text;
+          return n;
+        }
+
+        function picture(src, alt) {
+          if (!src || !JPEG_RE.test(src)) return null;
+          var img = document.createElement('img');
+          img.alt = alt || '';
+          img.loading = 'lazy';
+          img.src = src;
+          return img;
+        }
+
+        // Rebuild the poster and event cards from what admins saved. Every value goes in
+        // through textContent, .alt or .src (after the JPEG check), never as HTML.
         function renderGraphics(saved) {
           if (!graphics) return;
           var events = saved.events || [];
@@ -1514,45 +1547,45 @@
             events = Object.keys(events).sort(function (a, b) { return Number(a) - Number(b); }).map(function (k) { return saved.events[k]; });
           }
           events = events.filter(function (ev) { return ev && ev.title; });
-          if (!saved.heroImage && !events.length) return;   // nothing saved: keep the cards in the file
+          var heroImg = picture(saved.heroImage, saved.heroAlt || saved.rushTitle || 'Rush poster');
+          if (!heroImg && !events.length) return;   // nothing saved: keep the cards in the file
           var h2 = graphics.querySelector('h2');
           var sub = graphics.querySelector('.rg-sub');
           if (h2 && saved.rushTitle) h2.textContent = saved.rushTitle;
           if (sub && saved.subtitle) sub.textContent = saved.subtitle;
           var hero = graphics.querySelector('.rush-graphics-hero');
           if (hero) {
-            hero.innerHTML = saved.heroImage
-              ? '<img src="' + saved.heroImage + '" alt="' + escapeHtml(saved.heroAlt || saved.rushTitle || 'Rush poster') + '" loading="lazy">'
-              : '';
+            hero.textContent = '';
+            if (heroImg) hero.appendChild(heroImg);
+            hero.style.display = heroImg ? '' : 'none';
           }
           var grid = graphics.querySelector('.rush-graphics-grid');
           if (grid) {
-            grid.innerHTML = events.map(function (ev) {
-              var detail = escapeHtml(ev.detail || '') + (ev.inviteOnly ? (ev.detail ? ' · ' : '') + 'Invite only' : '');
-              return '<figure class="rg-card">' +
-                (ev.image ? '<img src="' + ev.image + '" alt="' + escapeHtml(ev.title) + (ev.detail ? ', ' + escapeHtml(ev.detail) : '') + '" loading="lazy">' : '') +
-                '<figcaption class="rg-caption"><h3>' + escapeHtml(ev.title) + '</h3>' +
-                (detail ? '<p>' + detail + '</p>' : '') + '</figcaption></figure>';
-            }).join('');
+            grid.textContent = '';
+            events.forEach(function (ev) {
+              var fig = el('figure', 'rg-card');
+              var img = picture(ev.image, ev.title + (ev.detail ? ', ' + ev.detail : ''));
+              if (img) fig.appendChild(img);
+              var cap = el('figcaption', 'rg-caption');
+              cap.appendChild(el('h3', null, ev.title));
+              var detail = (ev.detail || '') + (ev.inviteOnly ? (ev.detail ? ' · ' : '') + 'Invite only' : '');
+              if (detail) cap.appendChild(el('p', null, detail));
+              fig.appendChild(cap);
+              grid.appendChild(fig);
+            });
             grid.style.display = events.length ? '' : 'none';
           }
         }
 
-        var config = window.RUSH_CONFIG || {};
-        applyState(config);
+        applyState(window.RUSH_CONFIG || {});
 
-        // What admins save on the portal's Website page wins over the file.
-        if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
-        var settled = false;
-        var timeout = setTimeout(function () { settled = true; }, 6000);
-        firebase.database().ref('site/rush').once('value').then(function (snap) {
-          if (settled) return;
-          clearTimeout(timeout);
-          var saved = snap.val();
-          if (!saved) return;
+        // What admins save on the portal's Website page wins over the file, whenever it arrives.
+        if (!window.fetch) return;
+        fetch(SAVED_URL, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (saved) {
+          if (!saved || typeof saved !== 'object') return;
           renderGraphics(saved);
           applyState(saved);
-        }).catch(function () { clearTimeout(timeout); });
+        }).catch(function () { /* offline or blocked: the file's state stays */ });
       })();
     </script>
   </body>

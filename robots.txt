@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /portal/js/firebase-config.js
 Disallow: /portal/
 
 Sitemap: https://www.thetatauzd.org/sitemap.xml

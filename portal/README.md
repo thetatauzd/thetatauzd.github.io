@@ -32,7 +32,9 @@ The Brother Portal is a Firebase-backed private member portal for active brother
    - Build → Realtime Database → Create Database. Choose a region. Start in **locked mode**.
 
 4. **Apply security rules**
-   - Realtime Database → Rules tab. Paste the full contents of `firebase-database.rules.json` (repo root) and click **Publish**.
+   - Publish `firebase-database.rules.json` (repo root) with `firebase deploy --only database`, from a checkout that has
+     `firebase.json`, after the preflight in [Security Rules](#security-rules) passes. Never publish a rules file that is
+     missing a node the live rules have.
 
    Note: newsletters intentionally do **not** use Firebase Storage, Cloud Storage for Firebase now requires the paid Blaze plan even within the free-tier quota, and this project stays on the free Spark plan. Newsletter PDFs live in Google Drive; only a share link is stored in the database. See [Newsletters](#newsletters).
 
@@ -76,7 +78,26 @@ Rules are in `firebase-database.rules.json` at the repo root. Key principles:
 - Connected brothers presence node (`connectedBrothers/$uid`) is writable only by that UID, readable only by that UID, used for kick detection.
 - `newsletters` is publicly readable (powers the public `/newsletter` page) but writable only by `admin`.
 
-**Every time you modify the rules file, re-publish them in the Firebase console.**
+**Every time you modify the rules file, publish it, and only through this preflight.** The live rules must never lose a
+node: an older copy of this file (for example from before Chapter Ops) silently removes rules and can let any Google
+account make itself admin. From the repo root:
+
+```
+firebase database:get "/.settings/rules" > "$TMPDIR/live.json"
+python3 -I - "$TMPDIR/live.json" firebase-database.rules.json <<'EOF'
+import json, sys
+L = json.load(open(sys.argv[1]))['rules']; R = json.load(open(sys.argv[2]))['rules']
+miss = [k for k in L if k not in R]; chg = [k for k in L if k in R and R[k] != L[k]]
+print(len(R), 'missing', miss, 'changed', chg, 'added', sorted(set(R) - set(L)), 'users.validate', '.validate' in R['users']['$uid'])
+sys.exit(1 if miss or not ('.validate' in R['users']['$uid']) else 0)
+EOF
+firebase deploy --only database
+firebase database:get "/.settings/rules" > "$TMPDIR/after.json"
+python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))==json.load(open(sys.argv[2])))' "$TMPDIR/after.json" firebase-database.rules.json
+```
+
+`missing` must be empty. `changed` lists nodes you meant to edit, nothing else. The last line must print `True`. Paste
+the file into the console only if this preflight passed for that exact file.
 
 ---
 
@@ -271,8 +292,8 @@ link, upload the poster and one picture per event card, and reorder or remove ca
   the page goes back to the files.
 - New semester: press "Start from the Fall 2026 cards" once if the list is empty, swap the pictures, fix the dates,
   switch rush to open, save. When rush ends, switch it to closed and set the next semester.
-- The `site` rules must be published (`firebase deploy --only database`, or paste the rules file into the Firebase
-  console) before the first save works; until then saving fails with "permission denied".
+- The `site` rules must be published (see [Security Rules](#security-rules), preflight first) before the first save
+  works; until then saving fails with "permission denied". Nothing personal is saved there: it is world-readable.
 
 ## Newsletters
 
@@ -299,7 +320,7 @@ If you'd rather have one-click file uploads instead of a Drive-link paste step, 
 | Task | Where |
 |---|---|
 | Firebase API keys | `portal/js/firebase-config.js` |
-| Security rules | `firebase-database.rules.json` → republish in Firebase console |
+| Security rules | `firebase-database.rules.json` → preflight, then `firebase deploy --only database` (see Security Rules) |
 | Embedded Google Calendar | `portal/index.html`, replace the `<iframe>` src |
 | Portal resource links (bylaws, absence form, etc.) | `portal/index.html`, the resource cards section |
 | Standards report form URL | `portal/index.html`, Standards Report Form link |
