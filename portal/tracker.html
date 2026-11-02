@@ -48,6 +48,19 @@
 
     <div id="tracker-body" class="hidden">
       <div class="portal-card">
+        <h2>Payments</h2>
+        <div class="stat-grid" id="pay-summary"></div>
+        <div class="table-scroll">
+          <table class="admin-table" style="margin-top:1rem;">
+            <thead>
+              <tr><th>Item</th><th>Amount</th><th>Status</th><th>Due</th><th>Paid</th></tr>
+            </thead>
+            <tbody id="pay-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="portal-card">
         <h2>Demerits</h2>
         <div class="stat-grid" id="dem-summary"></div>
         <h3 style="font-size:1rem; margin:1.25rem 0 0.5rem; color:#666;">Standards adjustments</h3>
@@ -75,7 +88,7 @@
 
       <p style="color:#999; font-size:0.85rem;">
         Figures come straight from the chapter Tracker sheet. If something looks wrong,
-        contact the Standards Chair about demerits or the Community Service Chair about hours.
+        contact the Treasurer for payments or the Standards chair for demerits.
       </p>
     </div>
   </main>
