@@ -1,6 +1,7 @@
-/* 
+/*
  * static.css
- * Additional styling for specific elements and animations
+ * Additional styling for specific elements.
+ * Header, mobile menu, link hover, scrims, focus ring and motion now live in css/design.css.
  */
 
 /* Enhanced Header Styles */
@@ -9,88 +10,15 @@
   align-items: center;
 }
 
-/* Fixed Header Transition */
-.header.theme-col--primary {
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.header.theme-col--primary.scrolled {
-  background-color: rgba(0, 0, 0, 0.9);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
 /* Hero Section Enhancements */
 .section-height--large .content-wrapper {
   padding-top: 60px; /* Account for fixed header */
-}
-
-/* Section Background Overlays */
-.has-background .section-background-overlay {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%);
-}
-
-/* Enhanced Link Styles */
-a {
-  transition: color 0.3s ease;
-}
-
-/* Hover: maroon on the light sections, gold where the text sits on black or a photo. */
-a:hover {
-  color: #8B0000;
-}
-
-:where(.header, .header-menu, .footer, .hero-section, .cta-section, .has-background) a:hover {
-  color: #d4af37;
 }
 
 /* Social Icon Hover Effects */
 .social-icons-style-regular .sqs-svg-icon--wrapper:hover {
   transform: scale(1.1);
 }
-
-/* Custom Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Apply animations to specific elements */
-.page-section:not(.hero-section) {
-  animation: fadeIn 0.8s ease forwards;
-}
-
-.sqs-block-html:not(.first-block) {
-  animation: slideUp 0.6s ease forwards;
-}
-
-/* Enhanced Mobile Menu */
-.header-menu {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.header-menu-nav-item {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.menu-open .header-menu-nav-item {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Delay each menu item for a staggered effect */
-.menu-open .header-menu-nav-item:nth-child(1) { transition-delay: 0.1s; }
-.menu-open .header-menu-nav-item:nth-child(2) { transition-delay: 0.15s; }
-.menu-open .header-menu-nav-item:nth-child(3) { transition-delay: 0.2s; }
-.menu-open .header-menu-nav-item:nth-child(4) { transition-delay: 0.25s; }
-.menu-open .header-menu-nav-item:nth-child(5) { transition-delay: 0.3s; }
 
 /* Enhanced typography for welcome section */
 .welcome-section h2 {
@@ -104,30 +32,10 @@ a:hover {
   margin-right: auto;
 }
 
-/* Custom logo treatment. The link is a block so its focus ring wraps the whole logo. */
-.header-title-logo a {
-  display: block;
-}
-
-.header-title-logo img {
-  transition: transform 0.3s ease;
-}
-
-.header-title-logo img:hover {
-  transform: scale(1.05);
-}
-
 /* Enhanced section styling */
 .page-section .content {
   position: relative;
   z-index: 2;
-}
-
-/* Keyboard focus: a dark ring with a white halo, visible on gold, white and black alike. */
-:focus-visible {
-  outline: 3px solid #1a1a1a;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 5px #fff !important;
 }
 
 /* Custom burger menu animation */
@@ -139,23 +47,12 @@ a:hover {
 
 /* Additional mobile optimizations */
 @media (max-width: 768px) {
-  .section-background img {
-    object-position: center center !important;
-  }
-  
   .horizontal-alignment--right .content,
   .horizontal-alignment--left .content {
     text-align: center;
   }
-  
+
   .sqs-block-button-container {
     text-align: center !important;
-  }
-}
-
-/* Ensure sticky header works properly on iOS */
-@supports (-webkit-overflow-scrolling: touch) {
-  .header {
-    position: sticky;
   }
 }

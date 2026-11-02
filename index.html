@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <title>Theta Tau Zeta Delta at the University of South Carolina</title>
-    <link rel="icon" type="image/png" href="/Images/ThetaTau.png"/>
-    <link rel="apple-touch-icon" href="/Images/ThetaTau.png"/>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" type="image/png" sizes="192x192" href="/Images/brand/icon-192.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#8B0000">
     <link rel="canonical" href="https://www.thetatauzd.org/"/>
     <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
     <meta property="og:title" content="Theta Tau Zeta Delta at the University of South Carolina"/>
@@ -22,485 +25,36 @@
     <meta name="description" content="Theta Tau Zeta Delta is the coed professional engineering fraternity at the University of South Carolina. Chartered in 2011. Service, profession and brotherhood for engineers in Columbia, SC."/>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap">
-    <link rel="stylesheet" type="text/css" href="./css/site.css">
-    <link rel="stylesheet" type="text/css" href="./css/static.css">
-    <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
-    
-    <!-- Preload critical images -->
-    <link rel="preload" as="image" href="./Images/ThetaTau.png" fetchpriority="high">
-    <link rel="preload" as="image" href="./Images/Columbia3.webp" fetchpriority="high">
-    <link rel="preload" as="image" href="./Images/Carowinds.webp" fetchpriority="medium">
-    <link rel="preload" as="image" href="./Images/Service.webp" fetchpriority="medium">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:wght@700&text=%CE%98%CE%A4%CE%96%CE%94&display=swap">
+    <link rel="stylesheet" type="text/css" href="./css/site.css?v=2">
+    <link rel="stylesheet" type="text/css" href="./css/static.css?v=2">
     
     <style>
-    /* Enhanced CSS for better scroll experience */
-    body {
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 0;
-        color: #333;
-        overflow-x: hidden;
-    }
-    
-    /* Remove custom header styles - let navigation-animations.css handle it */
-    
-    /* Hero Section */
-    /* min-height, not height: if the content is ever taller than the viewport
-       the hero grows instead of clipping the letters behind the header. */
-    .hero-section {
-        min-height: 100vh;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-    
-    .hero-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0; /* was -2; ensure visible above body background */
-    }
-    
-    .hero-background img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        animation: heroZoom 20s ease-in-out infinite alternate;
-    }
-    
-    @keyframes heroZoom {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.1); }
-    }
-    
-    .hero-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
-        z-index: 1; /* was -1 */
-    }
-    
-    /* Top/bottom padding reserves room for the fixed header and the scroll
-       hint, so vertical centring never lands content underneath them. */
-    .hero-content {
-        text-align: center;
-        color: white;
-        max-width: 800px;
-        padding: 90px 4vw 80px;
-        z-index: 2; /* above overlay */
-    }
-    
-    .hero-title {
-        font-size: clamp(3rem, 8vw, 5rem);
-        font-weight: 700;
-        margin-bottom: 1rem;
-        line-height: 1.1;
-        animation: fadeInUp 1s ease-out;
-    }
-    
-    /* The Greek letters. Fluid at every size: they track the viewport width on
-       phones and tablets, but the vh term keeps a short landscape screen from
-       pushing the buttons out of view. The overlap between the two lines is in
-       em so it scales with the letters. */
-    .hero-letters {
-        font-family: 'Times New Roman', serif;
-        font-size: clamp(4.5rem, min(28vw, 22vh), 14rem);
-        line-height: 1;
-        margin-bottom: -0.25em;
-    }
+    /* Home page only (tokens only). The hero, photo bands, stats, buttons, CTA card, header
+       and footer all live in css/design.css, which loads after this block. */
 
-    .hero-letters--last {
-        margin-bottom: 0.45em;
-    }
-    
-    .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        animation: fadeInUp 1s ease-out 0.54s both;
-        margin-bottom: 60px;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-        color: #1a1a1a;
-        padding: 15px 30px;
-        border: none;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-    }
-    
-    .btn-primary:hover {
-        color: #1a1a1a;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-    }
-    
-    .btn-secondary {
-        background: transparent;
-        color: white;
-        padding: 15px 30px;
-        border: 2px solid white;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-secondary:hover {
-        background: white;
-        color: #333;
-        transform: translateY(-2px);
-    }
-    
-    /* Scroll Indicator */
-    .scroll-indicator {
-        position: absolute;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: white;
-        text-align: center;
-        cursor: pointer;
-        z-index: 10;
-    }
-    
-    .scroll-indicator .text {
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-        opacity: 0.8;
-    }
-    
-    .scroll-indicator .arrow {
-        font-size: 1.5rem;
-        animation: arrowBounce 2s infinite;
-        display: block;
-        text-align: center;
-    }
-    
-    /* Responsive fixes for scroll indicator overlap */
-    @media (max-width: 1200px) {
-        .hero-buttons {
-            margin-bottom: 90px !important;
-        }
+    /* About ("Welcome"): Coat of Arms and heading centred, paragraphs left-aligned in a prose column. */
+    .about-block h2 { text-align: center; }
 
-        .scroll-indicator {
-            bottom: 35px !important;
-        }
-    }
-
-    /* Short viewports (landscape phones, small browser panes): the scroll hint
-       has no room and only causes overlap, so drop it and the margin that
-       existed to clear it. */
-    @media (max-height: 600px) {
-        .scroll-indicator {
-            display: none;
-        }
-        .hero-buttons {
-            margin-bottom: 0 !important;
-        }
-        .hero-content {
-            padding-bottom: 40px;
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .scroll-indicator {
-            bottom: 20px;
-        }
-        
-        .scroll-indicator .text {
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-        
-        .scroll-indicator .arrow {
-            font-size: 1.2rem;
-        }
-        
-        .hero-buttons {
-            margin-bottom: 60px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .scroll-indicator {
-            bottom: 15px;
-        }
-        
-        .scroll-indicator .text {
-            font-size: 0.7rem;
-            margin-bottom: 6px;
-        }
-        
-        .scroll-indicator .arrow {
-            font-size: 1rem;
-        }
-        
-        .hero-buttons {
-            margin-bottom: 50px;
-        }
-    }
-    
-    @keyframes arrowBounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-10px); }
-        60% { transform: translateY(-5px); }
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    /* Content Sections */
-    .content-section {
-        padding: 100px 4vw;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .content-section:nth-child(even) {
-        background: #f8f9fa;
-    }
-
-    /* Sections with a photo background (Profession, Brotherhood, Service) must stay
-       transparent here: .section-background is z-index:-1, so any background-color
-       set on this element paints in front of it and hides the photo entirely. */
-    .content-section:has(.section-background) {
-        background: transparent;
-    }
-
-    .section-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-    }
-    
-    .section-background img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .section-background-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.4);
-    }
-    
-    .section-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .section-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4rem;
-        align-items: center;
-    }
-    
-    .section-text {
-        color: white;
-    }
-    
-    .section-text h2 {
-        font-size: clamp(2rem, 5vw, 3rem);
-        margin-bottom: 1rem;
-        font-weight: 700;
-    }
-    
-    .section-text h4 {
-        font-size: 1.2rem;
-        margin-bottom: 1rem;
-        color: var(--color-gold);
-        font-weight: 600;
-    }
-    
-    .section-text p {
-        font-size: 1.1rem;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-        opacity: 0.9;
-    }
-    
-    /* Stats Section */
-    .stats-section {
-        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-        color: white;
-        text-align: center;
-        padding: 80px 4vw;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 3rem;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    
-    .stat-item {
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .stat-number {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--color-gold);
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-label {
-        font-size: 1.1rem;
-        opacity: 0.8;
-    }
-    
-    /* Awards */
-    .awards-section { text-align: center; background: #fff; color: #1a1a1a; }
-    .awards-section h2 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 0.5rem; }
-    .awards-intro { color: #666; margin-bottom: 2.5rem; }
-    .awards-list { max-width: 760px; margin: 0 auto; text-align: left; }
-    .award-row { display: grid; grid-template-columns: 110px 1fr; gap: 1rem 1.5rem; padding: 1rem 0; border-top: 1px solid #e4e4e4; align-items: baseline; }
-    .award-row:last-child { border-bottom: 1px solid #e4e4e4; }
-    .award-year { font-size: 1.6rem; font-weight: 700; color: var(--color-maroon); line-height: 1.1; }
+    /* Awards: light band; the year sits beside its award names from 600px up. awards.js renders the rows. */
+    .awards-section { background: var(--surface-2); }
+    .awards-list { max-width: var(--container-narrow); margin: 0 auto; text-align: left; }
+    .award-row { display: grid; grid-template-columns: 1fr; gap: var(--space-1); padding: var(--space-4) 0; border-top: 1px solid var(--line); align-items: baseline; }
+    .award-row:last-child { border-bottom: 1px solid var(--line); }
+    .award-year { font: 700 var(--fs-h4)/var(--lh-tight) var(--font-sans); color: var(--maroon); }
     .award-names { list-style: none; margin: 0; padding: 0; }
-    .award-names li { padding: 0.2rem 0; font-size: 1.05rem; }
-    @media (max-width: 600px) {
-        .award-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .award-names li { padding: var(--space-1) 0; font-size: var(--fs-body); }
+    @media (min-width: 600px) {
+        .award-row { grid-template-columns: var(--space-10) 1fr; gap: var(--space-4) var(--space-5); }
     }
-
-    /* Call to Action */
-    .cta-section {
-        background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
-        color: #1a1a1a;
-        text-align: center;
-        padding: 100px 4vw;
-    }
-    
-    .cta-content h2 {
-        font-size: clamp(2.5rem, 6vw, 4rem);
-        margin-bottom: 1rem;
-    }
-    
-    .cta-content p {
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-        opacity: 0.9;
-    }
-
-    .cta-section .btn-secondary {
-        color: #1a1a1a;
-        border-color: #1a1a1a;
-        opacity: 1;
-    }
-    
-    /* Footer */
-    .footer {
-        background-color: #1a1a1a;
-        color: white;
-        padding: 60px 4vw 40px;
-    }
-    
-    .footer-content {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 3rem;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    
-    .footer-section h3 {
-        color: var(--color-gold);
-        margin-bottom: 1rem;
-    }
-    
-    .footer-section a {
-        color: white;
-        text-decoration: none;
-        opacity: 0.8;
-        transition: opacity 0.3s ease;
-    }
-    
-    .footer-section a:hover {
-        opacity: 1;
-        color: var(--color-gold);
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .section-grid {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    /* The two buttons only need to stack once the screen is genuinely narrow.
-       Stacking at 768px cost 130px of height on tablets and small panes. */
-    @media (max-width: 480px) {
-        .hero-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-    }
-    
-    /* Smooth scrolling */
-    html {
-        scroll-behavior: smooth;
-    }
-    
-    /* Performance optimizations */
-    .section-background {
-        content-visibility: auto;
-        contain-intrinsic-size: 1px 100vh;
-    }
-    
-    img {
-        will-change: transform;
-        backface-visibility: hidden;
-    }
+    /* Awards photo (2025 National Convention, 4:3): full width of the list column, above the list. */
+    .awards-layout { display: grid; gap: var(--space-7); max-width: var(--container-narrow); margin: 0 auto; }
+    .awards-figure { margin: 0; }
+    .awards-figure img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+    .awards-layout .awards-list { width: 100%; }
     </style>
-<style>
-    .footer-tagline { color: var(--color-gold); font-weight: 600; }
-    .footer-fineprint { grid-column: 1 / -1; flex-basis: 100%; width: 100%; font-size: 0.8rem; color: #9a9a9a; margin-top: 1.5rem !important; }
-    .footer-fineprint a { color: #bdbdbd; }
-    .footer-section a { min-height: 24px; display: inline-block; }
-    .header-skip-link { color: #1a1a1a !important; background: var(--color-gold) !important; font-weight: 600; }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
-    </style>
+    <link rel="stylesheet" href="./css/design.css?v=1">
 </head>
 
 <body>
@@ -518,16 +72,14 @@
                     <div class="header-display-desktop">
                         <div class="header-title-nav-wrapper">
                             <div class="header-title">
-                                <div class="header-title-logo">
-                                    <a href="/">
-                                        <img src="./Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
-                                    </a>
-                                </div>
+                                <div class="header-title-logo"><a href="/" class="brand-lockup" aria-current="page">
+                                    <img src="/Images/brand/palmetto-white-144.png" width="101" height="144" alt="">
+                                    <span class="brand-lockup__text"><span class="brand-lockup__name">Theta Tau</span><span class="brand-lockup__chapter">Zeta Delta</span></span></a></div>
                             </div>
                             
                             <div class="header-nav">
                                 <div class="header-nav-wrapper">
-                                    <nav class="header-nav-list">
+                                    <nav class="header-nav-list" aria-label="Main">
                                         <div class="header-nav-item header-nav-item--collection">
                                             <a href="/rush">Rush</a>
                                         </div>
@@ -573,12 +125,12 @@
             <div class="header-menu header-menu--folder-list">
                 <div class="header-menu-bg theme-bg--primary"></div>
                 <div class="header-menu-nav">
-                    <nav class="header-menu-nav-list">
+                    <nav class="header-menu-nav-list" aria-label="Main">
                         <div data-folder="root" class="header-menu-nav-folder">
                             <div class="header-menu-nav-folder-content">
                                 <div class="header-menu-nav-wrapper">
                                     <div class="container header-menu-nav-item header-menu-nav-item--collection header-menu-nav-item--active">
-                                        <a href="/"><div class="header-menu-nav-item-content">Home</div></a>
+                                        <a href="/" aria-current="page"><div class="header-menu-nav-item-content">Home</div></a>
                                     </div>
                                     <div class="container header-menu-nav-item header-menu-nav-item--collection">
                                         <a href="/rush"><div class="header-menu-nav-item-content">Rush</div></a>
@@ -610,29 +162,41 @@
             <!-- Hero Section -->
             <section class="hero-section">
                 <div class="hero-background">
-                    <img src="./Images/Swearingen.webp" alt="University of South Carolina Campus" loading="eager">
+                    <picture>
+                        <source media="(max-width: 599.98px), (min-width: 1024px) and (min-aspect-ratio: 1/1)" type="image/webp" sizes="(min-width: 1024px) and (min-aspect-ratio: 1/1) 50vw, 100vw" srcset="/Images/photos/home-hero-campus-portrait-480.webp 480w, /Images/photos/home-hero-campus-portrait-768.webp 768w, /Images/photos/home-hero-campus-portrait-1080.webp 1080w, /Images/photos/home-hero-campus-portrait-1440.webp 1440w">
+                        <source type="image/webp" sizes="100vw" srcset="/Images/photos/home-hero-campus-640.webp 640w, /Images/photos/home-hero-campus-960.webp 960w, /Images/photos/home-hero-campus-1280.webp 1280w, /Images/photos/home-hero-campus-1920.webp 1920w">
+                        <img src="/Images/photos/home-hero-campus-1280.jpg" width="1920" height="1280" alt="Students outside the John E. Swearingen Engineering Center, home of the Molinaroli College of Engineering and Computing" fetchpriority="high" style="--focus:40% 50%">
+                    </picture>
+                    <!-- Campus time-lapse: muted, looping, started by js/hero-video.js after the page loads (never under reduced motion or data saver). -->
+                    <video class="hero-video" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" style="--focus:40% 50%"
+                           data-src-small="/Images/video/campus-timelapse-720.mp4" data-src-large="/Images/video/campus-timelapse-1080.mp4"></video>
+                    <button class="hero-video-toggle" type="button" aria-label="Pause the background video" hidden><span aria-hidden="true">&#10074;&#10074;</span></button>
                 </div>
                 <div class="hero-overlay"></div>
                 
                 <div class="hero-content">
-                    <h1 class="hero-title hero-letters">ΘΤ</h1>
-                    <h1 class="hero-title hero-letters hero-letters--last">ΖΔ</h1>
+                    <h1 class="hero-letters"><span aria-hidden="true">ΘΤ<br>ΖΔ</span><span class="visually-hidden">Theta Tau Zeta Delta</span></h1>
+                    <p class="hero-kicker"><span class="hero-kicker-line">Professional Engineering Fraternity</span><span class="visually-hidden">, </span><span class="hero-kicker-line">University of South Carolina</span></p>
                     <div class="hero-buttons">
                         <a href="/rush" class="btn-primary">Rush Theta Tau</a>
                         <a href="#about" class="btn-secondary">Learn More</a>
                     </div>
                 </div>
                 
-                <div class="scroll-indicator" onclick="scrollToSection('about')">
-                    <div class="text">Scroll to explore</div>
-                    <div class="arrow">↓</div>
-                </div>
+                <a class="scroll-indicator" href="#about">
+                    <span class="text">Scroll to explore</span>
+                    <span class="arrow" aria-hidden="true">↓</span>
+                </a>
             </section>
 
             <!-- About Section -->
             <section id="about" class="content-section">
                 <div class="section-content">
-                    <div style="max-width: 720px; margin: 0 auto; text-align: center;">
+                    <div class="prose about-block">
+                        <picture class="coa">
+                            <source type="image/webp" srcset="/Images/brand/coat-of-arms-240.webp 1x, /Images/brand/coat-of-arms-480.webp 2x">
+                            <img src="/Images/brand/coat-of-arms-240.png" width="93" height="160" alt="Theta Tau Coat of Arms" loading="lazy" decoding="async">
+                        </picture>
                         <h2>Welcome to Theta Tau Zeta Delta</h2>
                         <p>Chartered on February 5, 2011, we are the coed professional engineering fraternity at the University of South Carolina, dedicated to developing leaders who excel in their careers while building lifelong friendships. Our brotherhood spans generations of engineers, innovators, and entrepreneurs.</p>
                         <p>We are a chapter of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau</a>, the national fraternity for engineers. The purpose of Theta Tau is to develop and maintain a high standard of professional interest among its members, and to unite them in a strong bond of fraternal fellowship.</p>
@@ -642,37 +206,43 @@
             </section>
 
             <!-- Profession Section -->
-            <section class="content-section">
+            <section class="content-section photo-band photo-band--stack">
                 <div class="section-background">
-                    <img src="./Images/Columbia3.webp" alt="Professional Development" loading="lazy">
+                    <picture>
+                        <source type="image/webp" sizes="100vw" srcset="/Images/photos/home-profession-640.webp 640w, /Images/photos/home-profession-960.webp 960w, /Images/photos/home-profession-1280.webp 1280w, /Images/photos/home-profession-1920.webp 1920w, /Images/photos/home-profession-2160.webp 2160w">
+                        <img src="/Images/photos/home-profession-1280.jpg" width="2160" height="1440" alt="Brothers at the chapter's Professional Development Workshop" loading="lazy" decoding="async" style="--focus:50% 25%">
+                    </picture>
                     <div class="section-background-overlay"></div>
                 </div>
                 <div class="section-content">
                     <div class="section-grid">
                         <div></div>
                         <div class="section-text">
-                            <h4>Professional Excellence</h4>
+                            <p class="eyebrow">Professional Excellence</p>
                             <h2>Get Ahead in Your Career</h2>
                             <p>Brothers work and intern at Boeing, Amazon, NASA, IBM and dozens of other companies. They read resumes, run mock interviews and make referrals for the brothers coming up behind them.</p>
-                            <a href="/profession" class="btn-primary">Explore Profession</a>
+                            <a href="/profession" class="btn-secondary">Explore Profession</a>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Brotherhood Section -->
-            <section class="content-section">
+            <section class="content-section photo-band photo-band--stack">
                 <div class="section-background">
-                    <img src="./Images/Carowinds.webp" alt="Brotherhood Activities" loading="lazy">
+                    <picture>
+                        <source type="image/webp" sizes="100vw" srcset="/Images/photos/home-brotherhood-640.webp 640w, /Images/photos/home-brotherhood-960.webp 960w, /Images/photos/home-brotherhood-1280.webp 1280w, /Images/photos/home-brotherhood-1620.webp 1620w">
+                        <img src="/Images/photos/home-brotherhood-1280.jpg" width="1620" height="1080" alt="The chapter on the cabin balconies at Mountain Weekend" loading="lazy" decoding="async" style="--focus:50% 45%">
+                    </picture>
                     <div class="section-background-overlay"></div>
                 </div>
                 <div class="section-content">
                     <div class="section-grid">
                         <div class="section-text">
-                            <h4>Lifelong Relationships</h4>
+                            <p class="eyebrow">Lifelong Relationships</p>
                             <h2>Build Lasting Friendships</h2>
                             <p>From social events and away weekends to study groups and philanthropic events, our brotherhood creates memories that last a lifetime. Join a community that supports you through every challenge.</p>
-                            <a href="/brotherhood" class="btn-primary">Join Brotherhood</a>
+                            <a href="/brotherhood" class="btn-secondary">Join Brotherhood</a>
                         </div>
                         <div></div>
                     </div>
@@ -680,28 +250,31 @@
             </section>
 
             <!-- Service Section -->
-            <section class="content-section">
+            <section class="content-section photo-band photo-band--stack">
                 <div class="section-background">
-                    <img src="./Images/Service.webp" alt="Community Service" loading="lazy">
+                    <picture>
+                        <source type="image/webp" sizes="100vw" srcset="/Images/photos/service-build-640.webp 640w, /Images/photos/service-build-960.webp 960w, /Images/photos/service-build-1280.webp 1280w, /Images/photos/service-build-1500.webp 1500w">
+                        <img src="/Images/photos/service-build-1280.jpg" width="1500" height="1000" alt="Brothers building a house with Habitat for Humanity" loading="lazy" decoding="async" style="--focus:40% 15%">
+                    </picture>
                     <div class="section-background-overlay"></div>
                 </div>
                 <div class="section-content">
                     <div class="section-grid">
                         <div></div>
                         <div class="section-text">
-                            <h4>Service Impact</h4>
+                            <p class="eyebrow">Service Impact</p>
                             <h2>Make a Difference</h2>
                             <p>Two STEM outreach events a year for local K-12 students, a table at Soda City Market, house projects and shelter volunteering around Columbia.</p>
-                            <a href="/service" class="btn-primary">Learn About Service</a>
+                            <a href="/service" class="btn-secondary">Learn About Service</a>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Stats Section -->
-            <section class="stats-section">
+            <section class="stats-section has-watermark">
                 <div class="section-content">
-                    <h2 style="margin-bottom: 3rem; font-size: clamp(2rem, 5vw, 3rem);">Our Impact</h2>
+                    <div class="section-head"><h2>Our Impact</h2></div>
                     <div class="stats-grid">
                         <div class="stat-item">
                             <div class="stat-number" data-stat="brothersAllTime">480+</div>
@@ -738,10 +311,20 @@
             <!-- Awards -->
             <section class="content-section awards-section" id="awards">
                 <div class="section-content">
-                    <h2>Awards &amp; Recognition</h2>
-                    <p class="awards-intro">Theta Tau national chapter awards.</p>
-                    <div class="awards-list" id="awards-list">
-                        <noscript><p>2026: Outstanding DEI Program, Outstanding Philanthropy Event. 2025: Outstanding DEI Program, Outstanding Professional Development Program, Outstanding Philanthropy Program, Outstanding Chapter Officer (Rachel Wayne). 2024: Outstanding Video. 2023: 700 Club. 2022: Outstanding Philanthropy Event. 2014-16: Schrader Award.</p></noscript>
+                    <div class="section-head">
+                        <h2>Awards &amp; Recognition</h2>
+                        <p class="awards-intro lead">Theta Tau national chapter awards.</p>
+                    </div>
+                    <div class="awards-layout">
+                        <figure class="awards-figure">
+                            <picture>
+                                <source type="image/webp" sizes="(max-width: 791px) calc(100vw - 32px), 760px" srcset="/Images/photos/national-convention-awards-480.webp 480w, /Images/photos/national-convention-awards-768.webp 768w, /Images/photos/national-convention-awards-1080.webp 1080w, /Images/photos/national-convention-awards-1440.webp 1440w">
+                                <img src="/Images/photos/national-convention-awards-768.jpg" width="1440" height="1080" alt="Three brothers in formal wear holding the chapter's award certificates under the Theta Tau National Convention and Grand Chapter banner in Milwaukee, July 2025" loading="lazy" decoding="async">
+                            </picture>
+                        </figure>
+                        <div class="awards-list" id="awards-list">
+                            <noscript><p>2026: Outstanding DEI Program, Outstanding Philanthropy Event. 2025: Outstanding DEI Program, Outstanding Professional Development Program, Outstanding Philanthropy Program, Outstanding Chapter Officer (Rachel Wayne). 2024: Outstanding Video. 2023: 700 Club. 2022: Outstanding Philanthropy Event. 2014-16: Schrader Award.</p></noscript>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -749,11 +332,12 @@
             <!-- Call to Action -->
             <section class="cta-section">
                 <div class="cta-content">
+                    <div class="letters-mark" aria-hidden="true">ΘΤ<br>ΖΔ</div>
                     <h2>Ready to Join Our Brotherhood?</h2>
                     <p>Come to a rush event, or message us with a question.</p>
-                    <div class="hero-buttons">
-                        <a href="/rush" class="btn-secondary">Rush Theta Tau</a>
-                        <a href="#footer" class="btn-secondary" onclick="scrollToSection('footer')">Contact Us</a>
+                    <div class="cta-buttons">
+                        <a href="/rush" class="btn-primary">Rush Theta Tau</a>
+                        <a href="#footer" class="btn-secondary">Contact Us</a>
                     </div>
                 </div>
             </section>
@@ -763,6 +347,7 @@
         <footer class="footer" id="footer">
             <div class="footer-content">
                 <div class="footer-section">
+                    <img class="footer-mark" src="/Images/brand/palmetto-white-144.png" width="101" height="144" alt="" loading="lazy" decoding="async">
                     <h3>Theta Tau Zeta Delta</h3>
                     <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Chartered February 5, 2011.</p>
                     <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
@@ -786,7 +371,7 @@
                     <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Instagram</a></p>
                     <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank" rel="noopener">LinkedIn</a></p>
                     <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank" rel="noopener">Facebook</a></p>
-                    <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener" style="color:var(--color-gold);">Donate</a></p>
+                    <p><a class="footer-donate" href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener">Donate</a></p>
                     <p><a href="/portal">Brother Portal</a></p>
                 </div>
                 <p class="footer-fineprint">Theta Tau Zeta Delta is a registered student organization at the University of South Carolina and is not an agent of the university. Theta Tau, its Greek letters and its Coat of Arms are trademarks of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau Fraternity</a>.</p>
@@ -794,57 +379,9 @@
         </footer>
     </div>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Header scroll effect
-            const header = document.querySelector('header');
-            
-            function updateHeader() {
-                if (window.scrollY > 100) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-            }
-            
-            window.addEventListener('scroll', updateHeader);
-            updateHeader();
-
-            // Smooth scroll function
-            window.scrollToSection = function(sectionId) {
-                const element = document.getElementById(sectionId);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                }
-            };
-            
-            // Intersection Observer for animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -10px 0px'
-            };
-            
-            const observer = new IntersectionObserver(function(entries) {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-            
-            // Observe all sections for animation
-            document.querySelectorAll('.content-section, .stats-section, .awards-section, .cta-section').forEach(section => {
-                section.style.opacity = '0';
-                section.style.transform = 'translateY(30px)';
-                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                observer.observe(section);
-            });
-            
-        });
-    </script>
     <script src="./js/site-stats.js"></script>
     <script src="./js/awards.js"></script>
-    <script src="./js/nav.js"></script>
+    <script src="./js/nav.js?v=2"></script>
+    <script src="./js/hero-video.js?v=1"></script>
 </body>
 </html>

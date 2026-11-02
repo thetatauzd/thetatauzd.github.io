@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <title>Profession | Theta Tau Zeta Delta at the University of South Carolina</title>
-    <link rel="icon" type="image/png" href="/Images/ThetaTau.png"/>
-    <link rel="apple-touch-icon" href="/Images/ThetaTau.png"/>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" type="image/png" sizes="192x192" href="/Images/brand/icon-192.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#8B0000">
     <link rel="canonical" href="https://www.thetatauzd.org/profession"/>
     <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
     <meta property="og:title" content="Profession | Theta Tau Zeta Delta at the University of South Carolina"/>
@@ -22,439 +25,39 @@
     <meta name="description" content="Professional development at Theta Tau Zeta Delta: resume workshops, company visits, speakers and a network of brothers who have interned at Boeing, NASA, Amazon, IBM and more."/>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap">
-    <link rel="stylesheet" type="text/css" href="./css/site.css">
-    <link rel="stylesheet" type="text/css" href="./css/static.css">
-    <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
-    <!-- Preload critical images -->
-    <link rel="preload" as="image" href="./Images/ThetaTau.png" fetchpriority="high">
-    <link rel="preload" as="image" href="./Images/SGBackground.webp" fetchpriority="high">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:wght@700&text=%CE%98%CE%A4%CE%96%CE%94&display=swap">
+    <link rel="stylesheet" type="text/css" href="./css/site.css?v=2">
+    <link rel="stylesheet" type="text/css" href="./css/static.css?v=2">
     <style>
-    /* Minimal CSS to ensure the page looks decent even if external CSS files fail to load */
-    body {
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 0;
-        color: #333;
-        background-color: #fff;
-    }
-    .image-block-wrapper .sqs-image-shape-container-element {
-      position: relative !important;
-      height: auto !important;
-      padding-bottom: 0 !important; /* Remove the aspect ratio padding */
-  }
-  
-  /* Make the image display with its natural height */
-  .image-block-wrapper .sqs-image-shape-container-element img {
-      position: static !important;
-      height: auto !important;
-      width: 100% !important;
-      object-fit: contain !important;
-  }
-  
-  /* Ensure the company list matches the image height */
-  .col.sqs-col-6.span-6 {
-      flex: 0 0 50%;
-      max-width: 50%;
-      display: flex;
-      flex-direction: column;
-  }
-  
-  /* Make sure content blocks take up all available vertical space */
-  .sqs-block-content {
-      height: 100%;
-  }
-  
-  /* Make sure rows don't have extra margin at the bottom */
-  .sqs-row {
-      margin-bottom: 0 !important;
-  }
-  
-  /* Fix for intrinsic ratio that might be creating a gap */
-  .sqs-block-image-figure.intrinsic {
-      height: auto !important;
-  }
-  
-  /* Fix for the job list section to prevent pushing content down */
-  .page-section.white {
-      min-height: 0 !important;
-      height: auto !important;
-  }
-  
-      /* Call to Action Section */
-    .cta-section {
-        text-align: center;
-        padding: 80px 0;
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 30px;
-        margin-top: 100px;
-    }
+    /* profession.html only. Tokens and shared components (header, top band, cards, CTA card,
+       footer, video reels) come from css/design.css, which loads after this block. */
 
-    /* Mobile-specific fixes for profession page */
-    @media (max-width: 768px) {
-        /* Fix intern image and text section to stretch full width */
-        .page-section.white .sqs-layout .sqs-row {
-            flex-direction: column !important;
-        }
-        
-        .page-section.white .sqs-layout .sqs-row .col {
-            flex: 0 0 100% !important;
-            max-width: 100% !important;
-            width: 100% !important;
-        }
-        
-        .page-section.white .sqs-layout .sqs-row .col.sqs-col-6 {
-            margin-bottom: 2rem;
-        }
-        
-        /* Make intern image stretch full width and remove left margin */
-        .page-section.white .sqs-block-image .sqs-image-shape-container-element {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-        }
-        
-        .page-section.white .sqs-block-image {
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-        }
-        
-        /* Make intern text content stretch full width and remove left margin */
-        .page-section.white .sqs-html-content {
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 0 !important;
-            margin-left: 0 !important;
-        }
-        
-        .page-section.white .sqs-block-html {
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-        }
-        
-        /* Fix interns companies grid for mobile */
-        .interns-companies {
-            grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
-        }
-        
-        /* Header navigation fixes to match navigation-animations.css exactly */
-        .header-title-logo img {
-            height: 45px !important;
-        }
-        
-        .header-nav-item {
-            margin: 0 8px !important;
-        }
-        
-        .header-nav-item a {
-            font-size: 0.9rem !important;
-            padding: 6px 0 !important;
-        }
-        
-        .header-inner {
-            padding: 10px 3vw !important;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        /* Even smaller mobile adjustments */
-        .header-title-logo img {
-            height: 35px !important;
-        }
-        
-        .header-nav-item {
-            margin: 0 5px !important;
-        }
-        
-        .header-nav-item a {
-            font-size: 0.8rem !important;
-            padding: 4px 0 !important;
-        }
-        
-        .header-inner {
-            padding: 8px 2vw !important;
-        }
-        
-        /* Ensure intern section content is properly spaced */
-        .page-section.white .sqs-html-content {
-            padding: 0 !important;
-        }
-    }
+    /* Section surfaces alternate white / --surface-2 so the even section padding reads as structure */
+    .page-section.section--tint{background:var(--surface-2)}
 
-  .cta-title {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 20px;
-  }
+    /* Split rows (Where Our Brothers Work, Summer Internships): stacked on phones, two equal columns from 768px */
+    .split .sqs-row{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-7);align-items:center;margin:0}
+    .split .sqs-row>.col{max-width:none;padding:0}
+    @media (min-width:768px){.split .sqs-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-8)}}
+    .split .lead{margin-inline:0}
+    .split-figure{margin:0}
+    .split-figure img{display:block;width:100%;height:auto}
+    .split-figure--card img{border-radius:var(--radius-lg);box-shadow:var(--shadow-1)}
 
-  .cta-subtitle {
-      font-size: 1.2rem;
-      color: #666;
-      margin-bottom: 40px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-  }
+    /* Where Our Brothers Work: company pills */
+    .companies-container{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-5)}
+    .company-tag{padding:6px 14px;border:1px solid var(--line);border-radius:var(--radius-pill);background:var(--surface-2);
+      font:500 var(--fs-small)/var(--lh-snug) var(--font-sans);color:var(--text);white-space:nowrap}
+    .company-tag.special{background:var(--maroon-50);border-color:var(--maroon-50);color:var(--maroon);font-weight:600}
 
-  .cta-buttons {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-  }
-
-  .cta-button {
-      padding: 15px 35px;
-      border-radius: 30px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-  }
-
-  .cta-primary {
-      background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
-      color: #1a1a1a;
-      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-  }
-
-  .cta-primary:hover {
-      color: #1a1a1a;
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
-  }
-
-  .cta-secondary {
-      background: transparent;
-      color: #333;
-      border-color: #333;
-  }
-
-  .cta-secondary:hover {
-      background: #333;
-      color: white;
-      transform: translateY(-3px);
-  }
-  
-  /* Fix for any height calculations at a viewport level */
-  @media (min-width: 768px) {
-      /* Specific fixes for desktop only */
-      .image-block-wrapper {
-          height: auto !important;
-          min-height: 0 !important;
-      }
-      
-      /* Override aspect ratio at desktop sizes */
-      .image-block-wrapper .sqs-image-shape-container-element[style*="padding-bottom"] {
-          padding-bottom: 0 !important;
-          height: auto !important;
-      }
-      
-      /* Force all sections to auto-height */
-      .section-height--small,
-      .section-height--medium,
-      .section-height--large {
-          min-height: 0 !important;
-          height: auto !important;
-      }
-      
-      /* Force columns to stay horizontal */
-      .sqs-row {
-          display: flex !important;
-          flex-wrap: nowrap !important;
-      }
-      
-      .sqs-col-4 {
-          flex: 0 0 33.33% !important;
-          max-width: 33.33% !important;
-      }
-      
-      .sqs-col-8 {
-          flex: 0 0 66.67% !important;
-          max-width: 66.67% !important;
-      }
-  }
-    /* Header styles are now in navigation-animations.css */
-    .section-background img {
-        width: 100%;
-        height: 100vh;
-        object-fit: cover;
-    }
-    .content-wrapper {
-        position: relative;
-        z-index: 1;
-        padding: 0 4vw;
-    }
-    .hero-content {
-        position: absolute;
-        top: 40%;
-        left: 4vw;
-        color: white;
-    }
-    .hero-content h1 {
-        font-size: 4rem;
-        margin-bottom: 20px;
-    }
-    .button {
-        display: inline-block;
-        padding: 12px 24px;
-        background-color: var(--color-gold);
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-    }
-    .welcome-section {
-        padding: 80px 4vw;
-        text-align: center;
-    }
-    .content-section {
-        padding: 80px 4vw;
-        display: flex;
-        align-items: center;
-    }
-    .content-text {
-        flex: 1;
-    }
-    .section-background-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-    }
-    .footer {
-        background-color: #222;
-        color: white;
-        padding: 50px 4vw;
-    }
-    /* Add explicit styles for white sections */
-    .white {
-        background-color: #fff;
-        color: #333;
-    }
-    .white .section-background {
-        background-color: #fff;
-    }
-    .header-menu-nav-item-content {
-        padding: 8px 0 !important;
-        line-height: 1.2 !important;
-        height: auto !important;
-    }
-    
-    /* Company Tags Styling */
-    .companies-section h2 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 2.2rem;
-        color: #333;
-    }
-
-    .companies-intro {
-        text-align: center;
-        color: #666;
-        font-size: 1.1rem;
-        margin-bottom: 40px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .companies-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px;
-        margin-top: 30px;
-    }
-
-    .company-tag {
-        background: rgba(212, 175, 55, 0.1);
-        border: 1px solid rgba(212, 175, 55, 0.3);
-        padding: 8px 16px;
-        border-radius: 25px;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #333;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-    }
-
-    .company-tag:hover {
-        background: rgba(212, 175, 55, 0.2);
-        border-color: var(--color-gold);
-        transform: translateY(-2px);
-    }
-
-    .company-tag.special {
-        background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
-        color: #1a1a1a;
-        border-color: var(--color-gold);
-        font-weight: 600;
-    }
-
-    /* Mobile responsive for CTA */
-    @media (max-width: 768px) {
-        /* Prevent horizontal scrolling */
-        body {
-            overflow-x: hidden;
-        }
-        
-        * {
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        
-        .content-wrapper {
-            padding-left: 4vw !important;
-            padding-right: 4vw !important;
-        }
-        
-        .sqs-block-content {
-            max-width: 100% !important;
-            overflow: hidden;
-        }
-        
-        .cta-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .companies-container {
-            gap: 8px;
-            max-width: 100%;
-            overflow: hidden;
-        }
-        
-        .company-tag {
-            font-size: 0.9rem;
-            padding: 6px 12px;
-        }
-        
-        /* Fix any images or figures that might overflow */
-        figure, img, .sqs-block-image-figure {
-            max-width: 100% !important;
-            height: auto !important;
-        }
-        
-        /* Ensure sections don't overflow */
-        .page-section {
-            overflow: hidden;
-        }
-    }
+    /* Summer Internships: company groups. Two columns whenever each gets at least 10rem, never more than two */
+    .interns-companies{display:grid;gap:var(--space-5);grid-template-columns:repeat(auto-fit,minmax(min(100%,max(10rem,calc((100% - var(--space-5))/2))),1fr))}
+    .intern-company h3{font-size:var(--fs-h4);color:var(--maroon);margin:0 0 var(--space-2)}
+    .intern-company ul{list-style:disc;margin:0;padding-left:1.25em}
+    .intern-company li{margin:0 0 var(--space-2)}
     </style>
-<style>
-    .footer-tagline { color: var(--color-gold); font-weight: 600; }
-    .footer-fineprint { grid-column: 1 / -1; flex-basis: 100%; width: 100%; font-size: 0.8rem; color: #9a9a9a; margin-top: 1.5rem !important; }
-    .footer-fineprint a { color: #bdbdbd; }
-    .footer-section a { min-height: 24px; display: inline-block; }
-    .header-skip-link { color: #1a1a1a !important; background: var(--color-gold) !important; font-weight: 600; }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
-    </style>
+    <link rel="stylesheet" href="./css/design.css?v=1">
 </head>
 
 <body id="collection-60f1b2b6e4c32d6f41f71ece" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons">
@@ -464,41 +67,39 @@
           <a href="#page" class="header-skip-link sqs-button-element--primary">
             Skip to Content
           </a>
-          
+
           <div class="header-inner container--fluid header-mobile-layout-logo-left-nav-right header-layout-nav-right">
             <!-- Background -->
             <div class="header-background theme-bg--primary"></div>
 
             <div class="header-display-desktop">
-              
+
               <!-- Title and nav wrapper -->
               <div class="header-title-nav-wrapper">
-                
-                <!-- Title -->
+
+                <!-- Title: brand lockup (the "Theta Tau / Zeta Delta" wordmark text is NEW, DESIGN 4.7) -->
                 <div class="header-title">
-                  <div class="header-title-logo">
-                    <a href="/">
-                      <img src="./Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
-                    </a>
-                  </div>
+                  <div class="header-title-logo"><a href="/" class="brand-lockup">
+                    <img src="/Images/brand/palmetto-white-144.png" width="101" height="144" alt="">
+                    <span class="brand-lockup__text"><span class="brand-lockup__name">Theta Tau</span><span class="brand-lockup__chapter">Zeta Delta</span></span></a></div>
                 </div>
-                
+
                 <!-- Nav -->
                 <div class="header-nav">
                   <div class="header-nav-wrapper">
-                    <nav class="header-nav-list">
+                    <nav class="header-nav-list" aria-label="Main">
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/rush">Rush</a>
                       </div>
-                      
+
                       <div class="header-nav-item header-nav-item--collection header-nav-item--active">
                         <a href="/profession" aria-current="page">Profession</a>
                       </div>
-           
+
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/brotherhood">Brotherhood</a>
                       </div>
-                      
+
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/service">Service</a>
                       </div>
@@ -512,7 +113,7 @@
                   </div>
                 </div>
               </div>
-            
+
               <!-- Actions -->
               <div class="header-actions header-actions--right"></div>
 
@@ -531,17 +132,14 @@
                 </button>
               </div>
             </div>
-            
-            <!-- Mobile display version (hidden, using desktop display + burger instead) -->
-            <div class="header-display-mobile"></div>
           </div>
         </div>
-        
+
         <!-- Mobile Menu Navigation -->
         <div class="header-menu header-menu--folder-list">
           <div class="header-menu-bg theme-bg--primary"></div>
           <div class="header-menu-nav">
-            <nav class="header-menu-nav-list">
+            <nav class="header-menu-nav-list" aria-label="Main">
               <div data-folder="root" class="header-menu-nav-folder">
                 <div class="header-menu-nav-folder-content">
                   <!-- Menu Navigation -->
@@ -569,65 +167,53 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="header-menu-actions social-accounts">
                 </div>
               </div>
-            </div>
+            </nav>
           </div>
-        </header>
-  
+        </div>
+      </header>
+
         <main id="page" class="container" role="main">
           <article class="sections" id="sections" data-page-sections="60f1b2b6e4c32d6f41f71ecd">
-            
-            <!-- Professional Development Header Section -->
-            <section class="page-section background-width--full-bleed section-height--small content-width--narrow horizontal-alignment--center vertical-alignment--middle has-background black">
+
+            <!-- Professional Development Header Section: top band (DESIGN 3B), the page LCP -->
+            <section class="page-section background-width--full-bleed section-height--small horizontal-alignment--center vertical-alignment--middle has-background black">
               <div class="section-border">
                 <div class="section-background">
                   <picture>
-                    <source srcset="./Images/SGBackground.webp" type="image/webp">
-                    <img src="./Images/SGBackground.jpg" alt="Professional Development Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high">
+                    <source media="(max-width: 599.98px)" type="image/webp" sizes="100vw" srcset="/Images/photos/profession-suits-portrait-480.webp 480w, /Images/photos/profession-suits-portrait-768.webp 768w, /Images/photos/profession-suits-portrait-1080.webp 1080w">
+                    <source type="image/webp" sizes="100vw" srcset="/Images/photos/profession-suits-640.webp 640w, /Images/photos/profession-suits-960.webp 960w, /Images/photos/profession-suits-1280.webp 1280w, /Images/photos/profession-suits-1920.webp 1920w">
+                    <img src="/Images/photos/profession-suits-1280.jpg" width="1920" height="1600" alt="A large group of Theta Tau brothers in suits standing together in a lobby" fetchpriority="high" style="--focus:50% 43%">
                   </picture>
-                  <div class="section-background-overlay" style="opacity: 0.35;"></div>
+                  <div class="section-background-overlay"></div>
                 </div>
               </div>
-              
+
               <div class="content-wrapper">
                 <div class="content">
-                  <div class="sqs-layout sqs-grid-12 columns-12">
-                    <div class="row sqs-row">
-                      <div class="col sqs-col-12 span-12">
-                        <div class="sqs-block html-block sqs-block-html">
-                          <div class="sqs-block-content">
-                            <div class="sqs-html-content">
-                              <h2 style="white-space:pre-wrap;"><strong>Coming from all types of fields and backgrounds, our brothers' work experience and connections last a lifetime. Their knowledge is passed down to younger members that wish to follow a similar path.</strong></h2>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div class="sqs-html-content">
+                    <h1 class="band-statement"><span class="visually-hidden">Profession: </span><strong>Coming from all types of fields and backgrounds, our brothers' work experience and connections last a lifetime. Their knowledge is passed down to younger members that wish to follow a similar path.</strong></h1>
                   </div>
                 </div>
               </div>
             </section>
-  
-            <!-- Work Experience Section - Modified to match index structure with white class -->
-            <section class="page-section white">
-              <div class="section-border">
-                <div class="section-background"></div>
-              </div>
-              
-              <div class="content-wrapper" style="padding-top: 3.3vmax; padding-bottom: 3.3vmax;">
+
+            <!-- Work Experience Section -->
+            <section class="page-section split white">
+              <div class="content-wrapper">
                 <div class="content">
                   <div class="sqs-layout sqs-grid-12 columns-12">
                     <div class="row sqs-row">
-                      <div class="col sqs-col-4 span-4">
+                      <div class="col sqs-col-6 span-6">
                         <div class="sqs-block html-block sqs-block-html">
                           <div class="sqs-block-content">
                             <div class="sqs-html-content companies-section">
                               <h2>Where Our Brothers Work</h2>
-                              <p class="companies-intro">Our alumni and current members have secured positions at leading companies across a wide range of industries, including disciplines of engineering, finance, consulting, and more.</p>
-                              
+                              <p class="lead companies-intro">Our alumni and current members have secured positions at leading companies across a wide range of industries, including disciplines of engineering, finance, consulting, and more.</p>
+
                               <div class="companies-container">
                                 <span class="company-tag">Amazon</span>
                                 <span class="company-tag">NASA</span>
@@ -658,15 +244,14 @@
                           </div>
                         </div>
                       </div>
-                      <div class="col sqs-col-8 span-8">
+                      <div class="col sqs-col-6 span-6">
                         <div class="sqs-block image-block sqs-block-image">
                           <div class="sqs-block-content">
-                            <figure class="sqs-block-image-figure intrinsic" style="max-width:1080px;">
-                              <div class="image-block-wrapper">
-                                <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom:177.7777862548828%; overflow: hidden;">
-                                  <picture><source srcset="./Images/Companies/ThetaTauCompanies.webp" type="image/webp"><img src="./Images/Companies/ThetaTauCompanies.png" alt="Company logos" style="display:block;object-fit: cover; width: 100%; height: 100%; object-position: 50% 50%" loading="lazy"></picture>
-                                </div>
-                              </div>
+                            <figure class="split-figure">
+                              <picture>
+                                <source type="image/webp" sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1263px) calc(50vw - 64px), 568px" srcset="/Images/photos/companies-collage-480.webp 480w, /Images/photos/companies-collage-768.webp 768w, /Images/photos/companies-collage-1080.webp 1080w, /Images/photos/companies-collage-1440.webp 1440w">
+                                <img src="/Images/photos/companies-collage-768.jpg" width="1440" height="1864" alt="Logos of companies where brothers work: Amazon, AMD, SpaceX, NASA, PwC, Adobe, Mercedes-Benz, Boeing, Intel, ExxonMobil, Deloitte, Dell, Capital One, Bain &amp; Company, Bank of America, Epic, BMW, Parker, EY and GEICO" loading="lazy" decoding="async">
+                              </picture>
                             </figure>
                           </div>
                         </div>
@@ -677,28 +262,21 @@
               </div>
             </section>
 
-            <!-- Interns Section (graphic says Summer 2025: replace Images/Interns.webp each summer) -->
-            <section class="page-section white">
-              <div class="section-border">
-                <div class="section-background"></div>
-              </div>
-              
-              <div class="content-wrapper" style="padding-top: 3.3vmax; padding-bottom: 3.3vmax;">
+            <!-- Interns Section (the graphic says Summer 2025: each summer, make a new photo set under a new slug,
+                 e.g. interns-2026, with scripts/make-images.sh; never overwrite a published filename) -->
+            <section class="page-section split section--tint">
+              <div class="content-wrapper">
                 <div class="content">
                   <div class="sqs-layout sqs-grid-12 columns-12">
                     <div class="row sqs-row">
                       <div class="col sqs-col-6 span-6">
                         <div class="sqs-block image-block sqs-block-image">
                           <div class="sqs-block-content">
-                            <figure class="sqs-block-image-figure intrinsic" style="max-width:800px;">
-                              <div class="image-block-wrapper">
-                                <div class="sqs-image-shape-container-element has-aspect-ratio" style="position: relative; padding-bottom:75%; overflow: hidden;">
-                                  <picture>
-                                                                          <source srcset="./Images/Interns.webp" type="image/webp">
-                                    <img src="./Images/Interns.webp" alt="Last Summer's Interns" style="display:block;object-fit: cover; width: 100%; height: 100%; object-position: 50% 50%" loading="lazy">
-                                  </picture>
-                                </div>
-                              </div>
+                            <figure class="split-figure split-figure--card">
+                              <picture>
+                                <source type="image/webp" sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1263px) calc(50vw - 64px), 568px" srcset="/Images/photos/interns-480.webp 480w, /Images/photos/interns-768.webp 768w, /Images/photos/interns-1080.webp 1080w">
+                                <img src="/Images/photos/interns-768.jpg" width="1080" height="1350" alt="Summer 2025 Zeta Delta Internships: eleven brothers photographed at their internships, with the logos of the companies listed beside it" loading="lazy" decoding="async">
+                              </picture>
                             </figure>
                           </div>
                         </div>
@@ -707,44 +285,44 @@
                         <div class="sqs-block html-block sqs-block-html">
                           <div class="sqs-block-content">
                             <div class="sqs-html-content">
-                              <h2 style="margin-bottom: 2rem;">Summer Internships</h2>
-                              <p style="margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6;">Where brothers interned in summer 2025:</p>
-                              
-                              <div class="interns-companies" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                              <h2>Summer Internships</h2>
+                              <p class="lead">Where brothers interned in summer 2025:</p>
+
+                              <div class="interns-companies">
                                 <div class="intern-company">
-                                  <h4 style="color: var(--color-maroon, #8B0000); margin-bottom: 0.5rem;">Technology & Consulting</h4>
-                                  <ul style="list-style: none; padding: 0; margin: 0;">
-                                    <li style="margin-bottom: 0.5rem;">• IBM</li>
-                                    <li style="margin-bottom: 0.5rem;">• Amazon</li>
-                                    <li style="margin-bottom: 0.5rem;">• UpAhead</li>
-                                    <li style="margin-bottom: 0.5rem;">• Acute Stress Center</li>
+                                  <h3>Technology & Consulting</h3>
+                                  <ul>
+                                    <li>IBM</li>
+                                    <li>Amazon</li>
+                                    <li>UpAhead</li>
+                                    <li>Acute Stress Center</li>
                                   </ul>
                                 </div>
-                                
+
                                 <div class="intern-company">
-                                  <h4 style="color: var(--color-maroon, #8B0000); margin-bottom: 0.5rem;">Finance & Investment</h4>
-                                  <ul style="list-style: none; padding: 0; margin: 0;">
-                                    <li style="margin-bottom: 0.5rem;">• Merrill</li>
+                                  <h3>Finance & Investment</h3>
+                                  <ul>
+                                    <li>Merrill</li>
                                   </ul>
                                 </div>
-                                
+
                                 <div class="intern-company">
-                                  <h4 style="color: var(--color-maroon, #8B0000); margin-bottom: 0.5rem;">Construction & Engineering</h4>
-                                  <ul style="list-style: none; padding: 0; margin: 0;">
-                                    <li style="margin-bottom: 0.5rem;">• Pavarini McGovern</li>
-                                    <li style="margin-bottom: 0.5rem;">• Ewing Cole</li>
-                                    <li style="margin-bottom: 0.5rem;">• Central Electric</li>
-                                    <li style="margin-bottom: 0.5rem;">• Seamon</li>
+                                  <h3>Construction & Engineering</h3>
+                                  <ul>
+                                    <li>Pavarini McGovern</li>
+                                    <li>Ewing Cole</li>
+                                    <li>Central Electric</li>
+                                    <li>Seamon</li>
                                   </ul>
                                 </div>
-                                
+
                                 <div class="intern-company">
-                                  <h4 style="color: var(--color-maroon, #8B0000); margin-bottom: 0.5rem;">Manufacturing & Defense</h4>
-                                  <ul style="list-style: none; padding: 0; margin: 0;">
-                                    <li style="margin-bottom: 0.5rem;">• Alpek</li>
-                                    <li style="margin-bottom: 0.5rem;">• CMaT</li>
-                                    <li style="margin-bottom: 0.5rem;">• Boeing</li>
-                                    <li style="margin-bottom: 0.5rem;">• US Navy</li>
+                                  <h3>Manufacturing & Defense</h3>
+                                  <ul>
+                                    <li>Alpek</li>
+                                    <li>CMaT</li>
+                                    <li>Boeing</li>
+                                    <li>US Navy</li>
                                   </ul>
                                 </div>
                               </div>
@@ -757,94 +335,92 @@
                 </div>
               </div>
             </section>
-            
+
             <!-- Career Services Section -->
             <section class="page-section white">
-              <div class="section-border">
-                <div class="section-background"></div>
-              </div>
-              
-              <div class="content-wrapper" style="padding-top: 1vmax; padding-bottom: 1vmax;">
-                <div class="content">
-                  <div class="sqs-layout sqs-grid-12 columns-12">
-                    <div class="row sqs-row">
-                      <div class="col sqs-col-12 span-12">
-                        <div class="sqs-block html-block sqs-block-html">
-                          <div class="sqs-block-content">
-                            <div class="sqs-html-content">
-                              <h2 style="text-align:center;white-space:pre-wrap;">How We Support Each Other</h2>
-                              <p style="text-align:center;white-space:pre-wrap;">Professional development has its own chair and its own events every semester: resume reviews, mock interviews and workshops.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+              <div class="content-wrapper">
+                <div class="section-head">
+                  <h2>How We Support Each Other</h2>
+                  <p class="lead">Professional development has its own chair and its own events every semester: resume reviews, mock interviews and workshops.</p>
+                </div>
+                <div class="card-grid">
+                  <div class="card">
+                    <div class="card-media">
+                      <picture>
+                        <source type="image/webp" sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1199px) calc(50vw - 48px), 380px" srcset="/Images/photos/resume-review-480.webp 480w, /Images/photos/resume-review-768.webp 768w, /Images/photos/resume-review-1080.webp 1080w">
+                        <img src="/Images/photos/resume-review-768.jpg" width="1080" height="720" alt="A Theta Tau brother with a name tag marking up a printed resume with a pen at the chapter's resume and LinkedIn review" loading="lazy" decoding="async">
+                      </picture>
                     </div>
-                    <div class="row sqs-row" style="margin-top: 30px;">
-                      <div class="col sqs-col-4 span-4">
-                        <div class="sqs-block html-block sqs-block-html">
-                          <div class="sqs-block-content">
-                            <div class="sqs-html-content">
-                              <h3 style="text-align:center;">Resume Workshops</h3>
-                              <p style="text-align:center;">Brothers who have been through recruiting at their companies read resumes line by line before the career fair.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col sqs-col-4 span-4">
-                        <div class="sqs-block html-block sqs-block-html">
-                          <div class="sqs-block-content">
-                            <div class="sqs-html-content">
-                              <h3 style="text-align:center;">Alumni and Company Events</h3>
-                              <p style="text-align:center;">Alumni come back to talk about their jobs, and brothers visit companies and hear from recruiters.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col sqs-col-4 span-4">
-                        <div class="sqs-block html-block sqs-block-html">
-                          <div class="sqs-block-content">
-                            <div class="sqs-html-content">
-                              <h3 style="text-align:center;">Alumni Network</h3>
-                              <p style="text-align:center;">Alumni at the companies above answer messages, refer brothers for internships and say which classes mattered.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div class="card-body">
+                      <h3>Resume Workshops</h3>
+                      <p>Brothers who have been through recruiting at their companies read resumes line by line before the career fair.</p>
                     </div>
                   </div>
+                  <div class="card">
+                    <div class="card-media">
+                      <picture>
+                        <source type="image/webp" sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1199px) calc(50vw - 48px), 380px" srcset="/Images/photos/ey-case-competition-480.webp 480w, /Images/photos/ey-case-competition-768.webp 768w, /Images/photos/ey-case-competition-1080.webp 1080w, /Images/photos/ey-case-competition-1440.webp 1440w">
+                        <img src="/Images/photos/ey-case-competition-768.jpg" width="1440" height="960" alt="Four Theta Tau brothers in suits and name tags beside an EY banner at a case competition" loading="lazy" decoding="async">
+                      </picture>
+                    </div>
+                    <div class="card-body">
+                      <h3>Alumni and Company Events</h3>
+                      <p>Alumni come back to talk about their jobs, and brothers visit companies and hear from recruiters.</p>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-media">
+                      <picture>
+                        <source type="image/webp" sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1199px) calc(50vw - 48px), 380px" srcset="/Images/photos/stoles-group-steps-480.webp 480w, /Images/photos/stoles-group-steps-768.webp 768w, /Images/photos/stoles-group-steps-1080.webp 1080w">
+                        <img src="/Images/photos/stoles-group-steps-768.jpg" width="1080" height="720" alt="A large group of graduating Theta Tau brothers in gold Theta Tau stoles, posed together on a set of curved steps" loading="lazy" decoding="async">
+                      </picture>
+                    </div>
+                    <div class="card-body">
+                      <h3>Alumni Network</h3>
+                      <p>Alumni at the companies above answer messages, refer brothers for internships and say which classes mattered.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Workshop video. The eyebrow, heading and caption are NEW labels for the owner to approve. -->
+            <section class="page-section section--tint">
+              <div class="content-wrapper">
+                <div class="section-head"><p class="eyebrow">Professional Development Workshop</p><h2>Inside the workshop</h2></div>
+                <div class="reel-grid">
+                  <figure class="reel"><video controls playsinline preload="none" poster="/Images/video/pd-workshop-poster.webp" width="720" height="1280" aria-label="Professional Development Workshop highlights (no sound)" aria-describedby="reel-pd-desc"><source src="/Images/video/pd-workshop.mp4" type="video/mp4"></video><p id="reel-pd-desc" class="visually-hidden">26-second video, no sound. A "Theta Tau Professional Development Workshop" title outside the Molinaroli College of Engineering and Computing at 300 Main Street, then classroom sessions with the on-screen titles "Overview of Professional Practices", "Research, Internships, Scholarships", "Resume &amp; LinkedIn Review" and "Mock Interviews". It ends on the Theta Tau Zeta Delta logo.</p></figure>
                 </div>
               </div>
             </section>
 
             <!-- Call to Action Section -->
             <section class="page-section white">
-              <div class="section-border">
-                <div class="section-background"></div>
-              </div>
-              
-              <div class="content-wrapper" style="padding-bottom: 1vmax">
-                <div class="content">
-                  <div class="cta-section">
-                    <h2 class="cta-title">Want to work at one of these?</h2>
-                    <p class="cta-subtitle">Rush Theta Tau and meet the brothers who work there.</p>
-                    <div class="cta-buttons">
-                      <a href="/rush" class="cta-button cta-primary">Join Our Brotherhood</a>
-                      <a href="#footer" class="cta-button cta-secondary" onclick="scrollToSection('footer')">Contact Us</a>
-                    </div>
+              <div class="content-wrapper">
+                <div class="cta-section">
+                  <div class="letters-mark" aria-hidden="true">ΘΤ<br>ΖΔ</div>
+                  <h2 class="cta-title">Want to work at one of these?</h2>
+                  <p class="cta-subtitle">Rush Theta Tau and meet the brothers who work there.</p>
+                  <div class="cta-buttons">
+                    <a href="/rush" class="cta-button cta-primary">Join Our Brotherhood</a>
+                    <a href="#footer" class="cta-button cta-secondary">Contact Us</a>
                   </div>
                 </div>
               </div>
             </section>
-            
+          </article>
+        </main>
+
         <!-- Footer -->
         <footer class="footer" id="footer">
           <div class="footer-content">
             <div class="footer-section">
+              <img class="footer-mark" src="/Images/brand/palmetto-white-144.png" width="101" height="144" alt="" loading="lazy" decoding="async">
               <h3>Theta Tau Zeta Delta</h3>
               <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Chartered February 5, 2011.</p>
                     <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
             </div>
-            
+
             <div class="footer-section">
               <h3>Contact</h3>
               <p><strong>Regent:</strong> Jack Schmitt</p>
@@ -854,8 +430,8 @@
                     <p><strong>Email:</strong> <a href="mailto:sotheta@mailbox.sc.edu">sotheta@mailbox.sc.edu</a></p>
                     <p><strong>Instagram DMs:</strong> <a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">@thetatauzd</a></p>
             </div>
-            
-            
+
+
             <div class="footer-section">
               <h3>Connect</h3>
               <p><a href="/newsletter">Newsletters</a></p>
@@ -863,40 +439,14 @@
               <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Instagram</a></p>
               <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank" rel="noopener">LinkedIn</a></p>
               <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank" rel="noopener">Facebook</a></p>
-              <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener" style="color:var(--color-gold);">Donate</a></p>
+              <p><a class="footer-donate" href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener">Donate</a></p>
                     <p><a href="/portal">Brother Portal</a></p>
             </div>
                 <p class="footer-fineprint">Theta Tau Zeta Delta is a registered student organization at the University of South Carolina and is not an agent of the university. Theta Tau, its Greek letters and its Coat of Arms are trademarks of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau Fraternity</a>.</p>
           </div>
         </footer>
       </div>
-  
-      <script src="./js/nav.js"></script>
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const header = document.querySelector('header');
 
-            if (header) {
-                function updateHeaderBackground() {
-                    if (window.scrollY > 100) {
-                        header.classList.add('scrolled');
-                    } else {
-                        header.classList.remove('scrolled');
-                    }
-                }
-
-                updateHeaderBackground();
-                window.addEventListener('scroll', updateHeaderBackground);
-            }
-        });
-        
-        // Smooth scroll function
-        window.scrollToSection = function(sectionId) {
-            const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        };
-    </script>
+      <script src="./js/nav.js?v=2"></script>
 </body>
 </html>

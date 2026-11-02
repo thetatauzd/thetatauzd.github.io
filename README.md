@@ -26,20 +26,31 @@ python3 dev-server.py 8080
 ├── service.html             # Community service
 ├── rush.html                # Rush information (dynamic open/closed)
 │
+├── newsletter.html          # Newsletter archive (read from Firebase)
+├── 404.html                 # Not-found page
+│
 ├── css/
-│   ├── site.css             # Main site styles + color variables
-│   ├── static.css           # Shared static styles
-│   ├── brotherhood_cards.css
-│   └── navigation-animations.css
+│   ├── design.css           # The design system: tokens, components, legibility rules (loaded last)
+│   ├── site.css             # Legacy layout base (Squarespace export)
+│   └── static.css           # Legacy shared styles
 │
 ├── js/
-│   ├── nav.js               # Mobile menu
-│   └── rush-config.js       # Rush open/closed status, GroupMe and interest-form links (edit each semester)
+│   ├── nav.js               # Header state and the mobile menu (modal dialog)
+│   ├── rush-config.js       # Rush open/closed fallback, GroupMe and interest-form links
+│   ├── site-stats.js        # Chapter numbers shown on the home and service pages
+│   └── awards.js            # National awards list on the home page
 │
 ├── Images/
-│   ├── rush/                # All rush-specific images (event photos, backgrounds)
-│   ├── Companies/           # Company logos (profession page)
-│   └── optimized/           # WebP-optimized versions of photos
+│   ├── photos/              # Responsive photo sets made by scripts/make-images.sh (<slug>-<width>.webp/.jpg)
+│   ├── brand/               # Palmetto logo, Coat of Arms, app icons
+│   ├── logos/               # Company logos for the rush logo strip
+│   ├── video/               # Short silent highlight reels and their posters
+│   └── rush/                # Rush poster and event cards (fallback for the Website page)
+│
+├── scripts/
+│   ├── make-images.sh       # Photo -> responsive WebP/JPEG sets (macOS: sips + cwebp; run in a normal Terminal)
+│   ├── brand-tool.swift     # Lifts/trims logos for Images/brand
+│   └── publish-rules.sh     # Safe Firebase rules publish
 │
 ├── portal/                  # Brother Portal (Firebase-backed)
 │   └── (see portal/README.md)
@@ -55,26 +66,30 @@ python3 dev-server.py 8080
 | What | Where |
 |---|---|
 | **Rush open/closed, title, GroupMe link, interest form, poster and event cards** | Portal → Admin → **Website** (no code). Saved under `site/rush` in Firebase and read by `rush.html`. If nothing has been saved there, the page falls back to `js/rush-config.js` and the pictures in `Images/rush/`. |
-| **Rush event photos** | `Images/rush/`: drop in new photos, update paths in `rush.html` |
+| **Photos anywhere on the site** | Put the original in a folder, run `sh scripts/make-images.sh <folder>` and paste the printed `<picture>` markup. Never reuse a published filename: give a new photo a new name. |
 | **Rush schedule graphics (fallback only)** | `rush.html`: the `FALL 2026 RUSH GRAPHICS` block, used only when nothing is saved on the Website page. |
-| **Leadership contacts** (Regent, VR, Rush Chairs, etc.) | Footer on every page: `index.html`, `brotherhood.html`, `profession.html`, `rush.html`, `service.html` |
-| **Company logos** | `Images/Companies/` |
-| **Brotherhood / service / profession photos** | `Images/` and `Images/optimized/` |
+| **Leadership contacts** (Regent, VR, Rush Chairs, etc.) | Footer on every page: `index.html`, `brotherhood.html`, `profession.html`, `rush.html`, `service.html`, `newsletter.html` |
+| **Company logos** | `Images/logos/` (the rush logo strip); the profession page uses the collage in `Images/photos/companies-collage-*` |
+| **Brotherhood / service / profession photos** | `Images/photos/`, made with `scripts/make-images.sh` (see "Photos anywhere on the site") |
 
 ### Rush Page Status (`js/rush-config.js`)
 
+This file is the fallback only: whatever an admin saves on Portal → Admin → **Website** wins over it.
+
 ```js
-// Set isOpen: true when rush is active, false when it is closed
-const rushConfig = {
-  isOpen: false,
-  nextSemester: 'Fall 2026',
-  rushTitle: 'Spring 2026 Rush',
-  ctaLine: 'Applications are open. Join us!',
-  rushLinkUrl: 'https://...'
+var CURRENT_RUSH = "Spring 2027";
+window.RUSH_CONFIG = {
+  isOpen: false,                 // true shows the schedule, signup and GroupMe; false shows the "Rush has closed" banner
+  nextSemester: CURRENT_RUSH,    // closed banner: "Next rush: ..."
+  rushTitle: CURRENT_RUSH + " Rush",
+  ctaLine: "Join the Rush GroupMe to keep up with every event.",
+  rushLinkUrl: "",               // the current GroupMe invite; "" hides the button
+  interestFormUrl: "",           // interest-list Google Form, shown all year; "" hides it
+  staticCardsSemester: "Fall 2026"  // semester of the poster and cards in Images/rush/f26/
 };
 ```
 
-When `isOpen` is `false`, the page shows a "Rush is currently closed" banner. When `true`, the rush info section and CTA are shown. The rush event section (specific dates, timeline, comic graphics) is stored in a comment block inside `rush.html` and can be uncommented when needed.
+The comments at the top of `js/rush-config.js` say what to change when rush opens or closes.
 
 ---
 
@@ -86,7 +101,7 @@ When `isOpen` is `false`, the page shows a "Rush is currently closed" banner. Wh
 | Gold | `#FFCC33` | Accents, active states, highlights |
 | Off-White | `#EDEAB5` | Background tones |
 
-Defined as CSS variables in `css/site.css`.
+From the 2018 Theta Tau style guide. Dark red and gold are the `--maroon` and `--gold` tokens at the top of `css/design.css`, the shared design system every public page loads last.
 
 ---
 

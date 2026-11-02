@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
     <title>Service | Theta Tau Zeta Delta at the University of South Carolina</title>
-    <link rel="icon" type="image/png" href="/Images/ThetaTau.png"/>
-    <link rel="apple-touch-icon" href="/Images/ThetaTau.png"/>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" type="image/png" sizes="192x192" href="/Images/brand/icon-192.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#8B0000">
     <link rel="canonical" href="https://www.thetatauzd.org/service"/>
     <meta property="og:site_name" content="Theta Tau Zeta Delta"/>
     <meta property="og:title" content="Service | Theta Tau Zeta Delta at the University of South Carolina"/>
@@ -22,478 +25,72 @@
     <meta name="description" content="Community service by Theta Tau Zeta Delta: STEM outreach at Soda City, the Living Science partnership, the service house, the Clemson Car Smash and 900+ service hours a semester in Columbia, SC."/>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap">
-    <link rel="stylesheet" type="text/css" href="./css/site.css">
-    <link rel="stylesheet" type="text/css" href="./css/static.css">
-    <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
-    <!-- Preload critical images -->
-    <link rel="preload" as="image" href="./Images/ThetaTau.png" fetchpriority="high">
-    <link rel="preload" as="image" href="./Images/Service.webp" fetchpriority="high">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:wght@700&text=%CE%98%CE%A4%CE%96%CE%94&display=swap">
+    <link rel="stylesheet" type="text/css" href="./css/site.css?v=2">
+    <link rel="stylesheet" type="text/css" href="./css/static.css?v=2">
     <style>
-    /* Minimal CSS to ensure the page looks decent even if external CSS files fail to load */
-    body {
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 0;
-        color: #333;
-        background-color: #fff;
-    }
-    
-    /* Header styles are now in navigation-animations.css */
-    
-    .section-background img {
-        width: 100%;
-        height: 100vh;
-        object-fit: cover;
-    }
-    .content-wrapper {
-        position: relative;
-        z-index: 1;
-        padding: 0 4vw;
-    }
-    .section-background-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-    }
-    
-    /* Add explicit styles for white sections */
-    .white {
-        background-color: #fff;
-        color: #333;
-    }
-    .white .section-background {
-        background-color: #fff;
-    }
-    
-    .header-menu-nav-item-content {
-        padding: 8px 0 !important;
-        line-height: 1.2 !important;
-        height: auto !important;
-    }
-    
-    /* Magazine-Style Service Layout */
-    .service-magazine {
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 100px 4vw;
-    }
+    /*
+     * service.html page CSS: layout only, tokens only.
+     * css/design.css loads after this block and owns the shared parts: top band, scrims and text
+     * panels, header, cards (.feature-story, .sidebar-article, .signature-card), the photo-card
+     * caption (.feature-overlay), the light stat blocks (.hero-stat), the CTA card and the footer.
+     * Rules here that change a design.css component are scoped one class deeper so they still win.
+     */
 
-    /* Hero Feature Article */
-    .hero-feature {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 60px;
-        margin-bottom: 120px;
-        align-items: center;
-    }
+    /* Magazine intro: text and stats beside the photo from 1024px, stacked below that */
+    .service-magazine{max-width:var(--container);margin:0 auto;padding:0}
+    .hero-feature{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-7);align-items:center;margin-bottom:var(--section-y)}
+    .hero-content{padding:0}
+    .hero-title{font-size:var(--fs-h1);font-weight:700;color:var(--ink)}
+    .hero-subtitle{font-size:var(--fs-lead);color:var(--text-muted);margin-bottom:var(--space-6)}
+    .hero-image{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-2)}
+    .hero-image img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}
+    @media (min-width:1024px){.hero-feature{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-8)}}
 
-    .hero-content {
-        padding: 40px;
+    /* Stats (design.css light stat component). Three columns from 600px while the intro is one
+       column wide. Below 600px, and from 1024px where the intro shares the row with the photo (a
+       third of that column is narrower than "1,000+" at --fs-h1), each stat is a row: number left,
+       labels right. subgrid lines the numbers up; without it each row falls back to auto 1fr. */
+    .hero-feature .hero-stats{max-width:none;margin:0}
+    @media (max-width:599.98px),(min-width:1024px){
+      .hero-feature .hero-stats{grid-template-columns:auto minmax(0,1fr);gap:var(--space-3)}
+      .hero-feature .hero-stat{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-columns:subgrid;
+        column-gap:var(--space-4);align-items:center;text-align:left;padding:var(--space-4) var(--space-5)}
+      .hero-feature .hero-stat-number{grid-row:1/span 2;margin:0}
+      .hero-feature .hero-stat-number:nth-last-child(2){grid-row:auto}  /* one label: centre it on the number */
+      .hero-feature .hero-stat-label{grid-column:2}
     }
+    @media (min-width:600px) and (max-width:1023.98px){.hero-feature .hero-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: #333;
-        line-height: 1.1;
-        margin-bottom: 30px;
-    }
+    /* Feature story and sidebar cards */
+    .magazine-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--grid-gap);align-items:start;margin-bottom:var(--section-y)}
+    @media (min-width:1024px){.magazine-grid{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}}
+    /* Phones: a square crop keeps the top of the photo clear of the caption box, and a tighter inset and padding keep
+       the box low enough that the front row's faces stay above it at 360px. */
+    @media (max-width:599.98px){.feature-story .feature-image img{aspect-ratio:1/1}
+      .feature-story .feature-overlay{inset:auto var(--space-2) var(--space-2) var(--space-2);padding:var(--space-4)}}
+    .sidebar{display:flex;flex-direction:column;gap:var(--grid-gap)}
 
-    .hero-subtitle {
-        font-size: 1.4rem;
-        color: #666;
-        line-height: 1.6;
-        margin-bottom: 40px;
-    }
+    /* Signature events: section head + design.css cards; the story links are text links.
+       Four cards: 1, 2 or 4 per row (design.css auto-fit would leave a 3 + 1 orphan row) */
+    .signature-events .signature-grid{grid-template-columns:minmax(0,1fr)}
+    @media (min-width:600px){.signature-events .signature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (min-width:1280px){.signature-events .signature-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .signature-card a{display:inline-flex;align-items:center;align-self:flex-start;min-height:44px;color:var(--link);font-weight:600;
+      text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em}
+    .signature-card a:hover{color:var(--link-hover);text-decoration-thickness:2px}
 
-    .hero-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 30px;
-    }
-
-    .hero-stat {
-        text-align: center;
-        padding: 20px;
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 15px;
-    }
-
-    .hero-stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--color-maroon, #8B0000);
-        display: block;
-    }
-
-    .hero-stat-label {
-        display: block;
-        font-size: 0.9rem;
-        color: #666;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 5px;
-    }
-
-    .signature-events { margin: 60px 0; }
-    .signature-heading { text-align: center; font-size: 2.2rem; margin-bottom: 30px; color: #1a1a1a; }
-    .signature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
-    .signature-card { background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 15px; padding: 26px 24px; display: flex; flex-direction: column; gap: 10px; }
-    .signature-card h3 { font-size: 1.25rem; color: var(--color-maroon); margin: 0; }
-    .signature-card p { margin: 0; color: #444; line-height: 1.55; }
-    .signature-card a { margin-top: auto; color: var(--color-maroon); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-
-    .hero-image {
-        position: relative;
-        border-radius: 25px;
-        overflow: hidden;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-        transform: rotate(2deg);
-        transition: transform 0.3s ease;
-    }
-
-    .hero-image:hover {
-        transform: rotate(0deg) scale(1.02);
-    }
-
-    .hero-image img {
-        width: 100%;
-        height: 500px;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .hero-image:hover img {
-        transform: scale(1.05);
-    }
-
-    /* Magazine Grid Layout */
-    .magazine-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 40px;
-        margin-bottom: 80px;
-    }
-
-    /* Feature Story */
-    .feature-story {
-        background: #fff;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        position: relative;
-    }
-
-    .feature-image {
-        width: 100%;
-        height: 400px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .feature-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .feature-story:hover .feature-image img {
-        transform: scale(1.1);
-    }
-
-    .feature-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(transparent, rgba(0,0,0,0.8));
-        color: white;
-        padding: 40px;
-    }
-
-    .feature-tag {
-        background: var(--color-gold);
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 15px;
-        display: inline-block;
-    }
-
-    .feature-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 15px;
-        line-height: 1.2;
-    }
-
-    .feature-excerpt {
-        font-size: 1.1rem;
-        line-height: 1.5;
-        opacity: 0.9;
-    }
-
-    .feature-content {
-        padding: 40px;
-    }
-
-    /* Sidebar Articles */
-    .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .sidebar-article {
-        background: #fff;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
-    }
-
-    .sidebar-article:hover {
-        transform: translateY(-5px);
-    }
-
-    .sidebar-image {
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-    }
-
-    .sidebar-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .sidebar-article:hover .sidebar-image img {
-        transform: scale(1.05);
-    }
-
-    .sidebar-content {
-        padding: 25px;
-    }
-
-    .sidebar-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 10px;
-        line-height: 1.3;
-    }
-
-    .sidebar-excerpt {
-        font-size: 0.95rem;
-        color: #666;
-        line-height: 1.5;
-        margin-bottom: 15px;
-    }
-
-    .sidebar-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.85rem;
-        color: #888;
-    }
-
-    /* Full Width Feature */
-    .full-width-feature {
-        margin: 100px -4vw;
-        position: relative;
-        border-radius: 30px;
-        overflow: hidden;
-        box-shadow: 0 40px 80px rgba(0,0,0,0.2);
-    }
-
-    .full-width-image {
-        width: 100%;
-        height: 600px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .full-width-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .full-width-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(212, 175, 55, 0.3));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: white;
-        padding: 60px;
-    }
-
-    .full-width-content h2 {
-        font-size: 4rem;
-        font-weight: 800;
-        margin-bottom: 30px;
-        text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-
-    .full-width-content p {
-        font-size: 1.5rem;
-        line-height: 1.6;
-        max-width: 800px;
-        margin: 0 auto;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-
-    /* Call to Action Section */
-    .cta-section {
-        text-align: center;
-        padding: 80px 0;
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 30px;
-        margin-top: 100px;
-    }
-
-    .cta-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 20px;
-    }
-
-    .cta-subtitle {
-        font-size: 1.2rem;
-        color: #666;
-        margin-bottom: 40px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .cta-buttons {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .cta-button {
-        padding: 15px 35px;
-        border-radius: 30px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    .cta-primary {
-        background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
-        color: #1a1a1a;
-        box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-    }
-
-    .cta-primary:hover {
-        color: #1a1a1a;
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
-    }
-
-    .cta-secondary {
-        background: transparent;
-        color: #333;
-        border-color: #333;
-    }
-
-    .cta-secondary:hover {
-        background: #333;
-        color: white;
-        transform: translateY(-3px);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .hero-feature {
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
-        
-        .magazine-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .hero-stats {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        .hero-title {
-            font-size: 2.5rem;
-        }
-        
-        .full-width-content h2 {
-            font-size: 2.5rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .service-magazine {
-            padding: 60px 4vw;
-        }
-        
-        .hero-stats {
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        
-        .hero-title {
-            font-size: 2rem;
-        }
-        
-        .full-width-feature {
-            margin: 60px -4vw;
-        }
-        
-        .full-width-image {
-            height: 400px;
-        }
-        
-        .full-width-content h2 {
-            font-size: 2rem;
-        }
-        
-        .full-width-content p {
-            font-size: 1.2rem;
-        }
-        
-        .cta-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-    }
+    /* "Every brother serves": photo card with the design.css text panel over a .20 veil */
+    .full-width-feature{position:relative;margin:var(--section-y) 0;border-radius:var(--radius-lg);overflow:hidden}
+    .full-width-image{height:clamp(22.5rem,45vw,35rem);overflow:hidden}
+    .full-width-image img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:var(--focus,50% 50%)}
+    .full-width-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--space-6) var(--gutter);text-align:center}
+    @media (max-width:599.98px){.full-width-overlay{align-items:flex-end}}  /* phones: panel low, faces (top quarter of the photo) clear */
+    .full-width-content h2{font-size:var(--fs-h2)}
+    .full-width-content p{font-size:var(--fs-lead);line-height:var(--lh-snug);max-width:var(--prose);margin-inline:auto}
     </style>
-<style>
-    .footer-tagline { color: var(--color-gold); font-weight: 600; }
-    .footer-fineprint { grid-column: 1 / -1; flex-basis: 100%; width: 100%; font-size: 0.8rem; color: #9a9a9a; margin-top: 1.5rem !important; }
-    .footer-fineprint a { color: #bdbdbd; }
-    .footer-section a { min-height: 24px; display: inline-block; }
-    .header-skip-link { color: #1a1a1a !important; background: var(--color-gold) !important; font-weight: 600; }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
-    </style>
+    <link rel="stylesheet" href="./css/design.css?v=1">
 </head>
 
 <body id="collection-60f1b2b6e4c32d6f41f71ece" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons">
@@ -515,25 +112,23 @@
                 
                 <!-- Title -->
                 <div class="header-title">
-                  <div class="header-title-logo">
-                    <a href="/">
-                      <img src="./Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
-                    </a>
-                  </div>
+                  <div class="header-title-logo"><a href="/" class="brand-lockup">
+                    <img src="/Images/brand/palmetto-white-144.png" width="101" height="144" alt="">
+                    <span class="brand-lockup__text"><span class="brand-lockup__name">Theta Tau</span><span class="brand-lockup__chapter">Zeta Delta</span></span></a></div>
                 </div>
-                
+
                 <!-- Nav -->
                 <div class="header-nav">
                   <div class="header-nav-wrapper">
-                    <nav class="header-nav-list">
+                    <nav class="header-nav-list" aria-label="Main">
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/rush">Rush</a>
                       </div>
-                      
+
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/profession">Profession</a>
                       </div>
-           
+
                       <div class="header-nav-item header-nav-item--collection">
                         <a href="/brotherhood">Brotherhood</a>
                       </div>
@@ -570,68 +165,6 @@
                 </button>
               </div>
             </div>
-            
-            <!-- Mobile display version -->
-            <div class="header-display-mobile">
-              <!-- Title and nav wrapper -->
-              <div class="header-title-nav-wrapper">
-                <!-- Title -->
-                <div class="header-title">
-                  <div class="header-title-logo">
-                    <a href="/">
-                      <img src="./Images/ThetaTau.png" alt="Theta Tau Zeta Delta" style="display:block" loading="eager" fetchpriority="high">
-                    </a>
-                  </div>
-                </div>
-                
-                <!-- Nav -->
-                <div class="header-nav">
-                  <div class="header-nav-wrapper">
-                    <nav class="header-nav-list">
-                      <div class="header-nav-item header-nav-item--collection">
-                        <a href="/rush">Rush</a>
-                      </div>
-
-                      <div class="header-nav-item header-nav-item--collection">
-                        <a href="/profession">Profession</a>
-                      </div>
-                                            
-                      <div class="header-nav-item header-nav-item--collection">
-                        <a href="/brotherhood">Brotherhood</a>
-                      </div>
-                      
-                      <div class="header-nav-item header-nav-item--collection header-nav-item--active">
-                        <a href="/service" aria-current="page">Service</a>
-                      </div>
-                      <div class="header-nav-item header-nav-item--collection">
-                          <a href="/newsletter">Newsletters</a>
-                      </div>
-                      <div class="header-nav-item header-nav-item--push-right">
-                        <a href="/portal">Brother Portal</a>
-                      </div>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            
-              <!-- Actions -->
-              <div class="header-actions header-actions--right"></div>
-
-              <!-- Burger Menu for Mobile -->
-              <div class="header-burger menu-overlay-has-visible-non-navigation-items">
-                <button class="header-burger-btn burger">
-                  <span hidden class="js-header-burger-open-title visually-hidden">Open Menu</span>
-                  <span hidden class="js-header-burger-close-title visually-hidden">Close Menu</span>
-                  <div class="burger-box">
-                    <div class="burger-inner header-menu-icon-doubleLineHamburger">
-                      <div class="top-bun"></div>
-                      <div class="patty"></div>
-                      <div class="bottom-bun"></div>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
         
@@ -639,7 +172,7 @@
         <div class="header-menu header-menu--folder-list">
           <div class="header-menu-bg theme-bg--primary"></div>
           <div class="header-menu-nav">
-            <nav class="header-menu-nav-list">
+            <nav class="header-menu-nav-list" aria-label="Main">
               <div data-folder="root" class="header-menu-nav-folder">
                 <div class="header-menu-nav-folder-content">
                   <!-- Menu Navigation -->
@@ -684,10 +217,11 @@
               <div class="section-border">
                 <div class="section-background">
                   <picture>
-                    <source srcset="./Images/Service.webp" type="image/webp">
-                    <img src="./Images/Service.webp" alt="Service Background" style="display:block;object-position: 50% 50%" loading="eager" fetchpriority="high" width="1000" height="750">
+                    <source media="(max-width: 767px)" type="image/webp" sizes="100vw" srcset="/Images/photos/service-build-portrait-480.webp 480w, /Images/photos/service-build-portrait-768.webp 768w, /Images/photos/service-build-portrait-900.webp 900w">
+                    <source type="image/webp" sizes="100vw" srcset="/Images/photos/service-build-640.webp 640w, /Images/photos/service-build-960.webp 960w, /Images/photos/service-build-1280.webp 1280w, /Images/photos/service-build-1500.webp 1500w">
+                    <img src="/Images/photos/service-build-1280.jpg" width="1500" height="1000" alt="Brothers building a house with Habitat for Humanity" fetchpriority="high" style="--focus:50% 12%">
                   </picture>
-                  <div class="section-background-overlay" style="opacity: 0.35;"></div>
+                  <div class="section-background-overlay"></div>
                 </div>
               </div>
               
@@ -699,7 +233,7 @@
                         <div class="sqs-block html-block sqs-block-html">
                           <div class="sqs-block-content">
                             <div class="sqs-html-content">
-                              <h2 style="white-space:pre-wrap;"><strong>Two STEM outreach events a year, a table at Soda City Market, house projects and hundreds of service hours every semester.</strong></h2>
+                              <p class="band-statement"><strong>Two STEM outreach events a year, a table at Soda City Market, house projects and hundreds of service hours every semester.</strong></p>
                             </div>
                           </div>
                         </div>
@@ -744,8 +278,8 @@
                   
                   <div class="hero-image">
                     <picture>
-                      <source srcset="./Images/Columbia.webp" type="image/webp">
-                      <img src="./Images/Columbia.jpg" alt="Columbia Service Trips" loading="lazy" width="612" height="453">
+                      <source type="image/webp" sizes="(max-width: 1023px) calc(100vw - 32px), 580px" srcset="/Images/photos/service-hero-image-480.webp 480w, /Images/photos/service-hero-image-768.webp 768w, /Images/photos/service-hero-image-1000.webp 1000w">
+                      <img src="/Images/photos/service-hero-image-768.jpg" width="1000" height="750" alt="Brothers in front of a house during a service project" loading="lazy" decoding="async">
                     </picture>
                   </div>
                 </div>
@@ -756,8 +290,8 @@
                   <div class="feature-story">
                     <div class="feature-image">
                       <picture>
-                        <source srcset="./Images/LivingScience.webp" type="image/webp">
-                        <img src="./Images/LivingScience.png" alt="Living Science Museum Partnership" loading="lazy" width="900" height="608">
+                        <source type="image/webp" sizes="(max-width: 1023px) calc(100vw - 32px), 760px" srcset="/Images/photos/living-science-chapter-480.webp 480w, /Images/photos/living-science-chapter-768.webp 768w, /Images/photos/living-science-chapter-1080.webp 1080w, /Images/photos/living-science-chapter-1440.webp 1440w">
+                        <img src="/Images/photos/living-science-chapter-768.jpg" width="1440" height="960" alt="The chapter in matching polos with the Living Science Museum banner" loading="lazy" decoding="async">
                       </picture>
                       <div class="feature-overlay">
                         <h2 class="feature-title">STEM Outreach Events</h2>
@@ -775,39 +309,34 @@
                     <article class="sidebar-article">
                       <div class="sidebar-image">
                         <picture>
-                          <source srcset="./Images/ServiceHouse.webp" type="image/webp">
-                          <img src="./Images/ServiceHouse.jpg" alt="Service House" style="object-position: top center;" loading="lazy" width="1400" height="1374">
+                          <source type="image/webp" sizes="(max-width: 1023px) calc(100vw - 32px), 380px" srcset="/Images/photos/service-house-480.webp 480w, /Images/photos/service-house-768.webp 768w, /Images/photos/service-house-1080.webp 1080w, /Images/photos/service-house-1440.webp 1440w">
+                          <img src="/Images/photos/service-house-768.jpg" width="1440" height="959" alt="Brothers in front of the wooden frame of a house they are helping build" loading="lazy" decoding="async">
                         </picture>
                       </div>
                       <div class="sidebar-content">
                         <h3 class="sidebar-title">Making a Difference in the Community</h3>
                         <p class="sidebar-excerpt">House renovations, shelters and partner organizations around Columbia.</p>
-                        <div class="sidebar-meta">
-                        </div>
                       </div>
                     </article>
 
                     <article class="sidebar-article">
                       <div class="sidebar-image">
                         <picture>
-                          <source srcset="./Images/optimized/SodaCity.webp" type="image/webp">
-                          <img src="./Images/optimized/SodaCity.webp" alt="Theta Tau table at Soda City Market" loading="lazy" width="1000" height="750">
+                          <source type="image/webp" sizes="(max-width: 1023px) calc(100vw - 32px), 380px" srcset="/Images/photos/soda-city-480.webp 480w, /Images/photos/soda-city-768.webp 768w, /Images/photos/soda-city-1000.webp 1000w">
+                          <img src="/Images/photos/soda-city-768.jpg" width="1000" height="666" alt="Theta Tau table at Soda City Market" loading="lazy" decoding="async">
                         </picture>
                       </div>
                       <div class="sidebar-content">
                         <h3 class="sidebar-title">Soda City Science</h3>
                         <p class="sidebar-excerpt">Find our table at Soda City Market, where we talk to parents and families about engineering and advertise our outreach events!</p>
-                        <div class="sidebar-meta">
-                        </div>
                       </div>
                     </article>
                   </div>
                 </div>
 
-                <!-- Full Width Feature -->
                 <!-- Signature events -->
                 <div class="signature-events" id="signature-events">
-                  <h2 class="signature-heading">Signature Events</h2>
+                  <div class="section-head"><h2 class="signature-heading">Signature Events</h2></div>
                   <div class="signature-grid">
                     <article class="signature-card">
                       <h3>STEM Extravaganza</h3>
@@ -830,11 +359,12 @@
                   </div>
                 </div>
 
+                <!-- Full Width Feature -->
                 <div class="full-width-feature">
                   <div class="full-width-image">
                     <picture>
-                      <source srcset="./Images/Service.webp" type="image/webp">
-                      <img src="./Images/Service.webp" alt="Service Impact" loading="lazy" width="1000" height="750">
+                      <source type="image/webp" sizes="(max-width: 575px) 540px, (max-width: 1263px) calc(100vw - 32px), 1200px" srcset="/Images/photos/every-brother-serves-640.webp 640w, /Images/photos/every-brother-serves-960.webp 960w, /Images/photos/every-brother-serves-1280.webp 1280w, /Images/photos/every-brother-serves-1500.webp 1500w">
+                      <img src="/Images/photos/every-brother-serves-1280.jpg" width="1500" height="1000" alt="Brothers in front of a Habitat for Humanity house they helped build" loading="lazy" decoding="async" style="--focus:50% 35%">
                     </picture>
                     <div class="full-width-overlay">
                       <div class="full-width-content">
@@ -847,21 +377,25 @@
 
                 <!-- Call to Action -->
                 <div class="cta-section">
+                  <div class="letters-mark" aria-hidden="true">ΘΤ<br>ΖΔ</div>
                   <h2 class="cta-title">Want to help?</h2>
                   <p class="cta-subtitle">Rush Theta Tau, or message us if your organization needs volunteers.</p>
                   <div class="cta-buttons">
                     <a href="/rush" class="cta-button cta-primary">Join Our Brotherhood</a>
-                    <a href="#footer" class="cta-button cta-secondary" onclick="scrollToSection('footer')">Contact Us</a>
+                    <a href="#footer" class="cta-button cta-secondary">Contact Us</a>
                   </div>
                 </div>
 
               </div>
             </section>
-            
+          </article>
+        </main>
+
         <!-- Footer -->
         <footer class="footer" id="footer">
           <div class="footer-content">
             <div class="footer-section">
+              <img class="footer-mark" src="/Images/brand/palmetto-white-144.png" width="101" height="144" alt="" loading="lazy" decoding="async">
               <h3>Theta Tau Zeta Delta</h3>
               <p>The Zeta Delta Chapter of Theta Tau Professional Engineering Fraternity at the University of South Carolina. Chartered February 5, 2011.</p>
                     <p class="footer-tagline">Engineering Leaders for Service, Profession, and Brotherhood</p>
@@ -885,7 +419,7 @@
               <p><a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">Instagram</a></p>
               <p><a href="https://www.linkedin.com/company/thetatau-zetadelta/" target="_blank" rel="noopener">LinkedIn</a></p>
               <p><a href="https://www.facebook.com/ThetaTauZetaDelta" target="_blank" rel="noopener">Facebook</a></p>
-              <p><a href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener" style="color:var(--color-gold);">Donate</a></p>
+              <p><a class="footer-donate" href="https://donate.sc.edu/AG/sfp/cec/theta-tau" target="_blank" rel="noopener">Donate</a></p>
                     <p><a href="/portal">Brother Portal</a></p>
             </div>
                 <p class="footer-fineprint">Theta Tau Zeta Delta is a registered student organization at the University of South Carolina and is not an agent of the university. Theta Tau, its Greek letters and its Coat of Arms are trademarks of <a href="https://thetatau.org/" target="_blank" rel="noopener">Theta Tau Fraternity</a>.</p>
@@ -894,30 +428,6 @@
       </div>
   
       <script src="./js/site-stats.js"></script>
-      <script src="./js/nav.js"></script>
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const header = document.querySelector('header');
-
-            function updateHeaderBackground() {
-              if (window.scrollY > 100) {
-                header.classList.add('scrolled');
-              } else {
-                header.classList.remove('scrolled');
-              }
-            }
-
-            updateHeaderBackground();
-            window.addEventListener('scroll', updateHeaderBackground);
-        });
-        
-        // Smooth scroll function
-        window.scrollToSection = function(sectionId) {
-            const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        };
-    </script>
+      <script src="./js/nav.js?v=2"></script>
 </body>
 </html>
