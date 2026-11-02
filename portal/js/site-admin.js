@@ -1,22 +1,28 @@
 /**
- * Website settings (admin only). Everything on this page is saved under
- * "site/rush" in the Realtime Database, which the public rush page reads
- * (no sign-in needed). Pictures are stored as small JPEG data URLs in the
- * database because the project stays on the free Spark plan (no Cloud Storage).
+ * Website settings (admin only). The text on this page is saved under "site/rush" and the
+ * pictures under "site/rushPictures" in the Realtime Database, both readable by anyone, which
+ * the public rush page reads with plain HTTPS requests. Pictures are small JPEG data URLs in
+ * the database because the project stays on the free Spark plan (no Cloud Storage). The rush
+ * page downloads the pictures only while rush is open; a closed page reads about 1 KB.
  *
- * If nothing has ever been saved here, the public page keeps using
- * js/rush-config.js and the pictures checked into Images/rush/.
+ * If nothing has ever been saved here, the public page keeps using js/rush-config.js and
+ * the pictures checked into Images/rush/.
  */
 (function (global) {
   'use strict';
 
   var db = firebase.database();
-  var REF = 'site/rush';
-  var MAX_IMAGE_CHARS = 190000;   // about 140 KB of JPEG; the database rule allows 200000
-  var MAX_SIDE = 1000;            // posters are shown at most ~600px wide, 1000px is plenty
-  var MAX_EVENTS = 10;            // the database rule accepts cards 0 to 9
+  var TEXT_KEY = 'rush';           // site/rush: text only, about 1 KB
+  var PICS_KEY = 'rushPictures';   // site/rushPictures: { hero, events: { "0": ..., "9": ... } }
+  var MAX_IMAGE_CHARS = 80000;    // about 60 KB of JPEG; the database rule allows 100000
+  var MAX_SIDE = 800;             // posters are shown at most ~600px wide
+  var MAX_EVENTS = 10;            // the database rules accept cards 0 to 9
   // Pictures are only ever shown if they are real JPEG data URLs (the rule checks the same).
   var JPEG_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/]+=*$/;
+  // Links: https only, nothing that could break out of an attribute.
+  var HTTPS_RE = /^https:\/\/[^\s"'<>]+$/;
+  // The poster and cards checked into rush.html belong to this semester.
+  var STATIC_SEMESTER = (global.RUSH_CONFIG && global.RUSH_CONFIG.staticCardsSemester) || 'Fall 2026';
 
   // The Fall 2026 cards that ship with the site, so the first save can start
   // from them instead of from nothing.
@@ -139,13 +145,14 @@
     if (showPicture(hero, state.heroImage)) {
       $('btn-hero-remove').classList.remove('hidden');
     } else {
-      hero.innerHTML = '<span class="site-noimg">No poster saved. The page shows the Fall 2026 poster from the site files.</span>';
+      hero.appendChild(noImg('No poster saved. The page shows the ' + STATIC_SEMESTER + ' poster from the site files only while the title says ' + STATIC_SEMESTER + '.'));
       $('btn-hero-remove').classList.add('hidden');
     }
 
     var list = $('event-list');
     if (!state.events.length) {
-      list.innerHTML = '<p class="site-noimg">No event cards saved. The page shows the Fall 2026 cards from the site files. Press "Start from the Fall 2026 cards" to load them here, or add your own.</p>';
+      list.textContent = '';
+      list.appendChild(noImg('No event cards saved. The page shows the ' + STATIC_SEMESTER + ' cards from the site files only while the title says ' + STATIC_SEMESTER + '. Press "Start from the Fall 2026 cards" to load them here, or add your own.', 'p'));
     } else {
       list.innerHTML = state.events.map(function (ev, i) {
         return '' +
@@ -175,6 +182,26 @@
     $('add-limit').textContent = state.events.length >= MAX_EVENTS ? 'The page holds at most ' + MAX_EVENTS + ' cards.' : '';
     $('btn-add-event').disabled = state.events.length >= MAX_EVENTS;
     $('event-count').textContent = state.events.length ? '(' + state.events.length + ')' : '';
+    showPictureSize();
+  }
+
+  function noImg(text, tag) {
+    var n = document.createElement(tag || 'span');
+    n.className = 'site-noimg';
+    n.textContent = text;
+    return n;
+  }
+
+  /** What every visit downloads while rush is open (base64 text, so characters are bytes). */
+  function showPictureSize() {
+    var el = $('pic-size');
+    if (!el) return;
+    var chars = (state.heroImage || '').length;
+    var count = state.heroImage ? 1 : 0;
+    state.events.forEach(function (ev) { if (ev.image) { chars += ev.image.length; count++; } });
+    el.textContent = count
+      ? count + (count === 1 ? ' picture, ' : ' pictures, ') + 'about ' + Math.max(1, Math.round(chars / 1000)) + ' KB per visit while rush is open.'
+      : 'No pictures saved.';
   }
 
   function readForm() {
@@ -268,15 +295,16 @@
     if (!state.isOpen && !state.nextSemester) return 'Say which semester rush comes back (for example "Spring 2027").';
     var urls = [state.rushLinkUrl, state.interestFormUrl];
     for (var k = 0; k < urls.length; k++) {
-      if (urls[k] && !/^https:\/\//.test(urls[k])) return 'Links must start with https://';
+      if (urls[k] && !HTTPS_RE.test(urls[k])) return 'Links must start with https:// and contain no spaces, quotes or < >.';
     }
     if (state.events.length > MAX_EVENTS) return 'The page holds at most ' + MAX_EVENTS + ' cards. Remove ' + (state.events.length - MAX_EVENTS) + '.';
     for (var i = 0; i < state.events.length; i++) {
       if (!state.events[i].title) return 'Event ' + (i + 1) + ' needs a title.';
     }
-    if (state.heroImage && !JPEG_RE.test(state.heroImage)) return 'The poster picture is not a JPEG. Choose it again.';
+    if (state.heroImage && (!JPEG_RE.test(state.heroImage) || state.heroImage.length > 100000)) return 'The poster picture is not a small JPEG. Choose it again.';
     for (var j = 0; j < state.events.length; j++) {
-      if (state.events[j].image && !JPEG_RE.test(state.events[j].image)) return 'The picture on event ' + (j + 1) + ' is not a JPEG. Choose it again.';
+      var im = state.events[j].image;
+      if (im && (!JPEG_RE.test(im) || im.length > 100000)) return 'The picture on event ' + (j + 1) + ' is not a small JPEG. Choose it again.';
     }
     return '';
   }
@@ -288,8 +316,8 @@
     var btn = $('btn-save');
     btn.disabled = true;
     say('Saving…');
-    // No name or email is saved: site/rush can be read by anyone on the internet.
-    var payload = {
+    // No name or email is saved: both nodes can be read by anyone on the internet.
+    var text = {
       isOpen: state.isOpen,
       nextSemester: state.nextSemester,
       rushTitle: state.rushTitle,
@@ -297,14 +325,23 @@
       ctaLine: state.ctaLine,
       rushLinkUrl: state.rushLinkUrl,
       interestFormUrl: state.interestFormUrl,
-      heroImage: state.heroImage || '',
       heroAlt: state.heroAlt || '',
       events: state.events.map(function (ev) {
-        return { title: ev.title || '', detail: ev.detail || '', inviteOnly: !!ev.inviteOnly, image: ev.image || '' };
+        return { title: ev.title || '', detail: ev.detail || '', inviteOnly: !!ev.inviteOnly };
       }),
       updatedAt: new Date().toISOString()
     };
-    db.ref(REF).set(payload).then(function () {
+    // Card pictures are keyed by the card's position, the same index as site/rush/events.
+    var pics = {};
+    var cardPics = {};
+    if (state.heroImage) pics.hero = state.heroImage;
+    state.events.forEach(function (ev, i) { if (ev.image) cardPics[String(i)] = ev.image; });
+    if (Object.keys(cardPics).length) pics.events = cardPics;
+    // One update writes both nodes or neither.
+    var both = {};
+    both[TEXT_KEY] = text;
+    both[PICS_KEY] = Object.keys(pics).length ? pics : null;
+    db.ref('site').update(both).then(function () {
       dirty = false;
       btn.textContent = 'Saved';
       say('Saved. The public rush page shows this now (phones may need a refresh).', 'ok');
@@ -315,9 +352,14 @@
   }
 
   function load() {
-    return db.ref(REF).once('value').then(function (snap) {
-      var v = snap.val();
+    return Promise.all([
+      db.ref('site/' + TEXT_KEY).once('value'),
+      db.ref('site/' + PICS_KEY).once('value')
+    ]).then(function (snaps) {
+      var v = snaps[0].val();
+      var p = snaps[1].val() || {};
       if (!v) { state = blank(); $('site-source').textContent = 'Nothing saved yet: the public page is using the files in the repository.'; return; }
+      var cardPics = p.events || {};
       state = {
         isOpen: v.isOpen === true,
         nextSemester: v.nextSemester || '',
@@ -326,24 +368,33 @@
         ctaLine: v.ctaLine || '',
         rushLinkUrl: v.rushLinkUrl || '',
         interestFormUrl: v.interestFormUrl || '',
-        heroImage: v.heroImage || '',
+        heroImage: typeof p.hero === 'string' ? p.hero : '',
         heroAlt: v.heroAlt || '',
-        events: toList(v.events)
+        events: toEntries(v.events).map(function (e) {
+          var ev = e[1] || {};
+          var img = cardPics[e[0]];
+          return { title: ev.title || '', detail: ev.detail || '', inviteOnly: ev.inviteOnly === true, image: typeof img === 'string' ? img : '' };
+        })
       };
       var when = v.updatedAt ? new Date(v.updatedAt).toLocaleString() : '';
       $('site-source').textContent = 'Last saved ' + when + '.';
     });
   }
 
-  function toList(events) {
-    if (!events) return [];
-    if (Array.isArray(events)) return events.filter(Boolean);
-    return Object.keys(events).sort(function (a, b) { return Number(a) - Number(b); }).map(function (k) { return events[k]; });
+  /** Saved cards arrive as an array or an object keyed "0".."9": [[index, card], ...] in order. */
+  function toEntries(events) {
+    if (!events || typeof events !== 'object') return [];
+    return Object.keys(events).sort(function (a, b) { return Number(a) - Number(b); })
+      .filter(function (k) { return events[k]; })
+      .map(function (k) { return [k, events[k]]; });
   }
 
   function clearSaved() {
-    if (!confirm('Remove everything saved here? The public page goes back to the files in the repository (js/rush-config.js and Images/rush/).')) return;
-    db.ref(REF).remove().then(function () {
+    if (!confirm('Remove everything saved here, the interest-form link and the next semester included? The public page goes back to the files in the repository (js/rush-config.js and Images/rush/). To close rush, switch to closed and save instead.')) return;
+    var both = {};
+    both[TEXT_KEY] = null;
+    both[PICS_KEY] = null;
+    db.ref('site').update(both).then(function () {
       state = blank(); dirty = false;
       render();
       say('Cleared. The public page is using the repository files again.', 'ok');

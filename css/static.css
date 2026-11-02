@@ -34,7 +34,12 @@ a {
   transition: color 0.3s ease;
 }
 
+/* Hover: maroon on the light sections, gold where the text sits on black or a photo. */
 a:hover {
+  color: #8B0000;
+}
+
+:where(.header, .header-menu, .footer, .hero-section, .cta-section, .has-background) a:hover {
   color: #d4af37;
 }
 
@@ -99,7 +104,11 @@ a:hover {
   margin-right: auto;
 }
 
-/* Custom logo treatment */
+/* Custom logo treatment. The link is a block so its focus ring wraps the whole logo. */
+.header-title-logo a {
+  display: block;
+}
+
 .header-title-logo img {
   transition: transform 0.3s ease;
 }

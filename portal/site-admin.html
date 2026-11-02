@@ -6,7 +6,7 @@
   <title>Website: Rush page settings</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=29">
+  <link rel="stylesheet" href="css/portal.css?v=30">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -16,7 +16,8 @@
     .site-form label input[type="text"], .site-form label input[type="url"] {
       display: block; width: 100%; margin-top: 0.25rem; padding: 0.6rem 0.8rem; border: 1px solid #ddd; border-radius: 8px; font: inherit; font-weight: 400;
     }
-    .site-form .site-help { font-weight: 400; font-size: 0.85rem; color: #666; margin: -0.5rem 0 0.9rem; }
+    .site-help { font-weight: 400; font-size: 0.85rem; color: #666; }
+    .site-form .site-help { margin: -0.5rem 0 0.9rem; }
     .site-toggle { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .site-toggle label { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; margin: 0; }
     .site-toggle input { accent-color: var(--color-maroon); }
@@ -137,7 +138,7 @@
         <button type="button" id="btn-load-static">Start from the Fall 2026 cards</button>
         <span class="site-help" id="add-limit" style="margin:0;"></span>
       </div>
-      <p class="site-help" style="margin-top:0.75rem;">Every picture saved here is downloaded by everyone who opens the rush page, even while rush is closed, and that counts against the free database plan. Save pictures only while rush is open, and press "Clear everything saved here" once rush closes.</p>
+      <p class="site-help" style="margin-top:0.75rem;">Pictures are downloaded only while rush is open, by everyone who opens the rush page, and that counts against the free database plan (10 GB a month). <span id="pic-size"></span> When rush closes, switch to closed, set the next semester and save. Visitors then download no pictures, so you can leave them here for next semester. Do not use "Clear everything saved here" to close rush: it also removes the interest-form link and the next semester.</p>
     </div>
 
     <div class="portal-card">
@@ -153,9 +154,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=29"></script>
-  <script src="js/auth.js?v=29"></script>
-  <script src="../js/rush-config.js?v=29"></script>
-  <script src="js/site-admin.js?v=29"></script>
+  <script src="js/firebase-config.js?v=30"></script>
+  <script src="js/auth.js?v=30"></script>
+  <script src="../js/rush-config.js?v=30"></script>
+  <script src="js/site-admin.js?v=30"></script>
 </body>
 </html>

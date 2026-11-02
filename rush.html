@@ -27,20 +27,58 @@
     <link rel="stylesheet" type="text/css" href="./css/static.css">
     <link rel="stylesheet" type="text/css" href="./css/brotherhood_cards.css">
     <link rel="stylesheet" type="text/css" href="./css/navigation-animations.css">
+    <link rel="preconnect" href="https://thetatauzd-2ab25-default-rtdb.firebaseio.com" crossorigin>
     <script src="./js/rush-config.js"></script>
     <script>
-      // Decide open or closed before the page draws, so the wrong state never flashes.
-      // The saved Website-page setting (read at the bottom of the page) can switch it later.
-      document.documentElement.className += (window.RUSH_CONFIG && window.RUSH_CONFIG.isOpen) ? ' rush-open' : ' rush-closed';
+      // Open or closed is decided here, before the page draws, so the wrong state never flashes.
+      // js/rush-config.js is the fallback. What admins save on the portal's Website page (site/rush,
+      // about 1 KB of text) wins: it is requested right away, and both states stay hidden until it
+      // answers, for at most 1.5 s. Pictures (site/rushPictures) are fetched later, only if rush is open.
+      (function () {
+        var DB = 'https://thetatauzd-2ab25-default-rtdb.firebaseio.com/site/';
+        var LINK_RE = /^https:\/\/[^\s"'<>]+$/;
+        var root = document.documentElement;
+        var cfg = window.RUSH_CONFIG || {};
+        function set(cls, on) {
+          root.className = root.className.replace(new RegExp('\\s*\\b' + cls + '\\b', 'g'), '') + (on ? ' ' + cls : '');
+        }
+        function show(config) {
+          var open = config.isOpen === true;
+          set('rush-open', open);
+          set('rush-closed', !open);
+          set('rush-has-link', open && LINK_RE.test(config.rushLinkUrl || ''));
+        }
+        window.RUSH_STATE = { DB: DB, LINK_RE: LINK_RE, set: set, show: show };
+        show(cfg);
+        if (!window.fetch) return;
+        set('rush-pending', true);
+        var settled = false;
+        function settle() { if (!settled) { settled = true; set('rush-pending', false); } }
+        setTimeout(settle, 1500);
+        window.RUSH_SAVED = fetch(DB + 'rush.json', { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (saved) {
+            saved = saved && typeof saved === 'object' && typeof saved.isOpen === 'boolean' ? saved : null;
+            if (saved) show(saved);
+            settle();
+            return saved;
+          })
+          .catch(function () { settle(); return null; });
+      })();
     </script>
+    <noscript><style>#rush-closed-banner .rush-js-only { display: none !important; }</style></noscript>
     <style>
     /* Rush state. Default (no script, or closed): the "Rush has closed" banner shows and the
-       schedule, sign-up section and join button stay hidden. html.rush-open flips that. */
+       schedule, sign-up section and join button stay hidden. html.rush-open flips that, and
+       html.rush-pending hides both while the saved setting is on its way (1.5 s at most). */
     #rush-graphics, #rush-signup-section, #rush-link-wrapper { display: none !important; }
     html.rush-open #rush-closed-banner { display: none !important; }
     html.rush-open #rush-graphics { display: block !important; }
     html.rush-open #rush-signup-section { display: flex !important; }
     html.rush-open.rush-has-link #rush-link-wrapper { display: block !important; }
+    html.rush-pending #rush-closed-banner, html.rush-pending #rush-graphics, html.rush-pending #rush-signup-section { display: none !important; }
+    /* The fixed header would cover the "Why rush" heading when its link is followed. */
+    #rush-why { scroll-margin-top: 60px; }
     </style>
     <style>
     /* Basic styling */
@@ -933,9 +971,13 @@
 
       <!-- Rush status banner: shown when RUSH_CONFIG.isOpen is false -->
       <div id="rush-closed-banner" class="rush-status-banner rush-closed" role="status" aria-live="polite">
-        <h2>Rush has closed for this semester</h2>
-        <p>Check back at the start of next semester. We usually run rush within the first month of classes.</p>
-        <p class="rush-next">Next rush: <span id="rush-next-semester">next semester</span></p>
+        <h2 class="rush-js-only">Rush has closed for this semester</h2>
+        <noscript>
+          <h2>Rush dates</h2>
+          <p>We run rush within the first month of every semester. Turn on JavaScript to see whether rush is open now, or follow @thetatauzd for dates.</p>
+        </noscript>
+        <p class="rush-js-only">Check back at the start of next semester. We usually run rush within the first month of classes.</p>
+        <p class="rush-next rush-js-only">Next rush: <span id="rush-next-semester">next semester</span></p>
         <script>
           // Fill in the semester as soon as the banner exists, before the rest of the page loads.
           (function () { var s = document.getElementById('rush-next-semester'); if (s && window.RUSH_CONFIG && window.RUSH_CONFIG.nextSemester) s.textContent = window.RUSH_CONFIG.nextSemester; })();
@@ -1481,45 +1523,50 @@
     </div>
     <script>
       (function() {
-        // The portal's Website page saves to site/rush, which anyone may read. It is fetched
-        // with one plain HTTPS request (no Firebase SDK and no open connection, so public
-        // visitors never use up the connection limit the portal's voting needs).
-        var SAVED_URL = 'https://thetatauzd-2ab25-default-rtdb.firebaseio.com/site/rush.json';
-        // Only real JPEG data URLs are ever shown as pictures.
+        // Fills in the rush page from js/rush-config.js, then from what admins saved on the
+        // portal's Website page (requested in the head as window.RUSH_SAVED). Pictures live in
+        // site/rushPictures and are downloaded only while rush is open. Every saved value goes in
+        // through textContent, .href (https links only) or .src (real JPEG data URLs only), never as HTML.
+        var S = window.RUSH_STATE;
+        if (!S) return;
         var JPEG_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/]+=*$/;
-        var HTTPS_RE = /^https:\/\/[^\s"'<>]+$/;
+        var fileConfig = window.RUSH_CONFIG || {};
+        // The poster and cards checked into this page belong to one semester (js/rush-config.js).
+        var STATIC_SEMESTER = fileConfig.staticCardsSemester || '';
 
-        var root = document.documentElement;
         var nextSpan = document.getElementById('rush-next-semester');
         var titleEl = document.getElementById('rush-title');
         var ctaEl = document.getElementById('rush-cta-line');
         var groupMeLink = document.getElementById('rush-groupme-link');
         var graphics = document.getElementById('rush-graphics');
         var interestLink = document.getElementById('rush-interest-link');
+        var hero = graphics && graphics.querySelector('.rush-graphics-hero');
+        var grid = graphics && graphics.querySelector('.rush-graphics-grid');
+        var sub = graphics && graphics.querySelector('.rg-sub');
+        var staticSub = sub ? sub.textContent : '';
+        var savedCards = false;
 
-        function setOpen(isOpen) {
-          root.className = root.className.replace(/\s*\brush-(open|closed)\b/g, '') + (isOpen ? ' rush-open' : ' rush-closed');
-        }
-
-        // Show the open or closed state from a config object (the static file,
-        // or the one admins save on the portal's Website page). Text only: textContent and href.
         function applyState(config) {
           if (interestLink) {
-            if (config.interestFormUrl && HTTPS_RE.test(config.interestFormUrl)) { interestLink.href = config.interestFormUrl; interestLink.style.display = ''; }
+            if (S.LINK_RE.test(config.interestFormUrl || '')) { interestLink.href = config.interestFormUrl; interestLink.style.display = ''; }
             else { interestLink.style.display = 'none'; }
           }
           if (nextSpan && config.nextSemester) nextSpan.textContent = config.nextSemester;
-          if (config.isOpen) {
+          if (config.isOpen === true) {
             if (titleEl && config.rushTitle) titleEl.textContent = config.rushTitle;
             var gh2 = graphics && graphics.querySelector('h2');
             if (gh2 && config.rushTitle) gh2.textContent = config.rushTitle;
             if (ctaEl && config.ctaLine) ctaEl.textContent = config.ctaLine;
-            // No GroupMe link set: hide the button rather than ship a dead link.
-            var hasLink = !!(groupMeLink && config.rushLinkUrl && HTTPS_RE.test(config.rushLinkUrl));
-            if (hasLink) groupMeLink.href = config.rushLinkUrl;
-            root.className = root.className.replace(/\s*\brush-has-link\b/g, '') + (hasLink ? ' rush-has-link' : '');
+            if (groupMeLink && S.LINK_RE.test(config.rushLinkUrl || '')) groupMeLink.href = config.rushLinkUrl;
+            // Never show one semester's poster and dates under another semester's title.
+            if (!savedCards && hero && grid) {
+              var fits = !!STATIC_SEMESTER && String(config.rushTitle || '').indexOf(STATIC_SEMESTER) !== -1;
+              hero.style.display = fits ? '' : 'none';
+              grid.style.display = fits ? '' : 'none';
+              if (sub) sub.textContent = fits ? (config.subtitle || staticSub) : 'The full schedule is coming soon. Follow @thetatauzd on Instagram for dates.';
+            }
           }
-          setOpen(!!config.isOpen);
+          S.show(config);
         }
 
         function el(tag, className, text) {
@@ -1530,7 +1577,7 @@
         }
 
         function picture(src, alt) {
-          if (!src || !JPEG_RE.test(src)) return null;
+          if (typeof src !== 'string' || !JPEG_RE.test(src)) return null;
           var img = document.createElement('img');
           img.alt = alt || '';
           img.loading = 'lazy';
@@ -1538,37 +1585,38 @@
           return img;
         }
 
-        // Rebuild the poster and event cards from what admins saved. Every value goes in
-        // through textContent, .alt or .src (after the JPEG check), never as HTML.
-        function renderGraphics(saved) {
+        /** Saved lists arrive as arrays or as objects keyed "0".."9": [[index, value], ...] in order. */
+        function entries(list) {
+          if (!list || typeof list !== 'object') return [];
+          return Object.keys(list).sort(function (a, b) { return Number(a) - Number(b); })
+            .map(function (k) { return [k, list[k]]; });
+        }
+
+        function renderGraphics(saved, pics) {
           if (!graphics) return;
-          var events = saved.events || [];
-          if (!Array.isArray(events)) {
-            events = Object.keys(events).sort(function (a, b) { return Number(a) - Number(b); }).map(function (k) { return saved.events[k]; });
-          }
-          events = events.filter(function (ev) { return ev && ev.title; });
-          var heroImg = picture(saved.heroImage, saved.heroAlt || saved.rushTitle || 'Rush poster');
-          if (!heroImg && !events.length) return;   // nothing saved: keep the cards in the file
+          var events = entries(saved.events).filter(function (e) { return e[1] && typeof e[1].title === 'string' && e[1].title; });
+          var picEvents = (pics && pics.events) || {};
+          var heroImg = picture(pics && pics.hero, saved.heroAlt || saved.rushTitle || 'Rush poster');
+          if (!heroImg && !events.length) return;   // nothing saved: the file's cards stay (if they fit the semester)
+          savedCards = true;
           var h2 = graphics.querySelector('h2');
-          var sub = graphics.querySelector('.rg-sub');
           if (h2 && saved.rushTitle) h2.textContent = saved.rushTitle;
-          if (sub && saved.subtitle) sub.textContent = saved.subtitle;
-          var hero = graphics.querySelector('.rush-graphics-hero');
+          if (sub) sub.textContent = saved.subtitle || staticSub;
           if (hero) {
             hero.textContent = '';
             if (heroImg) hero.appendChild(heroImg);
             hero.style.display = heroImg ? '' : 'none';
           }
-          var grid = graphics.querySelector('.rush-graphics-grid');
           if (grid) {
             grid.textContent = '';
-            events.forEach(function (ev) {
+            events.forEach(function (e) {
+              var ev = e[1];
               var fig = el('figure', 'rg-card');
-              var img = picture(ev.image, ev.title + (ev.detail ? ', ' + ev.detail : ''));
+              var img = picture(picEvents[e[0]], ev.title + (ev.detail ? ', ' + ev.detail : ''));
               if (img) fig.appendChild(img);
               var cap = el('figcaption', 'rg-caption');
               cap.appendChild(el('h3', null, ev.title));
-              var detail = (ev.detail || '') + (ev.inviteOnly ? (ev.detail ? ' · ' : '') + 'Invite only' : '');
+              var detail = (ev.detail || '') + (ev.inviteOnly === true ? (ev.detail ? ' · ' : '') + 'Invite only' : '');
               if (detail) cap.appendChild(el('p', null, detail));
               fig.appendChild(cap);
               grid.appendChild(fig);
@@ -1577,15 +1625,22 @@
           }
         }
 
-        applyState(window.RUSH_CONFIG || {});
+        applyState(fileConfig);
 
-        // What admins save on the portal's Website page wins over the file, whenever it arrives.
-        if (!window.fetch) return;
-        fetch(SAVED_URL, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (saved) {
-          if (!saved || typeof saved !== 'object') return;
-          renderGraphics(saved);
+        // What admins saved wins over the file, whenever it arrives.
+        if (!window.RUSH_SAVED) return;
+        window.RUSH_SAVED.then(function (saved) {
+          if (!saved) return;
           applyState(saved);
-        }).catch(function () { /* offline or blocked: the file's state stays */ });
+          if (saved.isOpen !== true) return;   // closed: no pictures are downloaded
+          return fetch(S.DB + 'rushPictures.json', { cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; })
+            .then(function (pics) {
+              renderGraphics(saved, pics && typeof pics === 'object' ? pics : null);
+              applyState(saved);
+            });
+        });
       })();
     </script>
   </body>

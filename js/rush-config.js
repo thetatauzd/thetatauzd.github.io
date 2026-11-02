@@ -1,17 +1,19 @@
 /**
- * Rush page config — the single place to open/close rush and set semester text.
+ * Rush page fallback config. Admins normally run the rush page from the portal:
+ * Admin → Website saves to the database, and whatever is saved there wins over this file.
+ * This file is used only when nothing is saved there yet, or the database cannot be reached.
  *
- * HOW TO UPDATE:
- * - When rush CLOSES: set isOpen to false. Set CURRENT_RUSH to the next semester (e.g. "Fall 2027").
- *   The schedule graphics and the GroupMe section hide themselves.
- * - When rush OPENS (start of semester, usually within the first month of classes):
- *   set isOpen to true, check CURRENT_RUSH, set ctaLine, and
- *   rushLinkUrl to the NEW GroupMe invite (leave "" to hide the join button).
- *   Then swap the poster and event cards in rush.html (Images/rush/f26/ → the new folder).
- * - interestFormUrl: a Google Form (name, email, major, year) shown in the closed
- *   banner all year so people can sign up before rush starts. Leave "" to hide it.
+ * Keep it roughly current anyway:
+ * - When rush CLOSES: set isOpen to false and CURRENT_RUSH to the next semester (e.g. "Fall 2027").
+ * - When rush OPENS: set isOpen to true, check CURRENT_RUSH and ctaLine, and set rushLinkUrl to the
+ *   NEW GroupMe invite ("" hides the join button).
+ * - staticCardsSemester: the semester of the poster and cards checked into rush.html
+ *   (Images/rush/f26/). They show only while the open title names this semester, so last
+ *   semester's dates never appear under a new title. Change it when you swap those files.
+ * - interestFormUrl: a Google Form (name, email, major, year) shown in the closed banner all
+ *   year so people can sign up before rush starts. "" hides it.
  */
-/** The one value to change each semester: the semester rush belongs to. */
+/** The semester rush belongs to. */
 var CURRENT_RUSH = "Spring 2027";
 
 window.RUSH_CONFIG = {
@@ -31,5 +33,8 @@ window.RUSH_CONFIG = {
   rushLinkUrl: "",
 
   /** All year: interest-list Google Form. "" hides the button. */
-  interestFormUrl: ""
+  interestFormUrl: "",
+
+  /** The semester of the poster and cards checked into rush.html. */
+  staticCardsSemester: "Fall 2026"
 };

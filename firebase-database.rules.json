@@ -353,7 +353,6 @@
         "ctaLine":         { ".validate": "newData.isString() && newData.val().length <= 200" },
         "rushLinkUrl":     { ".validate": "newData.isString() && newData.val().length <= 500 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
         "interestFormUrl": { ".validate": "newData.isString() && newData.val().length <= 500 && (newData.val() === '' || newData.val().beginsWith('https://'))" },
-        "heroImage":       { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/]+=*$/))" },
         "heroAlt":         { ".validate": "newData.isString() && newData.val().length <= 200" },
         "updatedAt":       { ".validate": "newData.isString() && newData.val().length <= 40" },
         "events": {
@@ -362,9 +361,16 @@
             "title":      { ".validate": "newData.isString() && newData.val().length <= 80" },
             "detail":     { ".validate": "newData.isString() && newData.val().length <= 160" },
             "inviteOnly": { ".validate": "newData.isBoolean()" },
-            "image":      { ".validate": "newData.isString() && newData.val().length <= 200000 && (newData.val() === '' || newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/]+=*$/))" },
             "$other":     { ".validate": false }
           }
+        },
+        "$other": { ".validate": false }
+      },
+      "rushPictures": {
+        ".read": true,
+        "hero": { ".validate": "newData.isString() && newData.val().length <= 100000 && newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/]+=*$/)" },
+        "events": {
+          "$i": { ".validate": "$i.matches(/^[0-9]$/) && newData.isString() && newData.val().length <= 100000 && newData.val().matches(/^data:image\\/jpeg;base64,[A-Za-z0-9+\\/]+=*$/)" }
         },
         "$other": { ".validate": false }
       },
