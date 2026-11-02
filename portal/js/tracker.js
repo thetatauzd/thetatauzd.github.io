@@ -81,8 +81,6 @@
     status.textContent = 'Loading your tracker…';
 
     load().then(function (data) {
-      var balance = data.payments.balanceDue;
-      setTile('stat-balance', money(balance), balance > 0 ? 'stat-owing' : 'stat-clear');
       setTile('stat-demerits', String(data.demerits.summary.total));
 
       var svc = document.getElementById('stat-service');
@@ -134,7 +132,6 @@
     load(true).then(function (data) {
       status.textContent = '';
       body.classList.remove('hidden');
-      renderPayments(data.payments);
       renderDemerits(data.demerits);
       renderService(data.serviceHours);
     }).catch(function (err) {

@@ -6,7 +6,7 @@
   <title>Brother Portal – Home</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=24">
+  <link rel="stylesheet" href="css/portal.css?v=25">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -33,6 +33,7 @@
         <div class="nav-dropdown-menu" id="dd-menu">
           <a href="/portal">Portal home</a>
           <a href="voting">Voting</a>
+          <a href="tracker">Theta Tau Tracker</a>
           <a href="timer" id="link-timer" class="hidden">Event Timer</a>
           <a href="/">Back to Site</a>
           <div class="dd-divider"></div>
@@ -50,6 +51,17 @@
     <div class="portal-card" id="greeting-card">
       <h2 id="greeting">Hi</h2>
       <p id="greeting-sub" style="color:#666; margin-bottom:0;">Welcome back.</p>
+      <div class="stat-grid hidden" id="stat-grid">
+        <div class="stat-tile" id="stat-service">
+          <span class="stat-label">Service hours</span>
+          <span class="stat-value">—</span>
+        </div>
+        <div class="stat-tile" id="stat-demerits">
+          <span class="stat-label">Demerits</span>
+          <span class="stat-value">—</span>
+        </div>
+      </div>
+      <p id="stat-status" style="color:#999; font-size:0.85rem; margin:0.75rem 0 0;"></p>
     </div>
 
     <div class="portal-card">
@@ -127,9 +139,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=24"></script>
-  <script src="js/auth.js?v=24"></script>
-  <script src="js/db.js?v=24"></script>
+  <script src="js/firebase-config.js?v=25"></script>
+  <script src="js/auth.js?v=25"></script>
+  <script src="js/db.js?v=25"></script>
+  <script src="js/tracker.js?v=25"></script>
   <script>
     (function() {
       PortalAuth.requireAuth({ page: '', forcePortalHome: true }).then(function(profile) {
@@ -143,6 +156,13 @@
         if (profile.rollNumber) bits.push('Roll #' + profile.rollNumber);
         if (profile.role && profile.role !== 'brother') bits.push(profile.role.replace('_', ' '));
         document.getElementById('greeting-sub').textContent = bits.length ? bits.join(' · ') : 'Welcome back.';
+
+        if (window.PortalTracker) {
+          PortalTracker.renderHomeStats(profile);
+        } else {
+          document.getElementById('stat-status').textContent =
+            'Theta Tau Tracker is not connected yet.';
+        }
       });
 
       // Month grid is unreadable on a phone — load the calendar in agenda mode there instead.
