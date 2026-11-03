@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpsCore tests</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; } .ok { color: #2e7d32; } .fail { color: #c62828; font-weight: 600; }
+    li { margin: 0.15rem 0; } pre { background: #f5f5f5; padding: 0.5rem; overflow: auto; }
+    #summary { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>OpsCore tests: cases shaped like the F26 Tracker Dashboard (every name is invented)</h1>
+  <p>Open this page after changing <code>portal/js/ops-core.js</code>. Every line must read OK. This page is public: never put a real brother's name, roll number or record in it.</p>
+  <div id="summary">Running…</div>
+  <ul id="results"></ul>
+  <script src="js/ops-core.js"></script>
+  <script src="js/family-tree-core.js"></script>
+  <script>
+  (function () {
+    var C = window.OpsCore, results = [], pass = 0, fail = 0;
+    function eq(name, got, want) {
+      var g = JSON.stringify(got), w = JSON.stringify(want);
+      if (g === w) { pass++; results.push('<li class="ok">OK — ' + name + '</li>'); }
+      else { fail++; results.push('<li class="fail">FAIL — ' + name + '<pre>got  ' + g + '\nwant ' + w + '</pre></li>'); }
+    }
+    var S = C.withDefaults({});
+
+    // ── Attendance facts shaped like the sheet: 12 chapters recorded? No — only recorded events count.
+    function recorded(type, n, prefix) {
+      var ev = {};
+      for (var i = 1; i <= n; i++) ev[prefix + i] = { title: prefix + ' ' + i, type: type, recorded: true };
+      return ev;
+    }
+    var events = Object.assign({}, recorded('chapter', 3, 'ch'), recorded('rush', 3, 'rush'), { lockin: { title: 'Lock In', type: 'other', recorded: true } });
+    function att(absentIds) {
+      var a = {};
+      Object.keys(events).forEach(function (eid) { a[eid] = {}; a[eid].u = { present: absentIds.indexOf(eid) === -1 }; });
+      return a;
+    }
+
+    // Rowan Vale: 3 chapter absences (→ 2), 3 rush absences (→ 6), rollover −1, Lock In credit −2 → total 5, Good.
+    var rowan = C.computeDemerits('u', {
+      events: events, attendance: att(['ch1', 'ch2', 'ch3', 'rush1', 'rush2', 'rush3']),
+      adjustments: { a1: { points: -2, reason: 'Lock In attendance credit' } }, rollover: { points: -1 }
+    }, S);
+    eq('Rowan: chapter absences', rowan.chapterAbsences, 3);
+    eq('Rowan: chapter demerits (3 absences, 2 free)', rowan.chapterDemerits, 2);
+    eq('Rowan: other event demerits (3 rush × 2)', rowan.otherEventDemerits, 6);
+    eq('Rowan: attendance demerits', rowan.attendanceDemerits, 8);
+    eq('Rowan: total = −1 + 8 + 0 − 2 (service credit 0)', rowan.total - rowan.serviceCredit, 5);
+    eq('Rowan: standing good', rowan.standing, 'good');
+    eq('Rowan: no buy-out', rowan.buyout, 0);
+
+    // Milo Brandt: 1 chapter absence (→ 0), 1 rush absence (→ 2), rollover −3, credit −2 → −3.
+    var milo = C.computeDemerits('u', { events: events, attendance: att(['ch1', 'rush1']),
+      adjustments: { a1: { points: -2 } }, rollover: { points: -3 } }, S);
+    eq('Milo: total −3', milo.total - milo.serviceCredit, -3);
+
+    // Ezra Pike: 0 chapter absences, 2 rush absences (→ 4), rollover 9, credit −2 → 11 → Bad Standing, $50.
+    var ezra = C.computeDemerits('u', { events: events, attendance: att(['rush1', 'rush2']),
+      adjustments: { a1: { points: -2 } }, rollover: { points: 9 } }, S);
+    eq('Ezra: total 11', ezra.total - ezra.serviceCredit, 11);
+    eq('Ezra: bad standing', ezra.standing, 'bad');
+    eq('Ezra: buy-out $50', ezra.buyout, 50);
+
+    // Excused chapter absence does not consume the free allowance; excused initiation still costs 2.
+    var ev2 = Object.assign({}, recorded('chapter', 3, 'ch'), { init: { title: 'Initiation', type: 'initiation', recorded: true } });
+    var exc = C.computeDemerits('u', { events: ev2, attendance: { ch1: { u: { present: false } }, ch2: { u: { present: false } }, ch3: { u: { present: false } }, init: { u: { present: false } } },
+      excuses: { e1: { eventId: 'ch1', status: 'approved' }, e2: { eventId: 'init', status: 'approved' } } }, S);
+    eq('Excused chapter absence: 2 unexcused left → 0 demerits', exc.chapterDemerits, 0);
+    eq('Excused initiation still costs 2', exc.otherEventDemerits, 2);
+
+    // Officers who cannot read excuse reasons get the same answer from the reason-free flags.
+    var excFlags = C.computeDemerits('u', { events: ev2, attendance: { ch1: { u: { present: false } }, ch2: { u: { present: false } }, ch3: { u: { present: false } }, init: { u: { present: false } } },
+      excusedEvents: { ch1: true, init: true } }, S);
+    eq('excuseFlags give the same totals as excuse records', [excFlags.chapterDemerits, excFlags.otherEventDemerits], [0, 2]);
+    // An approved "arriving late" request never excuses an absence.
+    var lateKind = C.computeDemerits('u', { events: ev2, attendance: { init: { u: { present: false } } }, excuses: { e1: { eventId: 'init', status: 'approved', kind: 'late' } } }, S);
+    eq('approved late-arrival request does not excuse a full absence', lateKind.otherEventDemerits, 7);
+    // No mark = was not on roll call that night (PNM, co-op, abroad, joined later): skipped.
+    var offRoll = C.computeDemerits('u', { events: ev2, attendance: { ch1: {}, ch2: { other: { present: true } }, init: {} } }, S);
+    eq('no mark on a recorded event = not on roll call = no demerits', offRoll.total, 0);
+
+    // Demerit history: dated lines whose sum is the total, free absences called out.
+    var tlFacts = { events: Object.assign({}, events, { ch1: { title: 'Chapter 1', type: 'chapter', recorded: true, date: '2026-08-23' }, ch2: { title: 'Chapter 2', type: 'chapter', recorded: true, date: '2026-08-30' }, ch3: { title: 'Chapter 3', type: 'chapter', recorded: true, date: '2026-09-13' } }),
+      attendance: att(['ch1', 'ch2', 'ch3', 'rush1']), adjustments: { a1: { points: -2, reason: 'Lock In attendance credit', date: '2026-08-26' } }, rollover: { points: 4, from: 'S26' } };
+    var tl = C.demeritTimeline('u', tlFacts, S), tlDem = C.computeDemerits('u', tlFacts, S);
+    eq('timeline total equals computeDemerits total', tl.total, tlDem.total);
+    eq('timeline: first two chapter absences are free, third costs 2', tl.lines.filter(function (l) { return /Chapter/.test(l.label); }).map(function (l) { return l.points; }), [0, 0, 2]);
+    eq('timeline: starts with the roll-over', tl.lines[0].kind, 'rollover');
+    eq('timeline: last running total is the total', tl.lines[tl.lines.length - 1].running, tlDem.total);
+    eq('free chapter absences left', C.freeAbsences(C.computeDemerits('u', { events: events, attendance: att(['ch1']) }, S), S), { allowed: 2, used: 1, left: 1 });
+
+    // 24-hour excuse rule and the semester scheduler.
+    eq('excuse 31 h ahead is on time', C.excuseTiming({ date: '2026-09-20', time: '19:00' }, new Date(2026, 8, 19, 12, 0), S).onTime, true);
+    eq('excuse 7 h ahead is late', C.excuseTiming({ date: '2026-09-20', time: '19:00' }, new Date(2026, 8, 20, 12, 0), S).onTime, false);
+    eq('excuse after the event is flagged', C.excuseTiming({ date: '2026-09-20' }, new Date(2026, 8, 21, 9, 0), S).after, true);
+    eq('weekly Sundays minus a skipped date', C.weeklyDates('2026-08-23', '2026-09-20', 0, ['2026-09-06']), ['2026-08-23', '2026-08-30', '2026-09-13', '2026-09-20']);
+    eq('service week starts on Sunday', C.weekOf('2026-09-17'), '2026-09-13');
+
+    eq('empty stored settings keep the defaults', C.withDefaults({ policy: undefined, statuses: null }).policy.warningThreshold, 7);
+
+    // Thresholds and the buy-out ladder.
+    eq('standing: 7 → warning', C.computeStanding(7, S), 'warning');
+    eq('standing: 9 → warning', C.computeStanding(9, S), 'warning');
+    eq('standing: 10 → bad', C.computeStanding(10, S), 'bad');
+    eq('buyout: 14 → $50', C.buyoutFor(14, S), 50);
+    eq('buyout: 15 → $75', C.buyoutFor(15, S), 75);
+    eq('buyout: 18 → $75', C.buyoutFor(18, S), 75);
+    eq('buyout: 25 → $125 cap', C.buyoutFor(25, S), 125);
+    eq('buyout: 40 → $125 cap', C.buyoutFor(40, S), 125);
+    eq('standing override wins', C.computeStanding(0, S, { override: 'bad' }), 'bad');
+
+    // Unpaid charge with demerits attached, past due.
+    var payDem = C.computeDemerits('u', { events: {}, ledger: { c1: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15', demeritsIfLate: 3 } } }, S, { asOf: '2026-11-01' });
+    eq('Unpaid dues past due add demeritsIfLate', payDem.paymentDemerits, 3);
+    var payDemPaid = C.computeDemerits('u', { events: {}, ledger: { c1: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15', demeritsIfLate: 3 },
+      p1: { type: 'payment', chargeId: 'c1', amount: 250, date: '2026-10-14' } } }, S, { asOf: '2026-11-01' });
+    eq('Paid dues add no demerits', payDemPaid.paymentDemerits, 0);
+
+    // Service: 12 hours / 3 events required for brothers; shortfall demerits for next term.
+    var svc = C.serviceSummary({ s1: { hours: 2, eventId: 'ev1', status: 'approved' }, s2: { hours: 4, eventId: 'ev2', status: 'pending' } }, S);
+    eq('service: approved hours', svc.approvedHours, 2);
+    eq('service: pending hours', svc.pendingHours, 4);
+    eq('service: hours short of 12', svc.hoursShort, 10);
+    eq('service: hours alone do not count as an event', svc.eventsShort, 3);
+    eq('service: shortfall demerits 10×1 + 3×2', svc.shortfallDemerits, 16);
+    var svcEv = C.serviceSummary({ a: { hours: 2, eventName: 'Habitat', date: '2026-09-19', status: 'approved', countsAsEvent: true }, b: { hours: 2, eventName: 'habitat ', date: '2026-09-19', status: 'approved', countsAsEvent: true }, c: { hours: 1, eventName: 'Tabling', date: '2026-09-01', status: 'approved' } }, S);
+    eq('service: only entries the chair ticks count as events, same event once', svcEv.distinctEvents, 1);
+    var pnmSvc = C.serviceSummary({}, S, { pnm: true });
+    eq('PNM service requirement 8 hours / 3 events', [pnmSvc.hoursRequired, pnmSvc.eventsRequired], [8, 3]);
+    var extra = C.computeDemerits('u', { events: {}, service: { s1: { hours: 15, eventId: 'a', status: 'approved' } } }, S);
+    eq('3 extra hours erase 3 demerits', extra.serviceCredit, -3);
+
+    // Late fees: bylaws ladder $5, $5, then $10/week; late one day after due date.
+    var charge = { accruesLate: true, dueDate: '2026-10-15' };
+    eq('late fee: on the due date', C.lateFeeFor(charge, S, '2026-10-15'), 0);
+    eq('late fee: 1 day late (grace)', C.lateFeeFor(charge, S, '2026-10-16'), 0);
+    eq('late fee: 2 days late → week 1 $5', C.lateFeeFor(charge, S, '2026-10-17'), 5);
+    eq('late fee: 9 days late → week 2 $10', C.lateFeeFor(charge, S, '2026-10-24'), 10);
+    eq('late fee: 16 days late → week 3 $20', C.lateFeeFor(charge, S, '2026-10-31'), 20);
+    eq('late fee: 23 days late → week 4 $30', C.lateFeeFor(charge, S, '2026-11-07'), 30);
+    eq('late fee: no accrual flag', C.lateFeeFor({ accruesLate: false, dueDate: '2026-10-15' }, S, '2026-12-01'), 0);
+    eq('late fee: settled in week 1 stays $5', C.lateFeeFor(Object.assign({ settledAt: '2026-10-20' }, charge), S, '2026-12-01'), 5);
+    eq('late fee: plan arranged before due → 0', C.lateFeeFor(Object.assign({ planAt: '2026-10-10', planDueDate: '2026-12-01' }, charge), S, '2026-11-15'), 0);
+
+    // Ledger summary.
+    var L = C.ledgerSummary({
+      dues: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15', date: '2026-08-20' },
+      pay1: { type: 'payment', chargeId: 'dues', amount: 100, date: '2026-10-01' },
+      bewe: { type: 'charge', item: 'BEWE', amount: 135, dueDate: '2026-08-30', date: '2026-08-15' },
+      w1: { type: 'waiver', chargeId: 'bewe', amount: 135, date: '2026-08-20' }
+    }, S, { asOf: '2026-10-24' });
+    eq('ledger: dues status late', L.charges[1].status, 'late');
+    eq('ledger: dues remaining 150', L.charges[1].remaining, 150);
+    eq('ledger: dues late fee week 2 = $10', L.charges[1].lateFee, 10);
+    eq('ledger: BEWE waived', L.charges[0].status, 'waived');
+    eq('ledger: balance 150 + 10', L.balance, 160);
+    var paidL = C.ledgerSummary({ c: { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15' }, p: { type: 'payment', chargeId: 'c', amount: 250, date: '2026-10-25' } }, S, { asOf: '2026-12-01' });
+    var due = { type: 'charge', item: 'Dues', amount: 250, dueDate: '2026-10-15' }, p250 = { type: 'payment', chargeId: 'c', amount: 250, date: '2026-10-25' };
+    var L1 = C.ledgerSummary({ c: due, p: p250 }, S, { asOf: '2026-12-01' });
+    eq('ledger: principal paid late → $10 fee frozen and still owed, not "late"', [L1.charges[0].status, L1.charges[0].lateFee, L1.balance, L1.charges[0].remaining, L1.charges[0].isLate], ['fee', 10, 10, 0, false]);
+    var L2 = C.ledgerSummary({ c: due, p: p250, q: { type: 'payment', chargeId: 'c', amount: 10, date: '2026-11-01' } }, S, { asOf: '2026-12-01' });
+    eq('ledger: fee paid → paid, balance 0', [L2.charges[0].status, L2.balance], ['paid', 0]);
+    var L3 = C.ledgerSummary({ c: due, p: p250, w: { type: 'waiver', chargeId: 'c', amount: 0, date: '2026-11-01' } }, S, { asOf: '2026-12-01' });
+    eq('ledger: "waive the rest" waives only the frozen $10 fee', [L3.charges[0].settled, L3.balance, L3.charges[0].waived, L3.totalWaived], [true, 0, 10, 10]);
+    var feeDem = C.computeDemerits('u', { events: {}, ledger: { c: { type: 'charge', item: 'BEWE', amount: 135, dueDate: '2026-10-15', demeritsIfLate: 2 }, p: { type: 'payment', chargeId: 'c', amount: 135, date: '2026-10-25' } } }, S, { asOf: '2026-12-01' });
+    eq('ledger: only the late fee left → no payment demerits', feeDem.paymentDemerits, 0);
+    var rev = C.ledgerSummary({ c: { type: 'charge', item: 'Dues', amount: 250 }, r: { type: 'reversal', reverses: 'c' } }, S);
+    eq('ledger: reversed charge disappears', rev.charges.length, 0);
+
+    // Pledge readiness.
+    var pr = C.pledgeReadiness({ startDate: '2026-09-17', nationalExam: { passed: true }, chapterExam: { passed: true } },
+      { a: { hours: 4, eventName: 'Habitat', date: '2026-09-19', countsAsEvent: true, status: 'approved' }, b: { hours: 4, eventName: 'Harvest Hope', date: '2026-10-03', countsAsEvent: true, status: 'approved' }, c: { hours: 1, eventName: 'River cleanup', date: '2026-10-17', countsAsEvent: true, status: 'approved' } }, S, { asOf: '2026-11-13' });
+    eq('pledge: 8 weeks + 9 h + 3 events + exams → ready', pr.ready, true);
+    var pr2 = C.pledgeReadiness({ startDate: '2026-09-17' }, {}, S, { asOf: '2026-10-01' });
+    eq('pledge: fresh PNM not ready', pr2.ready, false);
+
+    // People.
+    eq('perms: treasurer → finance + settings + tree', C.permsFor({ treasurer: true }, S), { finance: true, settings: true, tree: true });
+    eq('legacyRole: standards chair → standards', C.legacyRole({ status: 'active', positions: { standards_chair: true, treasurer: true } }), 'standards');
+    eq('legacyRole: plain active → brother', C.legacyRole({ status: 'active', positions: {} }), 'brother');
+    eq('legacyRole: pnm', C.legacyRole({ status: 'pnm' }), 'pnm');
+    eq('legacyRole: admin stays admin', C.legacyRole({ role: 'admin', status: 'active' }), 'admin');
+    eq('perms: a stored false beats a default true', C.permsFor({ treasurer: true }, { positions: { treasurer: { perms: { finance: true, settings: false } } } }), { finance: true, tree: true });
+    var up = C.upgradeUser({ role: 'regent', name: 'X' }, S);
+    eq('upgradeUser: regent → active + regent position + settings perm', [up.status, up.positions.regent, up.perms.settings, up.role], ['active', true, true, 'regent']);
+    eq('isActiveStatus: coop is not active', C.isActiveStatus('coop', S), false);
+    eq('rollKey: 415X! → 415', C.rollKey('415X!'), '415');
+    eq('nameKey: Luis Ortega Jr. → luis_ortega_jr', C.nameKey('Luis Ortega Jr.'), 'luis_ortega_jr');
+    eq('quorum: 68 active business → 34', C.quorum(68, 'business', S), 34);
+    eq('quorum: 68 active membership → 46', C.quorum(68, 'membership', S), 46);
+    eq('money: 1035.5 → $1035.50', C.money(1035.5), '$1035.50');
+    eq('withDefaults keeps stored values', C.withDefaults({ policy: { dues: { amount: 300 } } }).policy.dues.amount, 300);
+    eq('withDefaults fills missing', C.withDefaults({ policy: { dues: { amount: 300 } } }).policy.dues.graceDays, 1);
+
+    // ── Family tree (js/family-tree-core.js): a small chapter with one family of four and one loner ──
+    var T = window.FamilyTreeCore;
+    var tree = {
+      a: { name: 'Ava Lindqvist', pledgeClass: 'Alpha', roll: 1, color: 'maroon' },
+      b: { name: 'Ben Okafor', pledgeClass: 'Beta', roll: 42, bigId: 'a' },
+      c: { name: 'Cal Dimitrov', pledgeClass: 'Gamma', roll: 55, bigId: 'b' },
+      d: { name: 'Theo Marsh', pledgeClass: 'Epsilon', roll: 80, bigId: 'b' },
+      e: { name: 'Erin Castillo', pledgeClass: 'Alpha', roll: 4 },
+      f: { name: 'Ghost', pledgeClass: 'Zeta', bigId: 'nobody' }
+    };
+    var ti = T.index(tree);
+    eq('tree: roots are those with no big or a missing big', ti.roots, ['a', 'e', 'f']);
+    eq('tree: littles sorted by class then roll', ti.children.b, ['c', 'd']);
+    eq('tree: a missing big is cleared', ti.byId.f.bigId, '');
+    eq('tree: families carry the root colour and size', T.families(ti).map(function (f) { return [f.name, f.color, f.size]; }), [['Ava Lindqvist family', 'maroon', 4], ['Erin Castillo family', 'gold', 1], ['Ghost family', 'gold', 1]]);
+    eq('tree: descendants', T.descendants(ti, 'a').sort(), ['b', 'c', 'd']);
+    eq('tree: rootOf', T.rootOf(ti, 'd'), 'a');
+    eq('tree: relations', (function () { var r = T.relations(ti, 'c'); return [r.big.id, r.grandBig.id, r.twins.map(function (t) { return t.id; }), r.littles.length]; })(), ['b', 'a', ['d'], 0]);
+    eq('tree: grand-littles of the root', T.relations(ti, 'a').grandLittles.map(function (g) { return g.id; }), ['c', 'd']);
+    eq('tree: a loop is refused', T.wouldCycle(ti, 'a', 'd'), true);
+    eq('tree: your own big cannot be you', T.wouldCycle(ti, 'a', 'a'), true);
+    eq('tree: a sideways move is fine', T.wouldCycle(ti, 'd', 'e'), false);
+    eq('tree: validate catches the loop and the bad link', T.validate(ti, 'a', { name: 'Ava', bigId: 'd', linkedin: 'http://x' }).length, 2);
+    eq('tree: validate passes a clean record', T.validate(ti, 'b', { name: 'Ben', roll: '42', bigId: 'a', linkedin: 'https://www.linkedin.com/in/ben' }), []);
+    var lo = T.layout(ti);
+    eq('tree: rows come from the pledge class', [lo.pos.a.row, lo.pos.b.row, lo.pos.c.row, lo.pos.d.row], [0, 1, 2, 4]);
+    eq('tree: a big sits centred over the littles', lo.pos.b.x, (lo.pos.c.x + lo.pos.d.x) / 2);
+    eq('tree: families do not overlap', lo.pos.e.x > lo.pos.d.x && lo.pos.f.x > lo.pos.e.x, true);
+    var same = T.index({ a: { name: 'A', pledgeClass: 'Alpha' }, b: { name: 'B', pledgeClass: 'Alpha', bigId: 'a' } });
+    eq('tree: a little in the same class sits beside the big', T.layout(same).pos.b.x < T.layout(same).pos.a.x, true);
+    eq('tree: search by part of a name', T.search(ti, 'dimit').map(function (m) { return m.id; }), ['c']);
+    eq('tree: search by roll number', T.search(ti, '80').map(function (m) { return m.id; }), ['d']);
+    eq('tree: search both names in any order', T.search(ti, 'marsh theo')[0].id, 'd');
+    eq('tree: class list order', T.classList(26).slice(22), ['Psi', 'Omega', 'Beta Gamma', 'Beta Delta']);
+    eq('tree: next class after Beta Kappa', T.nextClass(T.classList(32)), 'Beta Lambda');
+    eq('tree: next class after Beta Omega', T.nextClass(T.DEFAULT_CLASSES), 'Gamma Gamma');
+    eq('tree: cleanRecord drops empties and numbers the roll', T.cleanRecord({ name: ' Jo ', roll: '7', major: '', bigId: '', color: 'gold' }), { name: 'Jo', color: 'gold', roll: 7 });
+    eq('tree: signs of office', T.signText({ regent: 'past', marshal: 'current', scribe: 'grand' }), 'XX! VVV! W!');
+    eq('tree: signs keep the official order and labels', T.signs({ marshal: 'current', regent: 'past' }).map(function (s) { return s.sign + ' ' + s.label; }), ['XX! Past Regent', 'W! Marshal']);
+    eq('tree: parseSigns reads the Brother List suffix', T.parseSigns('UUXX'), { outer_guard: 'past', regent: 'past' });
+    eq('tree: parseSigns single letter = current, triple = grand', T.parseSigns('Y VVV'), { vice_regent: 'current', scribe: 'grand' });
+    eq('tree: cleanRecord keeps a known status and drops an unknown one', [T.cleanRecord({ name: 'A', status: 'removed' }).status, T.cleanRecord({ name: 'A', status: 'ghost' }).status], ['removed', undefined]);
+    eq('tree: cleanRecord keeps offices and the Brother List fields', T.cleanRecord({ name: 'Jo', offices: { regent: 'past', bogus: 'past', scribe: 'maybe' }, fullName: ' Jo Ann Smith ', grad: 'May 2024' }), { name: 'Jo', fullName: 'Jo Ann Smith', grad: 'May 2024', offices: { regent: 'past' } });
+    eq('tree: stats', (function () { var s = T.stats(ti); return [s.members, s.families, s.classes, s.largest.name]; })(), [6, 3, 5, 'Ava Lindqvist family']);
+
+    // Standing and notes are officers-only: they live in familyTree/private/{id}, never in familyTree/members.
+    var gone = { name: 'Brother #900', pledgeClass: 'Omega', roll: 900, bigId: 'a', status: 'removed', note: 'Name withheld' };
+    eq('tree private: split moves standing and note out of the public record',
+      T.splitMember(gone), { member: { name: 'Brother #900', pledgeClass: 'Omega', roll: 900, bigId: 'a' }, priv: { status: 'removed', note: 'Name withheld' } });
+    eq('tree private: a record with neither has no private part', T.splitMember({ name: 'Jo', roll: 7 }), { member: { name: 'Jo', roll: 7 }, priv: null });
+    eq('tree private: empty standing and note are dropped, not stored', T.splitMember({ name: 'Jo', status: '', note: '' }), { member: { name: 'Jo' }, priv: null });
+    eq('tree private: merge puts them back', T.mergeMember(T.splitMember(gone).member, T.splitMember(gone).priv), gone);
+    eq('tree private: the private copy wins over an older value inside the record', T.mergeMember({ name: 'A', status: 'resigned' }, { status: 'removed' }).status, 'removed');
+    eq('tree private: merge without a private part keeps the record as it is', T.mergeMember({ name: 'A', note: 'old file' }, null), { name: 'A', note: 'old file' });
+    var withGone = Object.assign({}, tree, { g: gone });
+    var parts = T.splitAll(withGone);
+    eq('tree private: splitAll leaves standing out of every public record', Object.keys(parts.members).filter(function (id) { return parts.members[id].status || parts.members[id].note; }), []);
+    eq('tree private: splitAll keeps a private entry only for those who have one', Object.keys(parts.priv), ['g']);
+    eq('tree private: splitAll then mergeAll gives the records back', T.mergeAll(parts.members, parts.priv), withGone);
+    eq('tree private: a private entry with no member is dropped', Object.keys(T.mergeAll({ a: { name: 'A' } }, { a: { note: 'x' }, zz: { status: 'removed' } })), ['a']);
+    var leaked = { a: { name: 'A', status: 'removed', note: 'should not show' }, b: { name: 'B', bigId: 'a' } };
+    eq('tree private: a non-officer view never shows standing, even one left inside a public record', T.viewMembers(leaked, null), { a: { name: 'A' }, b: { name: 'B', bigId: 'a' } });
+    eq('tree private: an officer view takes standing from the private part only', T.viewMembers(leaked, { a: { status: 'resigned' } }).a, { name: 'A', status: 'resigned' });
+    eq('tree private: non-officers draw no black pills (no status on any node)', T.index(T.viewMembers(T.splitAll(withGone).members, null)).list.filter(function (m) { return m.status; }).length, 0);
+    eq('tree private: officers draw the black pill', T.index(T.viewMembers(parts.members, parts.priv)).byId.g.status, 'removed');
+    eq('tree private: who counts as an officer (admin, any position, tree capability)', [
+      T.isOfficer({ role: 'admin' }), T.isOfficer({ role: 'brother', positions: { scribe: true } }), T.isOfficer({ role: 'brother', positions: { standards_rep: true }, perms: {} }),
+      T.isOfficer({ role: 'brother', perms: { tree: true } }), T.isOfficer({ role: 'brother', positions: {}, perms: { finance: false } }),
+      T.isOfficer({ role: 'pnm', positions: {}, perms: {} }), T.isOfficer(null)], [true, true, true, true, false, false, false]);
+    // Restore: older files (and the private poster copy) keep status/note inside each member; newer ones in a `private` map.
+    var oldFile = { classes: ['Alpha', 'Beta'], members: { a: { name: 'Ava Lindqvist', pledgeClass: 'Alpha', roll: '1' }, x: { name: 'Gone', pledgeClass: 'Beta', bigId: 'a', status: 'resigned', note: ' left 2019 ' }, y: { name: 'Odd', status: 'ghost' } },
+      photos: { a: { data: 'data:image/jpeg;base64,AAAA' }, x: {}, nobody: { data: 'data:image/jpeg;base64,BBBB' } } };
+    var plan = T.restorePlan(oldFile);
+    eq('tree restore: an older file is split, standing and note go to the private part', [plan.members.x, plan.priv.x], [{ name: 'Gone', pledgeClass: 'Beta', bigId: 'a' }, { status: 'resigned', note: 'left 2019' }]);
+    eq('tree restore: records are cleaned and hasPhoto is set only when the file has the photo', [plan.members.a, plan.photoIds], [{ name: 'Ava Lindqvist', pledgeClass: 'Alpha', roll: 1, hasPhoto: true }, ['a']]);
+    eq('tree restore: an unknown standing is dropped', [plan.members.y, plan.priv.y, plan.privateCount], [{ name: 'Odd' }, undefined, 1]);
+    eq('tree restore: a clean file has no problems', plan.problems, []);
+    eq('tree restore: a numeric big id becomes a string (the rules want strings)', T.restorePlan({ members: { '5': { name: 'Big' }, '6': { name: 'Little', bigId: 5 } } }).members['6'].bigId, '5');
+    var newFile = { members: { a: { name: 'A' }, b: { name: 'B', bigId: 'a' } }, 'private': { b: { status: 'removed' } } };
+    eq('tree restore: a newer file with a private map', [T.restorePlan(newFile).members.b, T.restorePlan(newFile).priv], [{ name: 'B', bigId: 'a' }, { b: { status: 'removed' } }]);
+    var bad = T.restorePlan({ members: { 'a.b': { name: 'Dot' }, c: { name: 'C', linkedin: 'http://x.com' }, d: { name: 'D', note: new Array(1002).join('n') }, e: { name: 'E' } }, photos: { e: { data: 'data:image/png;base64,AA' } } });
+    eq('tree restore: what the rules would refuse is listed before anything is written', bad.problems.length, 4);
+    // Backup: members never carry standing; the private map only for officers.
+    var forAll = T.backupFile({ members: T.viewMembers(withGone, null), photos: {}, classes: ['Alpha'], includePrivate: false, exportedAt: 't' });
+    eq('tree backup: without private access there is no private key and no standing', ['private' in forAll, forAll.members.g], [false, { name: 'Brother #900', pledgeClass: 'Omega', roll: 900, bigId: 'a' }]);
+    var forOfficers = T.backupFile({ members: T.viewMembers(parts.members, parts.priv), photos: {}, classes: ['Alpha'], includePrivate: true, exportedAt: 't' });
+    eq('tree backup: an officer backup keeps standing in its own map', [forOfficers.members.g.status, forOfficers['private']], [undefined, { g: { status: 'removed', note: 'Name withheld' } }]);
+    var again = T.restorePlan(forOfficers);
+    eq('tree backup: restoring an officer backup gives the same private part', again.priv, { g: { status: 'removed', note: 'Name withheld' } });
+    eq('tree backup: restoring an officer backup gives the same public records', again.members.g, T.cleanRecord(T.splitMember(gone).member));
+
+    document.getElementById('results').innerHTML = results.join('');
+    var s = document.getElementById('summary');
+    s.textContent = fail === 0 ? 'All ' + pass + ' checks passed.' : fail + ' failed, ' + pass + ' passed.';
+    s.className = fail === 0 ? 'ok' : 'fail';
+    window.__opsTests = { pass: pass, fail: fail };
+  })();
+  </script>
+</body>
+</html>

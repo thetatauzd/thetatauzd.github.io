@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sheet sync tests</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; margin: 2rem; color: #222; }
+    h1 { font-size: 1.3rem; } .ok { color: #2e7d32; } .fail { color: #c62828; font-weight: 600; }
+    li { margin: 0.15rem 0; } pre { background: #f5f5f5; padding: 0.5rem; overflow: auto; white-space: pre-wrap; }
+    #summary { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Sheet sync tests: the Tracker sheet export to the site's copy</h1>
+  <p>Open this page after changing <code>portal/js/sheet-sync-core.js</code>. Every line must read OK. The same tests run in a terminal with <code>node scripts/sync-tests.js</code>. All names here are made up.</p>
+  <div id="summary">Running…</div>
+  <ul id="results"></ul>
+  <script src="js/ops-core.js"></script>
+  <script src="js/sheet-sync-core.js"></script>
+  <script id="sync-tests">
+  (function () {
+    var C = window.OpsCore, S = window.SheetSyncCore, results = [], plain = [], pass = 0, fail = 0;
+    function escHtml(s) { return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+    function eq(name, got, want) {
+      var g = JSON.stringify(got), w = JSON.stringify(want);
+      if (g === w) { pass++; results.push('<li class="ok">OK: ' + escHtml(name) + '</li>'); plain.push('OK   ' + name); }
+      else { fail++; results.push('<li class="fail">FAIL: ' + escHtml(name) + '<pre>got  ' + escHtml(g) + '\nwant ' + escHtml(w) + '</pre></li>'); plain.push('FAIL ' + name + '\n       got  ' + g + '\n       want ' + w); }
+    }
+    function ok(name, cond) { eq(name, !!cond, true); }
+    function clone(v) { return JSON.parse(JSON.stringify(v)); }
+    function tabOf(headers, rows) {
+      return { tab: '', found: true, headers: headers, rows: rows.map(function (r) { var o = {}; headers.forEach(function (h, i) { if (r[i] !== undefined) o[h] = r[i]; }); return o; }) };
+    }
+
+    // ── A made-up export in the shape Gateway.gs exportAll (version 2) sends ──
+    var DASH_H = ['Brother Name', 'Roll Number', 'S26 Service Rollover Demerits', 'Chapter Absences (Unexcused)', 'Chapter Demerits', 'Other Event Demerits', 'Attendance Demerits',
+      'Payment/Fine Demerits', 'Standards Adjustments', 'Total Demerits', 'Standing', 'Buy-Out', 'Service Hours', 'Service Events', 'Service Demerits (Next Sem)', 'Dues', 'Notes'];
+    var EV = ['Chapter 1', 'Chapter 2', 'Chapter 3', 'Chapter 4', 'Info Night 1', 'Speed Dating Voting', 'Initiation', 'Lock In', 'Mystery Mixer'];
+    function baseExport() {
+      return { ok: true, version: 2, exportedAt: '2026-11-02T15:00:00.000Z', tabs: {
+        Roster: tabOf(['Brother Name', 'Roll Number', 'Notes', 'Status', 'Inactive Since', 'Sort Order'], [
+          ['Avery Stone', 501, '', 'Active', '', 1], ['Blake Turner', 502, '', 'Active', '', 2], ['Thomas Quinn', 503, '', 'Active', '', 3],
+          ['Casey Morgan', 504, '', 'Co-op', '', 4], ['Drew Patel', 505, '', 'Inactive', '2026-09-10', 5], ['Jordan Lee', 506, '', 'Active', '', 6],
+          ['Riley Chen', '', '', 'Active', '', 7]]),
+        Demerit_Rules: tabOf(RULES_H, RULES),
+        Event_Info: tabOf(['Event Title', 'Event Date', 'Event Type', 'Unexcused Demerits', 'Excused Demerits', 'Attendance Recorded', 'Notes'], [
+          ['Chapter 1', '2026-08-23', 'Chapter Meeting', 2, 0, true], ['Chapter 2', '2026-08-30', 'Chapter Meeting', 2, 0, true], ['Chapter 3', '2026-09-14', 'Chapter Meeting', 2, 0, true],
+          ['Chapter 4', '', 'Chapter Meeting', 2, 0, false], ['Info Night 1', '', 'Rush Event', 2, 0, true], ['Speed Dating Voting', '2026-09-20', 'Voting Chapter', 5, 0, true],
+          ['Initiation', '', 'Initiation', 7, 2, false], ['Lock In', '', 'Other', 0, 0, true], ['Mystery Mixer', '2026-09-21', 'Social', 0, 0, true]]),
+        Attendance: tabOf(['Brother Name'].concat(EV), [
+          ['Avery Stone', false, false, false, '', true, false, '', true, false],
+          ['Blake Turner', true, '', true, '', '', true, '', '', true],
+          ['Thomas Quinn', false, false, false, '', true, true, '', true, true],
+          ['Casey Morgan', true, '', '', '', '', '', '', '', ''],
+          ['Drew Patel', false, '', false, '', '', false, '', '', ''],
+          ['Jordan Lee', false, true, true, '', true, true, '', true, true],
+          ['Riley Chen', true, true, true, '', true, true, '', true, true]]),
+        Excuses: tabOf(['Brother Name', 'Event Title', 'Excuse Status', 'Reason / Notes', 'Approved By'], [
+          ['Avery Stone', 'Chapter 3', 'Approved', 'Exam that night', 'Standards Chair'], ['Avery Stone', 'Chapter 3', 'Denied', 'First try, no proof', 'Standards Chair'],
+          ['Blake Turner', 'Info Night 1', 'Pending', 'Work'], ['Thomas Quinn', 'Chapter 9', 'Approved', 'Travel', 'Standards Chair']]),
+        Standards_Adjustments: tabOf(['Brother Name', 'Date', 'Reason', 'Demerit Change', 'Entered By', 'Notes'], [
+          ['Avery Stone', '2026-09-10', 'Lock In attendance credit', -2, 'Standards'], ['Blake Turner', '2026-09-10', 'Lock In attendance credit', -2, 'Standards'],
+          ['Thomas Quinn', '2026-09-10', 'Lock In attendance credit', -2, 'Standards'], ['Thomas Quinn', '2026-09-10', 'Lock In attendance credit', -2, 'Standards']]),
+        Service_Hours: tabOf(['Brother Name', 'Roll Number', 'Event', 'Date', 'Hours', 'Confirmed'], [
+          ['Avery Stone', 501, 'Rush tabling', 'Aug 16-22', 2, true], ['Avery Stone', 501, 'Class visits', 'Aug 23-29', 2, true], ['Avery Stone', 501, 'Class visits', 'Aug 23-29', 1, false],
+          ['Avery Stone', 501, 'Food bank', 'Aug 30-Sep 5', 6, true], ['Blake Turner', 502, 'Tabling', '2026-09-05', 1.5, true], ['Thomas Quinn', 503, 'Typo row', 'Sep 1', 250, true]]),
+        Payments_Fines: tabOf(['Brother Name', 'Item', 'Amount', 'Due Date', 'Payment Status', 'Date Paid', 'Demerits If Unpaid/Late', 'Notes'], [
+          ['Avery Stone', 'Dues', 250, '2026-10-25', 'Paid'], ['Blake Turner', 'Dues', 250, '2026-10-25', 'Unpaid', '', 2], ['Blake Turner', 'Late fee', 5, '2026-11-01', 'Unpaid'],
+          ['Thomas Quinn', 'Dues', 250, '2026-10-25', 'Payment Plan', '', 2], ['Riley Chen', 'Dues', 250, '2026-12-01', 'Waived']]),
+        DemeritDashboard: tabOf(DASH_H, [
+          ['Avery Stone', 501, -3, 2, 0, 5, 5, 0, -2, 0, 'Good', '', 10, 3, 0, 'Paid'],
+          ['Blake Turner', 502, 1, 1, 0, 2, 2, 2, -2, 3, 'Good', '', 1.5, 1, 8.5, 'Unpaid'],
+          ['Thomas Quinn', 503, 0, 3, 2, 0, 2, 0, -4, -2, 'Good', '', 250, 1, 4, 'Unpaid'],
+          ['Jordan Lee', 506, 9, 1, 0, 0, 0, 0, 0, 9, 'Warning', '', 0, 0, 14, ''],
+          ['Riley Chen', '', 0, 0, 0, 0, 0, 0, 0, 0, 'Good', '', 0, 0, 14, '']]),
+        Rollover: { tab: 'S26 Rollover Demerits', found: true, headers: ['Name', 'Roll Number', 'Demerits'], rows: [
+          { Name: 'Avery Stone', 'Roll Number': 501, Demerits: -3 }, { Name: 'Jordan Lee', 'Roll Number': 506, Demerits: 9 }, { Name: 'Blake Turner', 'Roll Number': 502, Demerits: 1 }] }
+      } };
+    }
+    // Demerit_Rules as on the live F26 sheet (two blocks side by side, like the tab).
+    var RULES_H = ['Event Type', 'Unexcused Demerits', 'Excused Demerits', 'Free Absences Per Semester', 'Source', 'Setting', 'Value'];
+    var RULES = [
+      ['Chapter Meeting', 2, 0, 2, 'Bylaws', 'Warning Threshold', 7], ['Voting Chapter', 5, 0, 0, '', 'Bad Standing Threshold', 10], ['Rush Event', 2, 0, 0, '', 'Service Hours Required', 8],
+      ['Initiation', 7, 2, 0, 'Excused still costs 2', 'Service Events Required', 3], ['Philanthropy', 7, 2, 0, '', 'Demerits Per Hour Short', 1], ['Committee Meeting', 1, 0, 0, '', 'Demerits Per Event Short', 2],
+      ['Other', 0, 0, 0, '', 'Buy-Out Base Amount', 50], ['', '', '', '', '', 'Buy-Out Base Demerits', 10], ['', '', '', '', '', 'Buy-Out Step Amount', 25],
+      ['', '', '', '', '', 'Buy-Out Step Demerits', 5], ['', '', '', '', '', 'Buy-Out Cap', 125]];
+    function exportV2() { return baseExport(); }
+
+    var USERS = {
+      u_avery: { name: 'Avery Stone', rollNumber: '501', status: 'active', role: 'brother' },
+      u_blake: { name: 'Blake Turner', rollNumber: '502', status: 'active', role: 'brother' },
+      u_thomas: { name: 'Tom Quinn', rollNumber: '', status: 'active', role: 'brother' },
+      u_casey: { name: 'Casey Morgan', rollNumber: '504', status: 'coop', role: 'brother' },
+      u_drew: { name: 'Drew Patel', rollNumber: '505', status: 'inactive', role: 'brother' },
+      u_riley: { name: 'Riley Chen', rollNumber: '', role: 'brother' },
+      u_sam: { name: 'Sam Ortiz', rollNumber: '508', status: 'active', role: 'admin' }
+    };
+    var CTX = { term: 'F26', users: USERS, aliases: {}, settings: C.withDefaults({}), asOf: '2026-11-02' };
+    function ctx(extra) { var c = Object.assign({}, CTX, extra || {}); c.users = clone(c.users); return c; }
+    function build(exp, extra) { return S.build(exp, ctx(extra)); }
+    function err(fn) { try { fn(); return null; } catch (e) { return e.code || e.message; } }
+
+    var B = build(exportV2());
+    var N = B.nodes;
+
+    // ── The export is checked before anything is built ──
+    var v1 = exportV2(); v1.version = undefined; delete v1.tabs.DemeritDashboard; v1.tabs.Config = tabOf(['Event Type'], []); v1.tabs.Service_Log = tabOf(['Brother Name'], []); delete v1.tabs.Demerit_Rules;
+    eq('An old (version 1) gateway export is refused', err(function () { build(v1); }), 'old-gateway');
+    var noRoster = exportV2(); noRoster.tabs.Roster.rows = [];
+    eq('An empty Roster is refused (the copy would wipe everything)', err(function () { build(noRoster); }), 'no-roster');
+    var noRules = exportV2(); noRules.tabs.Demerit_Rules.rows = [];
+    eq('An empty Demerit_Rules is refused', err(function () { build(noRules); }), 'no-rules');
+    var configOnly = exportV2(); configOnly.tabs.Config = configOnly.tabs.Demerit_Rules; delete configOnly.tabs.Demerit_Rules;
+    eq('A workbook with Config instead of Demerit_Rules still works', build(configOnly).sheetPolicy.policy.service.hoursRequired, 8);
+    eq('A bad term code is refused', err(function () { build(exportV2(), { term: 'f 26/x' }); }), 'term');
+
+    // ── The sheet's own policy for its term ──
+    var P = B.sheetPolicy;
+    eq('Policy: service hours required come from Demerit_Rules (8, not the site\'s 12)', P.policy.service.hoursRequired, 8);
+    eq('Policy: no extra-hour credit while the sheet owns the term', P.policy.service.extraHourErases, 0);
+    eq('Policy: thresholds and buy-out from Demerit_Rules', [P.policy.warningThreshold, P.policy.badStandingThreshold, P.policy.buyout.cap], [7, 10, 125]);
+    eq('Policy: rates per type', [P.eventTypes.chapter.unexcused, P.eventTypes.voting.unexcused, P.eventTypes.rush.unexcused, P.eventTypes.initiation.excused, P.eventTypes.philanthropy.unexcused], [2, 5, 2, 2, 7]);
+    eq('Policy: free absences only for Chapter Meeting', [P.eventTypes.chapter.freePerTerm, P.eventTypes.rush.freePerTerm, P.eventTypes.other.freePerTerm], [2, 0, 0]);
+    var freeRush = exportV2(); freeRush.tabs.Demerit_Rules.rows[2]['Free Absences Per Semester'] = 1;
+    var fr = build(freeRush);
+    eq('Policy: free absences on another type are ignored, like the sheet\'s dashboard', fr.sheetPolicy.eventTypes.rush.freePerTerm, 0);
+    ok('Policy: ... and a note says so', fr.warnings.some(function (w) { return /Rush Event/.test(w) && /free absences/.test(w); }));
+    eq('Policy: an event type not on Demerit_Rules costs nothing', [N.events.mystery_mixer.type, P.eventTypes.sheet_unrated.unexcused, P.eventTypes.sheet_unrated.excused], ['sheet_unrated', 0, 0]);
+    ok('Policy: ... with a note', B.warnings.some(function (w) { return /Mystery Mixer/.test(w) && /Demerit_Rules/.test(w); }));
+    eq('Policy: holds numbers only (no names)', JSON.stringify(P).indexOf('Avery'), -1);
+    var TS = S.termSettings(C.withDefaults({}), P, 'F26');
+    eq('termSettings: the sheet\'s numbers apply to its own term', [TS.policy.service.hoursRequired, TS.policy.service.extraHourErases, TS.policy.service.pnmHours], [8, 0, 8]);
+    eq('termSettings: they do not apply to another term', S.termSettings(C.withDefaults({}), P, 'S27').policy.service.hoursRequired, 12);
+    eq('termSettings: keeps site-only types and fields', [!!TS.eventTypes.pledge, TS.eventTypes.chapter.label], [true, 'Chapter Meeting']);
+
+    // ── Stable keys from content ──
+    eq('Keys: events are keyed by title', Object.keys(N.events).sort(), ['chapter_1', 'chapter_2', 'chapter_3', 'chapter_4', 'info_night_1', 'initiation', 'lock_in', 'mystery_mixer', 'speed_dating_voting']);
+    eq('Keys: a charge is keyed by item and due date, its payment follows it', Object.keys(N.ledger.u_avery), ['sh_dues_20261025', 'sh_dues_20261025_pay']);
+    eq('Keys: two identical adjustment rows get two keys, both counted', Object.keys(N.adjustments.u_thomas).sort(), ['sa_20260910_lock_in_attendance_credit', 'sa_20260910_lock_in_attendance_credit_2']);
+    eq('Keys: excuses are keyed by event', Object.keys(N.excuses.u_avery).sort(), ['x_chapter_3', 'x_chapter_3_2']);
+    eq('Keys: service rows by week and event', Object.keys(N.service.u_avery).sort(), ['sv_20260816_rush_tabling', 'sv_20260823_class_visits', 'sv_20260823_class_visits_2', 'sv_20260830_food_bank']);
+    eq('Keys: an all-digit title never becomes an all-digit key', S.safeKey('2026'), 'n2026');
+
+    // ── Re-running is idempotent ──
+    eq('Idempotent: the same export twice gives the same copy', S.canon(build(exportV2())), S.canon(B));
+    var shuffled = exportV2();
+    Object.keys(shuffled.tabs).forEach(function (t) { if (t !== 'Demerit_Rules') shuffled.tabs[t].rows.reverse(); });
+    var BS = build(shuffled);
+    eq('Idempotent: moving rows around on the sheet changes nothing in the copy', S.canon(BS.nodes), S.canon(N));
+    eq('Idempotent: ... nor the comparison', [BS.comparison.compared, BS.comparison.matching], [B.comparison.compared, B.comparison.matching]);
+    ok('Idempotent: an unchanged copy is recognised as unchanged (nothing is rewritten)', S.NODES.every(function (n) { return S.sameNode(N[n], build(exportV2()).nodes[n]); }));
+
+    // ── Deletions and corrections ──
+    var del = exportV2();
+    del.tabs.Payments_Fines.rows = del.tabs.Payments_Fines.rows.filter(function (r) { return r.Item !== 'Late fee'; });
+    del.tabs.Event_Info.rows = del.tabs.Event_Info.rows.filter(function (r) { return r['Event Title'] !== 'Lock In'; });
+    var BD = build(del);
+    eq('Deletions: a payment row removed on the sheet is gone from the copy', Object.keys(BD.nodes.ledger.u_blake), ['sh_dues_20261025']);
+    eq('Deletions: an event removed on the sheet is gone with its attendance', [!!BD.nodes.events.lock_in, !!BD.nodes.attendance.lock_in, !!(BD.nodes.myAttendance.u_avery || {}).lock_in], [false, false, false]);
+    ok('Deletions: the node is seen as changed, so it is replaced whole', !S.sameNode(N.ledger, BD.nodes.ledger) && !S.sameNode(N.events, BD.nodes.events));
+    ok('Deletions: other nodes stay unchanged', S.sameNode(N.adjustments, BD.nodes.adjustments));
+    var fix = exportV2();
+    fix.tabs.Payments_Fines.rows[1]['Payment Status'] = 'Paid';
+    var BF = build(fix);
+    eq('Corrections: a row fixed on the sheet (Unpaid to Paid) is fixed in the copy', Object.keys(BF.nodes.ledger.u_blake).sort(), ['sh_dues_20261025', 'sh_dues_20261025_pay', 'sh_late_fee_20261101']);
+    eq('Corrections: ... and no longer costs demerits', BF.comparison.mismatches.map(function (m) { return m.name; }), ['Blake Turner']);
+
+    // ── Attendance like the sheet ──
+    eq('Attendance: a blank on a recorded event is an absence for an Active brother', N.attendance.chapter_2.u_blake, { present: false });
+    eq('Attendance: a blank is no mark for a brother who is not Active (Co-op)', [N.attendance.chapter_1.u_casey, !!N.attendance.chapter_2.u_casey], [{ present: true }, false]);
+    eq('Attendance: events on or after Inactive Since are skipped', [N.attendance.chapter_1.u_drew, !!N.attendance.chapter_3.u_drew, !!N.attendance.speed_dating_voting.u_drew], [{ present: false }, false, false]);
+    eq('Attendance: unrecorded events get no marks', [!!N.attendance.chapter_4, !!N.attendance.initiation], [false, false]);
+    var mirrorOk = true;
+    Object.keys(N.attendance).forEach(function (e) { Object.keys(N.attendance[e]).forEach(function (u) { if (S.canon(N.myAttendance[u][e]) !== S.canon(N.attendance[e][u])) mirrorOk = false; }); });
+    ok('Attendance: each brother\'s own copy mirrors the officers\' marks', mirrorOk && S.countNode('myAttendance', N.myAttendance) === S.countNode('attendance', N.attendance));
+    var oddCell = exportV2(); oddCell.tabs.Attendance.rows[0]['Chapter 1'] = 'Present';
+    var BO = build(oddCell);
+    eq('Attendance: text other than TRUE counts as absent, as on the sheet', BO.nodes.attendance.chapter_1.u_avery, { present: false });
+    ok('Attendance: ... with a note', BO.warnings.some(function (w) { return /Present/.test(w); }));
+
+    // ── Excuses ──
+    eq('Excuses: an approved excuse wins over a denied one for the same event', N.excuseFlags.chapter_3.u_avery, 'approved');
+    eq('Excuses: a pending excuse is flagged pending', N.excuseFlags.info_night_1.u_blake, 'pending');
+    var unlisted = N.excuses.u_thomas[Object.keys(N.excuses.u_thomas)[0]];
+    eq('Excuses: an event not on Event_Info keeps its text and has no flag', [unlisted.eventText, unlisted.eventId, !!N.excuseFlags.chapter_9], ['Chapter 9', undefined, false]);
+    var longR = exportV2(); longR.tabs.Excuses.rows[2]['Reason / Notes'] = new Array(4200).join('x');
+    var BL = build(longR);
+    eq('Excuses: a reason over 4000 characters is shortened (the rules refuse longer)', BL.nodes.excuses.u_blake.x_info_night_1.reason.length, 4000);
+
+    // ── Payments as they are on the sheet ──
+    var allNoLadder = true;
+    Object.keys(N.ledger).forEach(function (u) { Object.keys(N.ledger[u]).forEach(function (k) { var e = N.ledger[u][k]; if (e.type === 'charge' && e.accruesLate !== false) allNoLadder = false; }); });
+    ok('Payments: no charge runs the site\'s late-fee ladder', allNoLadder);
+    eq('Payments: the sheet\'s late-fee row is its own charge, not folded or waived', [N.ledger.u_blake.sh_late_fee_20261101.type, N.ledger.u_blake.sh_late_fee_20261101.amount, !!N.ledger.u_blake.sh_late_fee_20261101_waive], ['charge', 5, false]);
+    eq('Payments: Paid adds a payment, Waived a waiver, Payment Plan a plan', [N.ledger.u_avery.sh_dues_20261025_pay.type, N.ledger.u_riley.sh_dues_20261201_waive.type, N.ledger.u_thomas.sh_dues_20261025_plan.type], ['payment', 'waiver', 'plan']);
+    var led = C.ledgerSummary(clone(N.ledger.u_blake), TS, { asOf: '2027-03-01' });
+    eq('Payments: four months late, still no late fee is added', led.lateFees, 0);
+
+    // ── The comparison with DemeritDashboard ──
+    eq('Compare: every matched dashboard brother has the sheet\'s total', [B.comparison.compared, B.comparison.matching, B.comparison.mismatches.length], [4, 4, 0]);
+    eq('Compare: a dashboard name without an account is listed, not guessed', B.comparison.notCompared, [{ name: 'Jordan Lee', roll: '506' }]);
+    var avery = C.computeDemerits('u_avery', S.factsFor('u_avery', N), TS, { asOf: '2026-11-02' });
+    eq('Compare: Avery 0 = -3 roll-over + 5 attendance (excused chapter, 2 free) - 2 credit, no service credit', [avery.total, avery.serviceCredit, avery.service.approvedHours], [0, 0, 10]);
+    var withCredit = clone(TS); withCredit.policy.service.extraHourErases = 1;
+    eq('Compare: with the site\'s extra-hour credit Avery would be -2, so the sheet policy matters', C.computeDemerits('u_avery', S.factsFor('u_avery', N), withCredit, { asOf: '2026-11-02' }).total, -2);
+    eq('Compare: service hours that differ are listed apart (a 250-hour typo row is left out)', B.comparison.service.map(function (s) { return [s.name, s.sheet.hours, s.site.hours]; }), [['Thomas Quinn', 250, 0]]);
+    ok('Compare: ... with a note', B.warnings.some(function (w) { return /250 hours/.test(w); }));
+    var typo = exportV2();
+    typo.tabs.Payments_Fines.rows.push({ 'Brother Name': 'Tommy Quinn', Item: 'BEWE', Amount: 135, 'Due Date': '2026-08-30', 'Payment Status': 'Unpaid', 'Demerits If Unpaid/Late': 1 });
+    var BT = build(typo);
+    eq('Compare: a name spelled two ways is caught (the sheet ignores the row, the site matched it)', BT.comparison.mismatches.map(function (m) { return [m.name, m.parts, m.sheet.payment, m.site.payment]; }), [['Thomas Quinn', ['payment'], 0, 1]]);
+    var noDue = exportV2();
+    noDue.tabs.Payments_Fines.rows.push({ 'Brother Name': 'Avery Stone', Item: 'Fine', Amount: 20, 'Payment Status': 'Unpaid', 'Demerits If Unpaid/Late': 3 });
+    noDue.tabs.DemeritDashboard.rows[0]['Payment/Fine Demerits'] = 3; noDue.tabs.DemeritDashboard.rows[0]['Total Demerits'] = 3;
+    var BN = build(noDue);
+    eq('Compare: an unpaid fine with no due date is flagged (the sheet counts it now)', BN.comparison.mismatches.map(function (m) { return [m.name, m.parts]; }), [['Avery Stone', ['payment']]]);
+    ok('Compare: ... and a note explains why', BN.warnings.some(function (w) { return /no due date/.test(w); }));
+
+    // ── Matching and aliases ──
+    eq('Match: a nickname on the portal ("Tom") matches the Roster ("Thomas")', N.attendance.chapter_1.u_thomas, { present: false });
+    eq('Match: unmatched names list the tabs, with data first', B.unmatched.map(function (u) { return [u.name, u.tabs, u.hasData]; }),
+      [['Jordan Lee', ['Attendance', 'DemeritDashboard', 'Rollover', 'Roster'], true]]);
+    var keysOk = B.unmatched.every(function (u) { return Object.keys(u).every(function (k) { return ['key', 'name', 'roll', 'tabs', 'hasData', 'ambiguous'].indexOf(k) !== -1; }); });
+    ok('Match: unmatched entries hold names only, never figures', keysOk);
+    var alias = exportV2();
+    alias.tabs.Standards_Adjustments.rows.push({ 'Brother Name': 'B. Turner', Date: '2026-10-01', Reason: 'Hearing', 'Demerit Change': 3 });
+    var BA0 = build(alias);
+    ok('Alias: without one, "B. Turner" is unmatched and its row left out', BA0.unmatched.some(function (u) { return u.name === 'B. Turner' && u.hasData; }) && Object.keys(BA0.nodes.adjustments.u_blake).length === 1);
+    var BA1 = build(alias, { aliases: { b_turner: { name: 'B. Turner', uid: 'u_blake' } } });
+    eq('Alias: a saved alias brings the row in', Object.keys(BA1.nodes.adjustments.u_blake).sort(), ['sa_20260910_lock_in_attendance_credit', 'sa_20261001_hearing']);
+    eq('Alias: ... and the comparison shows the sheet does not count it for Blake', BA1.comparison.mismatches.map(function (m) { return [m.name, m.parts]; }), [['Blake Turner', ['standards']]]);
+    var BA2 = build(alias, { aliases: { b_turner: { name: 'B. Turner', ignore: true } } });
+    eq('Alias: "no portal account" stops asking', [BA2.unmatched.some(function (u) { return u.name === 'B. Turner'; }), BA2.ignored], [false, [{ key: 'b_turner', name: 'B. Turner' }]]);
+    var gone = build(alias, { aliases: { b_turner: { name: 'B. Turner', uid: 'u_deleted' } } });
+    ok('Alias: one pointing at a deleted account is ignored', gone.unmatched.some(function (u) { return u.name === 'B. Turner'; }));
+    var M2 = S.makeMatcher({ a: { name: 'Alex Kim', rollNumber: '1' }, b: { name: 'Alex Kim', rollNumber: '2' } }, [], {});
+    eq('Match: two accounts with the same name are never guessed', M2.match('Alex Kim', ''), { uid: null, how: 'ambiguous' });
+    eq('Match: the roll number decides between them', M2.match('Alex Kim', '2'), { uid: 'b', how: 'roll' });
+    eq('Match: roll number wins over a name no account has', S.makeMatcher(USERS, [], {}).match('Someone Else', 502).uid, 'u_blake');
+
+    // ── Never a guess: a wrong match files one brother's excuse reasons and fines where another brother can read them ──
+    function svcNames(nodes, uid) { return Object.keys(nodes.service[uid] || {}).map(function (k) { return nodes.service[uid][k].eventName; }).sort(); }
+    function marks(nodes, uid) { return Object.keys(nodes.myAttendance[uid] || {}).length; }
+    function unm(b) { return b.unmatched.map(function (u) { return u.name + (u.ambiguous ? ' (ambiguous)' : ''); }); }
+    // A pending sign-up can type any name and roll number on login.html.
+    var UP = clone(USERS); UP.u_new = { name: 'Some Stranger', rollNumber: '506', role: 'pending', status: 'pending' };
+    var BP = build(exportV2(), { users: UP });
+    eq('Pending: an account still waiting for approval with a Roster brother\'s roll number gets nothing', [marks(BP.nodes, 'u_new'), !!BP.nodes.rollover.u_new, unm(BP)], [0, false, ['Jordan Lee']]);
+    var UP2 = clone(USERS); UP2.u_new = { name: 'Jordan Lee', rollNumber: '', role: 'pending' };
+    var BP2 = build(exportV2(), { users: UP2 });
+    eq('Pending: ... nor one with his exact name', [marks(BP2.nodes, 'u_new'), !!BP2.nodes.rollover.u_new, BP2.comparison.notCompared.length, unm(BP2)], [0, false, 1, ['Jordan Lee']]);
+    var BP3 = build(alias, { users: UP2, aliases: { b_turner: { name: 'B. Turner', uid: 'u_new' } } });
+    ok('Pending: a saved alias pointing at a pending account is not used', !BP3.nodes.adjustments.u_new && BP3.unmatched.some(function (u) { return u.name === 'B. Turner'; }));
+    eq('Pending: the matcher never returns one', S.makeMatcher({ p: { name: 'Pat Doe', rollNumber: '7', role: 'pending' } }, [], {}).match('Pat Doe', '7'), { uid: null, how: 'none' });
+    // Blake's account has no roll number and Avery's carries Blake's (502) by mistake.
+    var UW = clone(USERS); UW.u_blake.rollNumber = ''; UW.u_avery.rollNumber = '502';
+    var BW = build(exportV2(), { users: UW });
+    eq('Roll vs name: a roll number that points at a different account than the name is not trusted', [svcNames(BW.nodes, 'u_avery').indexOf('Tabling'), marks(BW.nodes, 'u_blake'), (BW.nodes.rollover.u_avery || {}).points], [-1, 0, -3]);
+    eq('Roll vs name: ... Avery keeps his own rows, and Blake is listed for the admin', [marks(BW.nodes, 'u_avery'), unm(BW)], [7, ['Blake Turner (ambiguous)', 'Jordan Lee']]);
+    eq('Roll vs name: the matcher says ambiguous', S.makeMatcher(UW, [], {}).match('Blake Turner', 502), { uid: null, how: 'ambiguous' });
+    var BWa = build(exportV2(), { users: UW, aliases: { blake_turner: { name: 'Blake Turner', uid: 'u_blake' } } });
+    eq('Roll vs name: a saved alias settles it', [marks(BWa.nodes, 'u_blake'), svcNames(BWa.nodes, 'u_blake'), svcNames(BWa.nodes, 'u_avery').indexOf('Tabling'), unm(BWa)], [7, ['Tabling'], -1, ['Jordan Lee']]);
+    // Casey's account carries Jordan Lee's roll number (506), and Jordan has no account.
+    var UC = clone(USERS); UC.u_casey.rollNumber = '506';
+    var BC = build(exportV2(), { users: UC });
+    eq('Roster clash: two Roster rows on one account copy neither', [marks(BC.nodes, 'u_casey'), !!BC.nodes.rollover.u_casey, unm(BC)], [0, false, ['Casey Morgan (ambiguous)', 'Jordan Lee (ambiguous)']]);
+    ok('Roster clash: ... with a note naming both rows', BC.warnings.some(function (w) { return /Casey Morgan/.test(w) && /Jordan Lee/.test(w) && /neither is copied/.test(w); }));
+    ok('Roster clash: ... and neither is compared with the dashboard', BC.comparison.notCompared.some(function (n) { return n.name === 'Jordan Lee'; }));
+    var BCa = build(exportV2(), { users: UC, aliases: { casey_morgan: { name: 'Casey Morgan', uid: 'u_casey' }, jordan_lee: { name: 'Jordan Lee', ignore: true } } });
+    eq('Roster clash: saved aliases settle it (Casey is his account, Jordan has none)', [marks(BCa.nodes, 'u_casey'), !!BCa.nodes.rollover.u_casey, unm(BCa), BCa.ignored.map(function (x) { return x.name; })], [1, false, [], ['Jordan Lee']]);
+    // Two people with one first + last name once nicknames are folded, and only one has an account.
+    function withRows(e, tabName, rows) { rows.forEach(function (r) { e.tabs[tabName].rows.push(r); }); return e; }
+    var lm = exportV2();
+    withRows(lm, 'Roster', [{ 'Brother Name': 'Samantha Reyes', 'Roll Number': 610, Status: 'Active' }, { 'Brother Name': 'Sam Reyes', 'Roll Number': 611, Status: 'Active' },
+      { 'Brother Name': 'Michael T Brown', 'Roll Number': 620, Status: 'Active' }, { 'Brother Name': 'Michael J Brown', 'Roll Number': 621, Status: 'Active' }]);
+    withRows(lm, 'Excuses', [{ 'Brother Name': 'Sam Reyes', 'Event Title': 'Chapter 3', 'Excuse Status': 'Approved', 'Reason / Notes': 'PRIVATE REASON ONE' },
+      { 'Brother Name': 'Michael J Brown', 'Event Title': 'Chapter 3', 'Excuse Status': 'Approved', 'Reason / Notes': 'PRIVATE REASON TWO' },
+      { 'Brother Name': 'Mike Brown', 'Event Title': 'Chapter 2', 'Excuse Status': 'Pending', 'Reason / Notes': 'PRIVATE REASON THREE' }]);
+    withRows(lm, 'Payments_Fines', [{ 'Brother Name': 'Sam Reyes', Item: 'Late fine', Amount: 20, 'Due Date': '2026-10-01', 'Payment Status': 'Unpaid' }]);
+    var UL = clone(USERS); UL.u_samantha = { name: 'Samantha Reyes', rollNumber: '610', status: 'active', role: 'brother' }; UL.u_michael = { name: 'Michael T Brown', rollNumber: '620', status: 'active', role: 'brother' };
+    var BLm = build(lm, { users: UL });
+    var leaked = JSON.stringify([BLm.nodes.excuses.u_samantha || null, BLm.nodes.excuses.u_michael || null, BLm.nodes.ledger.u_samantha || null]);
+    eq('Loose names: a Roster person without an account never gets the account of someone with the same loose name', [/PRIVATE REASON/.test(leaked), /late_fine/.test(leaked)], [false, false]);
+    ok('Loose names: ... each is listed as ambiguous', ['Sam Reyes', 'Michael J Brown', 'Mike Brown'].every(function (n) { return BLm.unmatched.some(function (u) { return u.name === n && u.ambiguous; }); }));
+    var ML = S.makeMatcher(UL, lm.tabs.Roster.rows, {});
+    eq('Loose names: the matcher, row roll number given or not', [ML.match('Sam Reyes', '611').how, ML.match('Sam Reyes', '').how, ML.match('Samantha Reyes', '').uid, ML.match('Michael T Brown', '').uid], ['ambiguous', 'ambiguous', 'u_samantha', 'u_michael']);
+    eq('Loose names: a nickname still matches when one Roster person has the name', S.makeMatcher(USERS, exportV2().tabs.Roster.rows, {}).match('Tommy Quinn', ''), { uid: 'u_thomas', how: 'loose' });
+    var MR = S.makeMatcher({ t: { name: 'Tom Quinn', rollNumber: '503' } }, [{ 'Brother Name': 'Thomas Quinn', 'Roll Number': 503 }], {});
+    eq('Loose names: a row whose own roll number contradicts the account is not matched loosely', [MR.match('Thomas Quinn', '').uid, MR.match('Tommy Quinn', '599').how], ['t', 'ambiguous']);
+
+    // ── Roster status vs User Management (reported, never changed) ──
+    eq('Roster: differences are listed for the admin', B.rosterDiffs.map(function (d) { return [d.name, d.sheet, d.site]; }), [['Sam Ortiz', '', 'active']]);
+
+    // ── Roll-over, service and dates ──
+    eq('Roll-over: from the S26 tab, by roll number', N.rollover.u_avery.points + '|' + N.rollover.u_avery.from, '-3|S26');
+    eq('Service: a week label takes its first day and keeps the label', [N.service.u_avery.sv_20260816_rush_tabling.date, N.service.u_avery.sv_20260816_rush_tabling.week, N.service.u_avery.sv_20260816_rush_tabling.dateText], ['2026-08-16', '2026-08-16', 'Aug 16-22']);
+    eq('Service: only a ticked Confirmed box is approved', N.service.u_avery.sv_20260823_class_visits_2 ? [N.service.u_avery.sv_20260823_class_visits.status, N.service.u_avery.sv_20260823_class_visits_2.status].sort() : null, ['approved', 'pending']);
+    eq('Dates: the sheet\'s formats', [S.parseDate('Aug 16-22', 2026), S.parseDate('Aug 30-Sep 5', 2026), S.parseDate('9/10/2026'), S.parseDate('Sep 10, 2026'), S.parseDate('2026-09-10'), S.parseDate(46257), S.parseDate('TBD', 2026), S.parseDate('Aug 16-22')],
+      ['2026-08-16', '2026-08-30', '2026-09-10', '2026-09-10', '2026-09-10', '2026-08-23', '', '']);
+    eq('Terms: the one before', [S.prevTerm('F26'), S.prevTerm('S27'), S.termYear('F26')], ['S26', 'F26', 2026]);
+
+    // ── What the runner writes ──
+    var ST = S.stamp(N, { uid: 'u_sam', name: 'Sam Ortiz' }, '2026-11-02T15:00:00.000Z');
+    eq('Stamp: ledger entries carry createdBy = the admin (the ledger rule requires it)', [ST.ledger.u_blake.sh_dues_20261025.createdBy, ST.ledger.u_blake.sh_dues_20261025.createdAt], ['u_sam', '2026-11-02T15:00:00.000Z']);
+    eq('Stamp: attendance marks carry markedBy', ST.attendance.chapter_1.u_avery.markedBy, 'u_sam');
+    ok('Stamp: audit fields never make a node look changed', S.NODES.every(function (n) { return S.sameNode(ST[n], N[n]); }));
+    eq('Stamp: the copy itself is not changed', N.ledger.u_blake.sh_dues_20261025.createdBy, undefined);
+    var safe = true, bad = [];
+    (function scan(v, path) {
+      if (v === null || v === undefined) { safe = false; bad.push(path + ' is empty'); return; }
+      if (Array.isArray(v)) { safe = false; bad.push(path + ' is an array'); return; }
+      if (typeof v === 'object') {
+        var ks = Object.keys(v);
+        if (!ks.length) { safe = false; bad.push(path + ' is an empty object'); }
+        ks.forEach(function (k) { if (/[.#$\[\]\/]/.test(k) || /^\d+$/.test(k)) { safe = false; bad.push(path + '/' + k); } scan(v[k], path + '/' + k); });
+      }
+    })(N, '');
+    eq('Firebase: no empty values, arrays, or unsafe keys anywhere in the copy', bad, []);
+    var rulesOk = true;
+    Object.keys(N.service).forEach(function (u) { Object.keys(N.service[u]).forEach(function (k) { var e = N.service[u][k]; if (typeof e.hours !== 'number' || e.hours < 0 || e.hours > 200 || !e.status) rulesOk = false; }); });
+    Object.keys(N.excuses).forEach(function (u) { Object.keys(N.excuses[u]).forEach(function (k) { var e = N.excuses[u][k]; if (!e.status || (e.reason && e.reason.length > 4000)) rulesOk = false; }); });
+    Object.keys(ST.ledger).forEach(function (u) { Object.keys(ST.ledger[u]).forEach(function (k) { var e = ST.ledger[u][k]; if (!e.type || !e.createdBy || !e.createdAt) rulesOk = false; }); });
+    Object.keys(N.excuseFlags).forEach(function (e) { Object.keys(N.excuseFlags[e]).forEach(function (u) { if (!/^(pending|approved|denied)$/.test(N.excuseFlags[e][u])) rulesOk = false; }); });
+    ok('Rules: every record passes the database .validate rules (service hours, excuse status and reason, ledger fields, flags)', rulesOk);
+    // Attendance: 7 recorded events x 4 Active brothers with accounts (blanks count) + Casey's one ticked box + Drew's one mark before Inactive Since.
+    eq('Counts: per node', B.counts, { events: 9, attendance: 30, myAttendance: 30, excuseFlags: 2, excuses: 4, adjustments: 4, rollover: 2, service: 5, ledger: 8 });
+    eq('Guard: a node that shrinks to under half (from 20 or more), or to nothing, is held back', S.guard({ attendance: 100, events: 10 }, { attendance: 40, events: 0 }).map(function (g) { return g.node; }), ['events', 'attendance']);
+    eq('Guard: a small node that empties is held back too (a renamed roll-over tab simply vanishes from the export)', S.guard({ rollover: 2, excuses: 4 }, { rollover: 0, excuses: 3 }).map(function (g) { return g.node; }), ['rollover']);
+    eq('Guard: normal changes pass', S.guard(B.counts, BD.counts), []);
+
+    // ── A renamed or deleted tab ──
+    var missingCodes = S.COPIED_TABS.map(function (k) { var e = exportV2(); e.tabs[k] = { tab: '', found: false, headers: [], rows: [] }; return err(function () { build(e); }); });
+    eq('Missing tab: a copied tab the gateway could not find is refused, for each of them', missingCodes, S.COPIED_TABS.map(function () { return 'missing-tab'; }));
+    var mt = exportV2(); mt.tabs.Excuses = { tab: '', found: false, headers: [], rows: [] }; mt.tabs.Standards_Adjustments = { tab: '', found: false, headers: [], rows: [] };
+    var mtMsg = (function () { try { build(mt); return ''; } catch (e) { return e.message; } })();
+    ok('Missing tab: the message names the tabs and says nothing was changed', /Excuses and Standards_Adjustments/.test(mtMsg) && /Nothing was changed/.test(mtMsg));
+    var mk = exportV2(); delete mk.tabs.Excuses;
+    eq('Missing tab: a key the export leaves out is not a missing tab (nothing to compare)', build(mk).counts.excuses, 0);
+
+    // ── The export must belong to the term it overwrites ──
+    eq('Term: the months each term covers', [S.termWindow('F26'), S.termWindow('S27'), S.termWindow('X1')],
+      [{ from: '2026-07-01', to: '2026-12-31', label: 'Fall 2026' }, { from: '2027-01-01', to: '2027-06-30', label: 'Spring 2027' }, null]);
+    function springDates(e) { e.tabs.Event_Info.rows.forEach(function (r) { if (r['Event Date']) r['Event Date'] = r['Event Date'].replace('2026-08', '2027-01').replace('2026-09', '2027-02'); }); return e; }
+    eq('Term: a sheet whose events are dated in another semester is refused', err(function () { build(springDates(exportV2())); }), 'wrong-term');
+    var wtMsg = (function () { try { build(springDates(exportV2())); return ''; } catch (e) { return e.message; } })();
+    ok('Term: ... and the message says which dates and which term', /Jan 2027 to Feb 2027/.test(wtMsg) && /F26 \(Fall 2026\)/.test(wtMsg) && /Nothing was changed/.test(wtMsg));
+    var spr = build(springDates(exportV2()), { term: 'S27' });
+    eq('Term: the same sheet fits S27', spr.term, 'S27');
+    var oneOff = exportV2(); oneOff.tabs.Event_Info.rows[0]['Event Date'] = '2027-01-10';
+    eq('Term: one stray date is fine', err(function () { build(oneOff); }), null);
+    var fewDates = springDates(exportV2()); fewDates.tabs.Event_Info.rows.forEach(function (r, i) { if (i > 1) r['Event Date'] = ''; });
+    eq('Term: with fewer than 3 event dates the due dates decide (here, Fall 2026)', err(function () { build(fewDates); }), null);
+    fewDates.tabs.Payments_Fines.rows.forEach(function (r) { r['Due Date'] = '2027-02-01'; });
+    eq('Term: ... and refuse when they are in another semester too', err(function () { build(fewDates); }), 'wrong-term');
+    var noYear = exportV2(); noYear.tabs.Event_Info.rows.forEach(function (r) { if (r['Event Date']) r['Event Date'] = 'Feb 3'; });
+    eq('Term: dates without a year are not counted (they take the term\'s year)', err(function () { build(noYear); }), null);
+    eq('Term: a term code that is not F## or S## is not checked', err(function () { build(springDates(exportV2()), { term: 'TEST1' }); }), null);
+
+    // ── Which roll-over tab ──
+    eq('Roll-over tab: the term in its name', [S.tabTerm('S26 Rollover Demerits'), S.tabTerm('Spring 2026 Rollover'), S.tabTerm("Fall '26 rollover"), S.tabTerm('Rollover')], ['S26', 'S26', 'F26', '']);
+    eq('Roll-over tab: the report names the tab it came from', B.rolloverTab, 'S26 Rollover Demerits');
+    var wrongRo = exportV2(); wrongRo.tabs.Rollover.tab = 'F26 Rollover Demerits';
+    var BRo = build(wrongRo);
+    eq('Roll-over tab: a tab for another term is not copied', [S.countNode('rollover', BRo.nodes.rollover), BRo.rolloverTab], [0, '']);
+    ok('Roll-over tab: ... with a note naming the tab and the term it should be for', BRo.warnings.some(function (w) { return /"F26 Rollover Demerits"/.test(w) && /from S26/.test(w); }));
+    eq('Roll-over tab: in S27 the S26 tab is the wrong one', [S.countNode('rollover', spr.nodes.rollover), spr.warnings.some(function (w) { return /"S26 Rollover Demerits"/.test(w) && /from F26/.test(w); })], [0, true]);
+    var plainRo = exportV2(); plainRo.tabs.Rollover.tab = 'Rollover';
+    eq('Roll-over tab: a tab without a term in its name counts as the term before', [build(plainRo).nodes.rollover.u_avery.from, build(plainRo).rolloverTab], ['S26', 'Rollover']);
+    var twoRo = exportV2(), s26 = twoRo.tabs.Rollover;
+    twoRo.tabs.Rollovers = [s26, { tab: 'F26 Rollover Demerits', found: true, headers: s26.headers, rows: [] }];
+    twoRo.tabs.Rollover = twoRo.tabs.Rollovers[1];   // older code would have used the last tab, the F26 carry-out
+    var BTwo = build(twoRo);
+    eq('Roll-over tab: with several tabs, the one for the term before is used', [BTwo.rolloverTab, BTwo.nodes.rollover.u_avery.points], ['S26 Rollover Demerits', -3]);
+    eq('Roll-over tab: pickRollover falls back to the single Rollover tab of an older gateway', S.pickRollover({ Rollover: s26 }, 'F26').tab, 'S26 Rollover Demerits');
+    var noRo = exportV2(); delete noRo.tabs.Rollover;
+    eq('Roll-over tab: none on the sheet, none copied', [S.countNode('rollover', build(noRo).nodes.rollover), build(noRo).rolloverTab], [0, '']);
+
+    // ── Event_Info Notes stay on the sheet (every member can read events/) ──
+    var withNotes = exportV2(); withNotes.tabs.Event_Info.rows[0].Notes = 'Avery left early, Blake sent home';
+    var BNo = build(withNotes);
+    eq('Events: Event_Info Notes are not copied', [BNo.nodes.events.chapter_1.notes, JSON.stringify(BNo.nodes.events).indexOf('left early')], [undefined, -1]);
+
+    var summary = document.getElementById('summary');
+    summary.innerHTML = fail ? '<span class="fail">' + fail + ' FAILED</span>, ' + pass + ' passed' : '<span class="ok">All ' + pass + ' tests passed</span>';
+    document.getElementById('results').innerHTML = results.join('');
+    window.__syncTestResults = { pass: pass, fail: fail, lines: plain };
+    window.__syncFixture = { exportV2: exportV2, users: USERS };   // scripts/sync-runner-tests.js reuses it
+  })();
+  </script>
+</body>
+</html>

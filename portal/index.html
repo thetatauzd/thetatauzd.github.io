@@ -6,7 +6,7 @@
   <title>Brother Portal | Home</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=30">
+  <link rel="stylesheet" href="css/portal.css?v=32">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -17,29 +17,17 @@
   <header class="portal-header">
     <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>ΘΤ ΖΔ Brother Portal</h1></div>
     <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu"></div>
+      </div>
       <div class="nav-dropdown hidden" id="admin-dropdown">
         <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
-        <div class="nav-dropdown-menu" id="admin-dd-menu">
-          <a href="admin">User Management</a>
-          <a href="newsletters-admin">Newsletters</a>
-          <a href="site-admin">Website</a>
-          <div class="dd-section-label">Voting</div>
-          <a href="standards">Standards</a>
-          <a href="regent">Regent View</a>
-          <a href="history">Session History</a>
-        </div>
+        <div class="nav-dropdown-menu" id="admin-dd-menu"></div>
       </div>
       <div class="nav-dropdown" id="nav-dropdown">
         <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
-        <div class="nav-dropdown-menu" id="dd-menu">
-          <a href="/portal">Portal home</a>
-          <a href="voting">Voting</a>
-          <a href="tracker">Theta Tau Tracker</a>
-          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
-          <a href="/">Back to Site</a>
-          <div class="dd-divider"></div>
-          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
-        </div>
+        <div class="nav-dropdown-menu" id="dd-menu"></div>
       </div>
     </div>
   </header>
@@ -69,62 +57,16 @@
       <p id="stat-status" style="color:#999; font-size:0.85rem; margin:0.75rem 0 0;"></p>
     </div>
 
-    <div class="portal-card">
-      <h2>Chapter Tools</h2>
-      <div class="portal-nav-grid">
-        <a href="voting">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          <span>Voting</span>
-        </a>
-        <a href="timer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2"/><path d="M9 2h6"/></svg>
-          <span>Event Timer</span>
-        </a>
-        <a href="https://cmt.thetatau.org/" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          <span>CMT (Chapter Management Tool)</span>
-        </a>
-      </div>
-    </div>
+    <!-- Link tiles: rendered by js/portal-links-core.js from portalLinks/ (edited at portal-links by admins).
+         While the Tracker sheet is the record, the excuse and service tiles go to the Google Forms. -->
+    <div id="link-sections"></div>
 
-    <div class="portal-card">
-      <h2>Forms</h2>
-      <div class="portal-nav-grid">
-        <a href="https://forms.gle/J6VS1uHyRY5dmMLz8" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14c.2-1 .6-1.7 1.4-2.5A4.6 4.6 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.8.8 1.2 1.5 1.4 2.5"/></svg>
-          <span>Suggestion Box</span>
-        </a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeSfcDvaUI_R1Q1Mxvc2lhzC2yfzgaWraVsN-dKWc6OS9coOg/viewform" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m10 14 4 4M14 14l-4 4"/></svg>
-          <span>Excused Absence Form</span>
-        </a>
-        <a href="https://forms.gle/t7JE3kjKJ42rEM5Y9" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-          <span>Service Hours Form</span>
-        </a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSexPJKwoFsV5_OhqBOkf9dtI722QIqPeqpZT8AumJ8HnXwSFw/viewform" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-          <span>Standards Report Form</span>
-        </a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfiuC-GMeZIhcl6zoJcFIua_-vIkgigcsp6clA2oo2znpkWLQ/viewform" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
-          <span>Standards Concerns Form</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="portal-card">
-      <h2>Resources</h2>
-      <div class="portal-nav-grid">
-        <a href="https://drive.google.com/drive/folders/1PBIxFjb9p-EDtErJXusBblbV75rcgqRO?usp=sharing" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Textbook Bank</span>
-        </a>
-        <a href="https://drive.google.com/drive/folders/1fj4oobTumOEYza9B6S82-hEgVXkeb-q7?usp=sharing" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 12.5-8 8a2.12 2.12 0 1 1-3-3l8-8"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/><path d="M3 22h10"/></svg>
-          <span>Chapter Bylaws</span>
-        </a>
-      </div>
+    <!-- Officers only: the Chapter Ops pages, a read-only copy of the Tracker sheet for now. -->
+    <div class="portal-card hidden" id="officer-card">
+      <h2 id="officer-title">Officer preview</h2>
+      <div id="officer-banner" hidden></div>
+      <div class="portal-nav-grid" id="officer-links"></div>
+      <p class="officer-note" id="officer-note">Only officers see this card. Brothers still use the Theta Tau Tracker.</p>
     </div>
 
     <div class="portal-card">
@@ -144,12 +86,92 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=30"></script>
-  <script src="js/auth.js?v=30"></script>
-  <script src="js/db.js?v=30"></script>
-  <script src="js/tracker.js?v=30"></script>
+  <script src="js/firebase-config.js?v=31"></script>
+  <script src="js/auth.js?v=32"></script>
+  <script src="js/ops-core.js?v=32"></script>
+  <script src="js/ops-db.js?v=32"></script>
+  <script src="js/ops-mode.js?v=32"></script>
+  <script src="js/db.js?v=31"></script>
+  <script src="js/tracker.js?v=32"></script>
+  <script src="js/portal-links-core.js?v=32"></script>
   <script>
     (function() {
+      'use strict';
+
+      // The site's own excuse and service pages, and the Google Form each one stands in for.
+      var FORM_PAGES = { 'excuse': 'excuse', 'log-service': 'service' };
+      // The names brothers knew on this page before Chapter Ops.
+      var SHEET_LABELS = { 'Excused Absence Request': 'Excused Absence Form', 'Log Service Hours': 'Service Hours Form' };
+      // The Forms card order before Chapter Ops. Used only while the links are the built-in set.
+      var SHEET_FORMS_ORDER = { suggest: 1, excuse: 2, service: 3, report: 4, concern: 5 };
+      var OFFICER_ICONS = { 'tracker-preview': 'chart', attendance: 'calendar', 'standards-board': 'gavel', treasurer: 'dollar',
+        service: 'heart', marshal: 'star', semester: 'calendar', settings: 'grid' };
+
+      function pageOf(url) { return String(url == null ? '' : url).trim().replace(/\/+$/, ''); }
+
+      /**
+       * While the Tracker sheet is the record: links to the site's excuse and service pages
+       * go to the Google Forms instead (OpsMode.formUrl), under their old names, and a form
+       * that is already its own tile shows once. Pure: returns a new sections object.
+       */
+      function sheetSections(sections, mode, isDefault) {
+        var out = {}, seen = {};
+        Object.keys(sections || {}).forEach(function(sid) {
+          var links = (sections[sid] || {}).links || {};
+          Object.keys(links).forEach(function(lid) {
+            var l = links[lid] || {};
+            if (!l.hidden && !FORM_PAGES[pageOf(l.url)]) seen[pageOf(l.url)] = true;
+          });
+        });
+        Object.keys(sections || {}).forEach(function(sid) {
+          var sec = sections[sid] || {}, links = {};
+          Object.keys(sec.links || {}).forEach(function(lid) {
+            var l = Object.assign({}, sec.links[lid]);
+            var kind = FORM_PAGES[pageOf(l.url)];
+            if (kind) {
+              l.url = OpsMode.formUrl(kind, mode);
+              if (seen[pageOf(l.url)]) return;
+              seen[pageOf(l.url)] = true;
+              if (SHEET_LABELS[l.label]) l.label = SHEET_LABELS[l.label];
+            }
+            if (isDefault && sid === 'forms' && SHEET_FORMS_ORDER[lid]) l.order = SHEET_FORMS_ORDER[lid];
+            links[lid] = l;
+          });
+          out[sid] = Object.assign({}, sec, { links: links });
+        });
+        return out;
+      }
+
+      /** Officers: one tile per Chapter Ops page they can open, under the preview notice. */
+      function renderOfficerCard(profile, mode) {
+        if (!PortalAuth.isOfficer(profile)) return;
+        var items = PortalAuth.visibleNav('ops', profile).filter(function(it) { return it.href && !it.section; });
+        if (!items.length) return;
+        var sheet = !window.OpsMode || OpsMode.isSheet(mode);
+        document.getElementById('officer-title').textContent = sheet ? 'Officer preview' : 'Officer tools';
+        document.getElementById('officer-note').classList.toggle('hidden', !sheet);
+        if (window.OpsMode) OpsMode.banner(document.getElementById('officer-banner'), mode);
+        var grid = document.getElementById('officer-links');
+        grid.innerHTML = '';
+        items.forEach(function(it) {
+          var a = document.createElement('a');
+          var external = /^https:/.test(it.href);
+          a.href = it.href;
+          if (external) { a.target = '_blank'; a.rel = 'noopener'; }
+          a.innerHTML = PortalLinks.iconSvg(OFFICER_ICONS[it.href] || (external ? 'doc' : 'link'));
+          var span = document.createElement('span');
+          span.textContent = it.label;
+          a.appendChild(span);
+          grid.appendChild(a);
+        });
+        document.getElementById('officer-card').classList.remove('hidden');
+      }
+
+      // No refresh from the sheet runs here: a quiet one could be cut off by the next tap and leave a partial
+      // copy. It runs on the officer preview pages and on Refresh from sheet, where the banner shows progress.
+
+      window.PortalHome = { sheetSections: sheetSections };
+
       PortalAuth.requireAuth({ page: '', forcePortalHome: true }).then(function(profile) {
         if (!profile) return;
         PortalAuth.initNav(profile);
@@ -162,6 +184,18 @@
         if (profile.role && profile.role !== 'brother') bits.push(profile.role.replace('_', ' '));
         document.getElementById('greeting-sub').textContent = bits.length ? bits.join(' · ') : 'Welcome back.';
 
+        var cal = document.getElementById('chapter-calendar');
+        var modeReady = window.OpsMode ? OpsMode.load() : Promise.resolve(null);
+        Promise.all([PortalLinks.load(), modeReady]).then(function(r) {
+          var cfg = r[0], mode = r[1];
+          var sections = cfg.sections;
+          if (window.OpsMode && OpsMode.isSheet(mode)) sections = sheetSections(sections, mode, cfg.isDefault);
+          PortalLinks.render(document.getElementById('link-sections'), sections, profile);
+          setCalendar(cfg.calendarUrl && /^https:\/\/calendar\.google\.com\//.test(cfg.calendarUrl) ? cfg.calendarUrl : cal.getAttribute('data-calendar-src'));
+          renderOfficerCard(profile, mode);
+        });
+
+        // Balance, service hours and demerits come live from the Tracker sheet (js/tracker.js).
         if (window.PortalTracker) {
           PortalTracker.renderHomeStats(profile);
         } else {
@@ -170,11 +204,10 @@
         }
       });
 
-      // Month grid is unreadable on a phone — load the calendar in agenda mode there instead.
-      var cal = document.getElementById('chapter-calendar');
-      if (cal) {
-        var src = cal.getAttribute('data-calendar-src');
-        cal.src = window.matchMedia('(max-width: 768px)').matches ? src + '&mode=AGENDA' : src;
+      // Month grid is unreadable on a phone. Load the calendar in agenda mode there instead.
+      function setCalendar(src) {
+        var el = document.getElementById('chapter-calendar');
+        if (el && src) el.src = window.matchMedia('(max-width: 768px)').matches ? src + '&mode=AGENDA' : src;
       }
     })();
   </script>

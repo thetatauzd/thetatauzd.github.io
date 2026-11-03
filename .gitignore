@@ -42,3 +42,7 @@ brothers.html
 
 # Firebase CLI (firepit) debug log
 firepit-log.txt
+
+# Family tree data holds members' personal data and must never be committed (the repo is public).
+portal/data/*-seed.json
+portal/data/*backup*.json

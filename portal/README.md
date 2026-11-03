@@ -11,13 +11,14 @@ The Brother Portal is a Firebase-backed private member portal for active brother
 3. [Security Rules](#security-rules)
 4. [File Structure](#file-structure)
 5. [Authentication & Roles](#authentication--roles)
-6. [Voting System](#voting-system)
-7. [Session Flow](#session-flow)
-8. [Database Schema](#database-schema)
-9. [Session History & Export](#session-history--export)
-10. [Event Timer](#event-timer)
-11. [Newsletters](#newsletters)
-12. [What to Update](#what-to-update)
+6. [Chapter Ops](#chapter-ops)
+7. [Voting System](#voting-system)
+8. [Session Flow](#session-flow)
+9. [Database Schema](#database-schema)
+10. [Session History & Export](#session-history--export)
+11. [Event Timer](#event-timer)
+12. [Newsletters](#newsletters)
+13. [What to Update](#what-to-update)
 
 ---
 
@@ -107,6 +108,17 @@ portal/
 ├── chapter-results.html  # Chapter-friendly results view (pass/fail, no percentages)
 ├── timer.html            # Synchronized event timer
 ├── newsletters-admin.html # Upload & manage chapter newsletters (admin only)
+├── tracker.html          # Theta Tau Tracker: a brother's own row, read live from the Tracker sheet (js/tracker.js)
+├── tracker-preview.html  # Officers: the site's My Tracker computed from the sheet copy (js/ops-tracker.js)
+├── excuse.html, log-service.html   # Site forms (sheet mode: a notice and a button to the Google Form)
+├── attendance, standards-board, treasurer, service, marshal, member, semester, settings .html
+│                         # Chapter Ops officer pages (read-only previews while the sheet is the record)
+├── import.html           # Admin: Refresh from sheet
+├── family-tree.html      # Big/little family tree
+├── portal-links.html, site-admin.html   # Admin: home page links, public rush page
+├── ops-tests.html, sync-tests.html      # Test pages (pure code, invented names)
+├── docs/                 # ops-schema.md, officer-guide.md, semester-checklist.md (not served on the site)
+├── apps-script/          # Gateway.gs (Tracker sheet), RosterGateway.gs (sign-up autofill), setup README
 │
 ├── css/
 │   └── portal.css        # All portal styles (colors, layout, components)
@@ -120,7 +132,13 @@ portal/
     ├── regent.js           # Regent display board logic
     ├── admin.js            # Admin user management logic
     ├── newsletters.js      # Newsletter upload/list/delete logic
-    └── timer.js            # Synchronized timer logic
+    ├── timer.js            # Synchronized timer logic
+    ├── ops-core.js         # Chapter Ops math (pure): demerits, dues, late fees, service, pledges
+    ├── ops-db.js           # Chapter Ops Firebase glue (PortalOps), including the preview helpers
+    ├── ops-mode.js         # OpsMode: who owns the tracker data (settings/mode), the Google Form links
+    ├── sheet-sync-core.js  # Pure mapper from the Tracker sheet export to the site's copy
+    ├── sheet-sync.js       # PortalSync: Refresh from sheet (admins)
+    └── family-tree-core.js, family-tree.js, portal-links-core.js, ops-photos.js, …
 ```
 
 ---
@@ -132,13 +150,47 @@ Sign-in is **Google only**. After signing in for the first time, brothers comple
 | Role | Access |
 |---|---|
 | `pending` | Waiting screen only. Auto-redirects to portal home the instant an admin approves. |
-| `brother` | Portal home, voting page. |
-| `standards` | All above + Standards session control. |
-| `regent` | All above + Regent display board. |
+| `brother` (and `pnm`, `standards`, `regent`) | Portal home, voting, results, Theta Tau Tracker, family tree. |
 | `rush_chair` | All above + Event Timer controls. |
-| `admin` | Full access: all pages, session history, user management, timer controls. |
+| `admin` | Full access: all pages, Standards and Regent View, session history, user management, timer controls. |
 
-Role is stored in `users/{uid}/role` in the Realtime Database. Admins set roles from the Admin panel.
+Role is stored in `users/{uid}/role` in the Realtime Database. It is recomputed from status and positions when an
+admin saves someone on User Management (`OpsCore.legacyRole`). The Standards and Regent View pages are admin-only, as
+they were before Chapter Ops, whatever the role says.
+
+Chapter Ops pages are opened by capabilities (`users/{uid}/perms`, derived from positions) instead of roles. An
+**officer** is an admin, anyone with a position, or anyone with a capability set to true (`PortalAuth.isOfficer`).
+Officers see the Chapter Ops menu, the "Officer preview" card on the home page and `tracker-preview`. Menus are built
+from `NAV` in `js/auth.js`.
+
+---
+
+## Chapter Ops
+
+Attendance, excuses, demerits, dues, service hours and pledges. The full reference is
+[`docs/ops-schema.md`](docs/ops-schema.md); the how-to for each officer is [`docs/officer-guide.md`](docs/officer-guide.md);
+the start, end and cut-over steps are in [`docs/semester-checklist.md`](docs/semester-checklist.md).
+
+**Fall 2026: the Tracker sheet is the record.** `settings/mode/source` is `'sheet'` (or missing):
+- Brothers keep today's live Theta Tau Tracker (`tracker`, Gateway.gs action `me`) and the Google Forms.
+- Officers see the Chapter Ops pages as a read-only preview of a copy of the sheet. No page writes tracker data.
+- Admins refresh the copy on **Admin → Refresh from sheet** (`import.html`, `js/sheet-sync.js`). It also refreshes
+  itself when an admin opens a preview page and the copy is more than a day old.
+- At the cut-over (planned for Spring 2027) an admin refreshes one last time and switches the source on Chapter
+  Settings. From then on the site is the record.
+
+**Tests** (none of them touch Firebase):
+```
+node scripts/sync-tests.js          # the sheet mapper (also portal/sync-tests.html in a browser)
+node scripts/sync-runner-tests.js   # Refresh from sheet against an in-memory database
+# in a browser, with python3 dev-server.py 8080 running:
+#   http://localhost:8080/portal/ops-tests.html   OpsCore and FamilyTreeCore; every line must say OK
+```
+
+**This repository is public**, and GitHub Pages serves every file on `main` except what `_config.yml` excludes
+(`CLAUDE.md`, `AGENTS.md`, `portal/docs/`). Never commit personal data: no brothers' names next to demerits,
+standing, money or notes, no phone numbers, private emails or student IDs, no export of the database, the Tracker
+sheet or the family tree poster file. Test fixtures use invented names.
 
 ---
 
@@ -239,6 +291,9 @@ timers/
     startedAt, duration, pausedAt, elapsed
 ```
 
+Chapter Ops, the family tree, the portal home links and the rush page settings have their own nodes. They are listed
+with their rules in [`docs/ops-schema.md`](docs/ops-schema.md).
+
 ---
 
 ## Session History & Export
@@ -321,7 +376,9 @@ If you'd rather have one-click file uploads instead of a Drive-link paste step, 
 |---|---|
 | Firebase API keys | `portal/js/firebase-config.js` |
 | Security rules | `firebase-database.rules.json` → `scripts/publish-rules.sh` (see Security Rules) |
-| Embedded Google Calendar | `portal/index.html`, replace the `<iframe>` src |
-| Portal resource links (bylaws, absence form, etc.) | `portal/index.html`, the resource cards section |
-| Standards report form URL | `portal/index.html`, Standards Report Form link |
+| Embedded Google Calendar | **Admin → Portal Links** (calendar link); the fallback is the `<iframe>` in `portal/index.html` |
+| Portal home links (bylaws, forms, resources) | **Admin → Portal Links**; the built-in set is in `portal/js/portal-links-core.js` |
+| Google Forms for excuses and service hours (sheet mode) | `OpsMode.FORMS` in `portal/js/ops-mode.js`, or `settings/mode/forms` |
+| Header menus | `NAV` in `portal/js/auth.js` |
+| Chapter numbers (demerits, dues, service) | **Chapter Settings** (after the switch to the site); defaults in `OpsCore.DEFAULTS` |
 | Authorized sign-in domains | Firebase console → Authentication → Authorized domains |

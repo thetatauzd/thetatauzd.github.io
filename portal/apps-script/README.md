@@ -5,7 +5,7 @@ deployment and `/exec` URL:
 
 | File | Lives in | Serves |
 |---|---|---|
-| [`Gateway.gs`](Gateway.gs) | **F26 Theta Tau Tracker** | A brother's own demerits and payments |
+| [`Gateway.gs`](Gateway.gs) | **F26 Theta Tau Tracker** | A brother's own demerits and payments (`me`), and the admin-only full export behind **Refresh from sheet** (`exportAll`) |
 | [`RosterGateway.gs`](RosterGateway.gs) | **Brother list** (the chapter roll) | Roll number ↔ name, for sign-up autofill |
 
 They verify callers differently, and the reason matters:
@@ -90,8 +90,8 @@ this — but the builder still can.
 5. Copy the `/exec` URL.
 6. Paste it into `portal/js/tracker.js` as `GATEWAY_URL`, then commit and push.
 
-After **any** edit to `Gateway.gs`, re-deploy with
-**Deploy → Manage deployments → ✏️ → Deploy**, or the old version keeps serving.
+After **any** edit to `Gateway.gs`, redeploy it as a new version of the same
+deployment (see [Redeploy](#redeploy) below), or the old version keeps serving.
 
 ## Sheet expectations
 
@@ -103,7 +103,9 @@ Read from the tabs you already have:
 | `Payments_Fines` | Balance due, amount paid, and the line-item history. |
 | `DemeritDashboard` | Demerit totals per brother. |
 | `Standards_Adjustments` | The individual entries behind the standards number. |
-| `Service_Hours` | **Optional and not created yet** — see below. |
+| `Service_Hours` | Service hours (the live sheet has it). |
+| `Demerit_Rules` | Rates, thresholds and the service requirement. Only `exportAll` reads it. |
+| `Event_Info`, `Attendance`, `Excuses` | Events and attendance. Only `exportAll` reads them. |
 
 Header rows are found by looking for `Brother Name`, so the title rows above
 `DemeritDashboard`'s header are fine. Blank spacer rows are skipped, and roll
@@ -125,21 +127,72 @@ Recommended: add a `Roll Number` column to `Payments_Fines` and
 
 Exec keeps picking names from the dropdown; the roll number fills itself in.
 
-## Adding service hours later
+## Service hours tab
 
-The portal hides the service-hours section until the tab exists. Create a tab
-named `Service_Hours` with these columns and it appears on its own:
+The live sheet has a `Service_Hours` tab with these columns (My Tracker hides the
+service section on a workbook without it):
 
 | Brother Name | Roll Number | Event | Date | Hours | Confirmed |
 |---|---|---|---|---|---|
 
-`Confirmed` counts as yes for `Y`, `Yes`, `TRUE`, `Confirmed`, or `Approved`.
+For My Tracker (`me`), `Confirmed` counts as yes for `Y`, `Yes`, `TRUE`,
+`Confirmed`, or `Approved`. The sheet's own DemeritDashboard and the Refresh from
+sheet copy count only a ticked box (`TRUE`), so tick the box rather than typing.
 Only confirmed rows are added to the total; everything else shows as Pending.
+
+## Refresh from sheet (`exportAll`, version 2)
+
+While the sheet is the record, officers preview the new Chapter Ops pages from a
+copy of it. An admin makes the copy on **Admin → Refresh from sheet**
+(`portal/import.html`), and it also runs on its own when an admin opens a preview
+page and the copy is more than a day old. Brothers are not affected: My Tracker
+keeps reading the sheet through `me`.
+
+`exportAll` is admin only (the same database check as `me`, then `role === 'admin'`).
+It returns `{ ok, version: 2, exportedAt, tabs }`, one entry per tab:
+`{ tab, found, headers, rows }`, dates as `yyyy-MM-dd` in the spreadsheet's time zone.
+
+| Export key | Tab read (first that exists) |
+|---|---|
+| `Roster` | `Roster` |
+| `Demerit_Rules` | `Demerit_Rules`, else `Config` |
+| `Event_Info` | `Event_Info` |
+| `Attendance` | `Attendance` |
+| `Payments_Fines` | `Payments_Fines` |
+| `Standards_Adjustments` | `Standards_Adjustments` |
+| `Service_Hours` | `Service_Hours`, else `Service_Log` |
+| `Excuses` | `Excuses` |
+| `DemeritDashboard` | `DemeritDashboard`, else `Dashboard` (the sheet's own totals, used to check the copy) |
+| `Rollover` | any tab with "rollover" in its name (`S26 Rollover Demerits`) |
+
+Version 1 (before November 2026) asked for `Config` and `Service_Log`, which the
+live sheet does not have, so both came back empty, and it did not send
+`DemeritDashboard`. The portal refuses a version 1 export and says the gateway
+needs redeploying, so nothing is copied until the new version is live.
+
+## Redeploy
+
+Do this after every change to `Gateway.gs`. The `/exec` URL must stay the same,
+because `portal/js/tracker.js` and `portal/js/sheet-sync.js` both call it.
+
+1. Open the **F26 Theta Tau Tracker** → **Extensions → Apps Script**.
+2. Open the `Gateway` file (not `Code.gs`), select everything, and paste in the new
+   [`Gateway.gs`](Gateway.gs). Press **Save** (the disk icon).
+3. **Deploy → Manage deployments**. Pick the existing **Web app** deployment and
+   press the pencil (**Edit**).
+4. Under **Version**, choose **New version**. Leave *Execute as: Me* and
+   *Who has access: Anyone* as they are. Press **Deploy**.
+5. If Google asks to authorize again, allow it (it reads the sheet and calls Firebase).
+6. Check: open the `/exec` URL with `?action=ping` on the end. It must list the tabs
+   and say `"version":2`. The Refresh from sheet page also shows "Gateway: Up to date".
+
+Do **not** press **Deploy → New deployment**: that creates a second, different
+`/exec` URL that the portal does not use, and the old version keeps serving.
 
 ## Checking it works
 
 Visit the `/exec` URL with `?action=ping` on the end. You should get the list of
-tab names back. If you get an error page instead, the deployment's access is
+tab names back, and `"version":2` once the current `Gateway.gs` is deployed. If you get an error page instead, the deployment's access is
 probably not set to **Anyone**.
 
 ---

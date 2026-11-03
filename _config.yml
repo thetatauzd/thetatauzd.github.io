@@ -1,0 +1,22 @@
+# GitHub Pages builds this site with Jekyll (there is no .nojekyll). This file only sets `exclude`.
+# Every other setting stays the GitHub Pages default. No page has front matter, so Jekyll copies them as they are.
+#
+# Setting `exclude` replaces Jekyll's own default list, so that list comes first, unchanged.
+exclude:
+  # Jekyll and GitHub Pages defaults
+  - CNAME
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - .sass-cache
+  - .jekyll-cache
+  - gemfiles
+  # Notes for maintainers and AI tools. They stay in the repository but are not served on thetatauzd.org.
+  # The menus link to the copies on GitHub instead.
+  - CLAUDE.md
+  - AGENTS.md
+  - portal/docs

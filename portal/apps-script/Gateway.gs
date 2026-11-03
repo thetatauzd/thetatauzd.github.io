@@ -30,8 +30,11 @@
  *      what actually protects the data.
  *   4. Copy the /exec URL it gives you into portal/js/tracker.js (GATEWAY_URL).
  *
- * After changing this file you must Deploy - Manage deployments - edit - Deploy
- * again, or the old version keeps serving.
+ * After changing this file, publish it as a NEW VERSION of the EXISTING deployment:
+ * Deploy - Manage deployments - pencil (Edit) - Version: New version - Deploy.
+ * The /exec URL stays the same. Do not use "New deployment": that makes a new URL
+ * the portal does not know. Then open the /exec URL with ?action=ping and check
+ * that it says "version": 2 (see README.md, "Redeploy").
  */
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -43,6 +46,10 @@ var FIREBASE_DB = 'https://thetatauzd-2ab25-default-rtdb.firebaseio.com';
 var ROLL_SPREADSHEET_ID = '';
 var ROLL_SHEET_NAME = '';
 
+// Version of the exportAll payload. js/sheet-sync-core.js refuses anything older,
+// because version 1 asked for tabs the live sheet does not have (Config, Service_Log).
+var EXPORT_VERSION = 2;
+
 // Each entry lists the tab names to try, in order. The live workbook has drifted
 // from what the template builder creates (the dashboard was renamed), so both
 // spellings are accepted rather than assuming one.
@@ -51,7 +58,8 @@ var SHEETS = {
   payments: ['Payments_Fines'],
   demerits: ['DemeritDashboard', 'Dashboard'],
   adjustments: ['Standards_Adjustments'],
-  serviceHours: ['Service_Hours']   // optional; ignored until you add it
+  serviceHours: ['Service_Hours'],  // optional; ignored until you add it
+  rules: ['Demerit_Rules', 'Config'] // Demerit_Rules on the live sheet; Config on the template's
 };
 
 // ── Entry points ─────────────────────────────────────────────────────────────
@@ -71,7 +79,8 @@ function handle(e) {
 
     if (action === 'me') return json(getMyRecord(req.idToken));
     if (action === 'lookupRoll') return json(lookupRoll(req.idToken, req.rollNumber));
-    if (action === 'ping') return json({ ok: true, sheets: listTabs() });
+    if (action === 'ping') return json({ ok: true, sheets: listTabs(), version: EXPORT_VERSION });
+    if (action === 'exportAll') return json(exportAll(req.idToken));
 
     return json({ ok: false, error: 'Unknown action: ' + action });
   } catch (err) {
@@ -167,10 +176,10 @@ function getSheet(names) {
  */
 function readTable(sheetNames, headerHint) {
   var sheet = getSheet(sheetNames);
-  if (!sheet) return { headers: [], rows: [] };
+  if (!sheet) return { headers: [], rows: [], tab: '' };
 
   var values = sheet.getDataRange().getValues();
-  if (!values.length) return { headers: [], rows: [] };
+  if (!values.length) return { headers: [], rows: [], tab: sheet.getName() };
 
   var hint = (headerHint || 'brother name').toLowerCase();
   var headerIdx = -1;
@@ -191,7 +200,7 @@ function readTable(sheetNames, headerHint) {
     }
     rows.push(obj);
   }
-  return { headers: headers, rows: rows };
+  return { headers: headers, rows: rows, tab: sheet.getName() };
 }
 
 /** Roll numbers arrive as 396, "396", or 396.0 depending on the cell. */
@@ -433,4 +442,62 @@ function lookupRoll(idToken, rollNumber) {
   }
 
   return { ok: true, found: !!name, name: name, rollNumber: roll };
+}
+
+
+// ── Full export for the portal's "Refresh from sheet" (admin only) ───────────
+//
+// Returns every row of the tracker tabs the portal copies, so officers can preview
+// Chapter Ops while this sheet stays the record. The portal (js/sheet-sync.js)
+// replaces its whole copy of the term each time, so this is safe to call daily.
+// The caller must hold the admin role on the portal; the same
+// users/{uid}.json?auth= read that verifies everyone else verifies this.
+//
+// Each tab comes back as { tab: <the tab actually read, '' if none>, found,
+// headers, rows }. Dates are 'yyyy-MM-dd' in the spreadsheet's own time zone.
+// Text cells (the Service_Hours week labels, for example) stay text.
+
+function exportAll(idToken) {
+  var me = resolveCaller(idToken);
+  if (me.role !== 'admin') throw new Error('Admin only.');
+
+  var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  var tabs = {
+    Roster:                { names: SHEETS.roster },
+    Demerit_Rules:         { names: SHEETS.rules,                     hint: 'event type' },
+    Event_Info:            { names: ['Event_Info'],                   hint: 'event title' },
+    Attendance:            { names: ['Attendance'] },
+    Payments_Fines:        { names: SHEETS.payments },
+    Standards_Adjustments: { names: SHEETS.adjustments },
+    Service_Hours:         { names: ['Service_Hours', 'Service_Log'] },
+    Excuses:               { names: ['Excuses'] },
+    DemeritDashboard:      { names: SHEETS.demerits }                 // the sheet's own totals, to check the copy
+  };
+  var out = {};
+  Object.keys(tabs).forEach(function (k) {
+    var t = readTable(tabs[k].names, tabs[k].hint);
+    out[k] = { tab: t.tab, found: !!t.tab, headers: t.headers, rows: t.rows.map(function (r) { return cleanRow(r, tz); }) };
+  });
+  // Any tab named like "S26 Rollover Demerits" is a carry-in. Every one is sent in Rollovers, so the site can
+  // pick the tab for the term before the one it copies (an "F26" carry-out tab added at the end of the fall
+  // must not hide the S26 carry-in). Rollover keeps the last one, for sites that predate Rollovers.
+  out.Rollovers = [];
+  SpreadsheetApp.getActiveSpreadsheet().getSheets().forEach(function (sh) {
+    if (/rollover/i.test(sh.getName())) {
+      var t = readTable([sh.getName()], 'demerits');
+      out.Rollover = { tab: sh.getName(), found: true, headers: t.headers, rows: t.rows.map(function (r) { return cleanRow(r, tz); }) };
+      out.Rollovers.push(out.Rollover);
+    }
+  });
+  return { ok: true, version: EXPORT_VERSION, exportedAt: new Date().toISOString(), tabs: out };
+}
+
+function cleanRow(obj, tz) {
+  var o = {};
+  Object.keys(obj).forEach(function (k) {
+    var v = obj[k];
+    if (v instanceof Date) v = Utilities.formatDate(v, tz || Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    o[k] = v;
+  });
+  return o;
 }

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brother Portal – Chapter Settings</title>
+  <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/portal.css?v=32">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style id="auth-wall">.auth-pending>header,.auth-pending>main,.auth-pending>.portal-container{display:none!important}.auth-spinner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f5;z-index:9999}.auth-spinner .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:#8B0000;border-radius:50%;animation:authspin .7s linear infinite}@keyframes authspin{to{transform:rotate(360deg)}}</style>
+</head>
+<body class="auth-pending">
+  <div class="auth-spinner" id="auth-spinner"><div class="sp"></div></div>
+  <header class="portal-header">
+    <div class="header-brand"><a href="/portal" class="logo-link"><img src="../Images/ThetaTau.png" alt="ΘΤ"></a><h1>Chapter Settings</h1></div>
+    <div class="user-info">
+      <div class="nav-dropdown hidden" id="ops-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--ops" id="ops-dd-toggle">Chapter Ops</button>
+        <div class="nav-dropdown-menu" id="ops-dd-menu">
+          <a href="attendance" data-perm="attendance" class="hidden">Attendance</a>
+          <a href="standards-board" data-perm="standards" class="hidden">Standards Board</a>
+          <a href="treasurer" data-perm="finance" class="hidden">Treasurer</a>
+          <a href="service" data-perm="service" class="hidden">Service Hours</a>
+          <a href="marshal" data-perm="pledges" class="hidden">Marshal</a>
+          <a href="settings" data-perm="settings" class="hidden">Chapter Settings</a>
+        </div>
+      </div>
+      <div class="nav-dropdown hidden" id="admin-dropdown">
+        <button type="button" class="nav-dropdown-toggle nav-dropdown-toggle--admin" id="admin-dd-toggle">Admin</button>
+        <div class="nav-dropdown-menu" id="admin-dd-menu">
+          <a href="admin">User Management</a>
+          <a href="import">Import from Tracker sheet</a>
+          <a href="newsletters-admin">Newsletters</a>
+          <div class="dd-section-label">Voting</div>
+          <a href="standards">Standards</a>
+          <a href="regent">Regent View</a>
+          <a href="history">Session History</a>
+        </div>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <button type="button" class="nav-dropdown-toggle" id="dd-toggle"><span id="user-name">Menu</span></button>
+        <div class="nav-dropdown-menu" id="dd-menu">
+          <a href="/portal">Portal home</a>
+          <a href="voting">Voting</a>
+          <a href="tracker">Theta Tau Tracker</a>
+          <a href="timer" id="link-timer" class="hidden">Event Timer</a>
+          <a href="/">Back to Site</a>
+          <div class="dd-divider"></div>
+          <button type="button" class="dd-signout" id="btn-signout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container ops-section">
+    <div id="ops-banner" hidden></div>
+
+    <div class="portal-card" id="card-source">
+      <h2>Source of truth <span class="count-pill" id="src-pill"></span></h2>
+      <p class="step-hint" id="src-now">Checking…</p>
+      <div class="req-actions hidden" id="src-admin">
+        <button type="button" class="btn danger btn-small" id="btn-src-switch"></button>
+        <span class="status-line" id="src-status" style="margin:0;"></span>
+      </div>
+      <p class="step-hint hidden" id="src-nonadmin">Only an admin can change this.</p>
+    </div>
+
+    <div class="portal-card hidden" data-readonly>
+      <h2>Read-only this semester</h2>
+      <p class="step-hint">Chapter Settings is locked while the Tracker sheet is the record, for admins too. The numbers below are the site's own. This semester the preview pages use the Tracker sheet's own numbers where the sheet has them, so their totals follow the sheet. The site's numbers take over at the switch to This site, so check them before then. Positions (below) stay editable, and member statuses and positions are assigned on <a href="admin">User Management</a>.</p>
+      <details class="panel-collapse hidden" id="sheet-rules"></details>
+    </div>
+
+    <div class="portal-card">
+      <h2>Term <span class="count-pill" id="term-pill"></span></h2>
+      <p class="step-hint">Everything operational (attendance, fees, hours, demerits) is filed under the current term. Start a new term at the semester break; the wizard carries forward only what the bylaws say carries forward.</p>
+      <div class="req-actions" data-write><a class="btn btn-primary btn-small" href="semester">Open Semester Setup</a><span class="step-hint" style="margin:0;">Start a new term, schedule its chapters and events, clear old photos.</span></div>
+      <p class="step-hint hidden" data-readonly>Semester Setup is closed while the Tracker sheet is the record. It opens again after the switch to This site.</p>
+    </div>
+
+    <div class="portal-card">
+      <h2>Bylaw numbers</h2>
+      <p class="step-hint">Totals are recalculated from these numbers, so a change applies to the whole current semester, including absences already recorded. Change them between semesters unless the chapter voted otherwise, and put the bylaw section in the note.</p>
+      <p class="step-hint">These drive every computation on the site. Each group saves on its own and keeps a history below. The source line notes where the number comes from.</p>
+      <div id="policy-groups"></div>
+    </div>
+
+    <div class="portal-card">
+      <h2>Event types</h2>
+      <p class="step-hint">What each kind of absence costs. "Free per term" only applies to unexcused absences of that type.</p>
+      <div class="table-scroll"><table class="admin-table"><thead><tr><th>Key</th><th>Label</th><th>Unexcused</th><th>Excused</th><th>Free / term</th><th>Source</th></tr></thead><tbody id="et-tbody"></tbody></table></div>
+      <div class="add-row" style="margin-top:0.5rem; align-items:center;" data-write>
+        <input id="et-new" class="field" placeholder="New type label" style="max-width:220px;">
+        <button type="button" class="btn ghost btn-small" id="btn-et-add" style="margin:0;">Add type</button>
+        <button type="button" class="btn btn-primary btn-small" id="btn-et-save" style="margin:0;">Save event types</button>
+        <span class="status-line" id="et-status" style="margin:0;"></span>
+      </div>
+    </div>
+
+    <div class="portal-card">
+      <h2>Positions</h2>
+      <p class="step-hint">Officers, boards and committee chairs, and what each one can do on the site. Assign them to people on User Management. Positions stay editable while the Tracker sheet is the record, because the sheet does not hold them.</p>
+      <div class="table-scroll"><table class="admin-table"><thead><tr><th>Key</th><th>Label</th><th>Group</th><th>Order</th><th>Can do</th></tr></thead><tbody id="pos-tbody"></tbody></table></div>
+      <div class="add-row" style="margin-top:0.5rem; align-items:center;">
+        <input id="pos-new" class="field" placeholder="New position label" style="max-width:220px;">
+        <button type="button" class="btn ghost btn-small" id="btn-pos-add" style="margin:0;">Add position</button>
+        <button type="button" class="btn btn-primary btn-small" id="btn-pos-save" style="margin:0;">Save positions</button>
+        <span class="status-line" id="pos-status" style="margin:0;"></span>
+      </div>
+      <p class="step-hint">Capabilities: <strong>finance</strong> treasurer page · <strong>attendance</strong> take attendance · <strong>standards</strong> demerits, excuses, overrides · <strong>service</strong> approve hours · <strong>pledges</strong> marshal page · <strong>settings</strong> this page and terms.</p>
+    </div>
+
+    <div class="portal-card">
+      <h2>Member statuses</h2>
+      <div class="table-scroll"><table class="admin-table"><thead><tr><th>Key</th><th>Label</th><th>Counts as active</th><th>Charged dues</th><th>Votes</th></tr></thead><tbody id="st-tbody"></tbody></table></div>
+      <div class="add-row" style="margin-top:0.5rem; align-items:center;" data-write>
+        <button type="button" class="btn btn-primary btn-small" id="btn-st-save" style="margin:0;">Save statuses</button>
+        <span class="status-line" id="st-status" style="margin:0;"></span>
+      </div>
+    </div>
+
+    <div class="portal-card">
+      <h2>History</h2>
+      <div id="hist-list"></div>
+    </div>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js?v=31"></script>
+  <script src="js/auth.js?v=32"></script>
+  <script src="js/ops-core.js?v=32"></script>
+  <script src="js/ops-db.js?v=32"></script>
+  <script src="js/ops-mode.js?v=32"></script>
+  <script src="js/sheet-sync.js?v=32"></script>
+  <script src="js/settings.js?v=32"></script>
+</body>
+</html>
