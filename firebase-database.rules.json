@@ -350,7 +350,7 @@
         ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)"
       },
       "private": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('positions').exists() || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
         ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
         "$id": {
           ".validate": "newData.hasChildren()",
@@ -360,7 +360,7 @@
         }
       },
       "history": {
-        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('positions').exists() || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true)",
         "$id": {
           ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('perms').child('tree').val() === true) && !data.exists()"
         }

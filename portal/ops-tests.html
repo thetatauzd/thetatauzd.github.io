@@ -262,10 +262,11 @@
     eq('tree private: an officer view takes standing from the private part only', T.viewMembers(leaked, { a: { status: 'resigned' } }).a, { name: 'A', status: 'resigned' });
     eq('tree private: non-officers draw no black pills (no status on any node)', T.index(T.viewMembers(T.splitAll(withGone).members, null)).list.filter(function (m) { return m.status; }).length, 0);
     eq('tree private: officers draw the black pill', T.index(T.viewMembers(parts.members, parts.priv)).byId.g.status, 'removed');
-    eq('tree private: who counts as an officer (admin, any position, tree capability)', [
-      T.isOfficer({ role: 'admin' }), T.isOfficer({ role: 'brother', positions: { scribe: true } }), T.isOfficer({ role: 'brother', positions: { standards_rep: true }, perms: {} }),
+    eq('tree private: who counts as an officer (admin or the tree capability, which only exec positions grant)', [
+      T.isOfficer({ role: 'admin' }), T.isOfficer({ role: 'brother', positions: { scribe: true }, perms: { attendance: true, tree: true } }),
+      T.isOfficer({ role: 'brother', positions: { academic_chair: true }, perms: {} }), T.isOfficer({ role: 'brother', positions: { community_service_chair: true }, perms: { service: true } }),
       T.isOfficer({ role: 'brother', perms: { tree: true } }), T.isOfficer({ role: 'brother', positions: {}, perms: { finance: false } }),
-      T.isOfficer({ role: 'pnm', positions: {}, perms: {} }), T.isOfficer(null)], [true, true, true, true, false, false, false]);
+      T.isOfficer({ role: 'pnm', positions: {}, perms: {} }), T.isOfficer(null)], [true, true, false, false, true, false, false, false]);
     // Restore: older files (and the private poster copy) keep status/note inside each member; newer ones in a `private` map.
     var oldFile = { classes: ['Alpha', 'Beta'], members: { a: { name: 'Ava Lindqvist', pledgeClass: 'Alpha', roll: '1' }, x: { name: 'Gone', pledgeClass: 'Beta', bigId: 'a', status: 'resigned', note: ' left 2019 ' }, y: { name: 'Odd', status: 'ghost' } },
       photos: { a: { data: 'data:image/jpeg;base64,AAAA' }, x: {}, nobody: { data: 'data:image/jpeg;base64,BBBB' } } };

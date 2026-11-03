@@ -187,7 +187,7 @@ imports/{push}            { kind: 'sheetSync', term, at, by, byName, status: don
 | changeLog | admin and any ops capability (finance, attendance, standards, service, pledges, settings) | the same |
 | portalLinks | every member | admin |
 | familyTree/members, photos, meta | every approved member | admin or `perms/tree` (exec by default); members may not hold `status` or `note`; name ≤ 80, roll a number, LinkedIn URL only; photo ≤ 90k chars JPEG data URL |
-| familyTree/private | officers: admin, any position, or `perms/tree` | admin or `perms/tree`; `status` resigned or removed, `note` ≤ 1000, nothing else |
+| familyTree/private | the exec board: admin or `perms/tree` (chairs do not have it) | admin or `perms/tree`; `status` resigned or removed, `note` ≤ 1000, nothing else |
 | familyTree/history | officers (same as private): before/after copies hold standing | admin or `perms/tree`, append-only |
 | site/rush | **anyone, signed in or not** (the public rush page reads `/site/rush.json` over plain HTTPS, about 1 KB) | admin only (Admin → Website, `portal/site-admin.html`). Text only. Validated children: isOpen (required), nextSemester ≤ 60, rushTitle ≤ 80, subtitle/ctaLine ≤ 200, rushLinkUrl/interestFormUrl `https://` ≤ 500, heroAlt ≤ 200, updatedAt, events/0-9 {title (required) ≤ 80, detail ≤ 160, inviteOnly}. Never personal data: no names or emails. |
 | site/rushPictures | **anyone, signed in or not** (the rush page fetches `/site/rushPictures.json` only while rush is open) | admin only, written in the same update as site/rush. hero and events/0-9 (same index as site/rush/events), each a full JPEG data URL ≤ 100k chars. Closing rush needs no cleanup: a closed page never downloads them. |
@@ -259,7 +259,7 @@ familyTree/members/{id}   { name, roll, major, pledgeClass, bigId, big2Id, linke
                             offices: { regent: 'past', marshal: 'current' },    -- official signs of office: X! XX! XXX! XXXX!
                             familyName, color }            -- familyName/color only on a family root (no bigId)
                                                            -- never status or note (the rules refuse them here)
-familyTree/private/{id}   { status: 'resigned' | 'removed', note }   -- officers only (admin, any position, or perms/tree)
+familyTree/private/{id}   { status: 'resigned' | 'removed', note }   -- exec board only (admin or perms/tree; chairs excluded)
                                                            -- absent = brother; resigned/removed stay in the tree
 familyTree/photos/{id}    { data: 'data:image/jpeg;base64,…', w: 192, h: 192, bytes, createdAt, by }   -- one square thumbnail per member
 familyTree/meta           { classes: [ 'Alpha', …, 'Omega Beta', … ], title, importedAt, importedBy, source, updatedAt }

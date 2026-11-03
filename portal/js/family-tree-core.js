@@ -360,9 +360,11 @@
    * capability. Mirrors the familyTree/private and familyTree/history read rule.
    */
   function isOfficer(profile) {
+    // The exec board: admins and holders of the tree capability. Chairs hold positions without it,
+    // so they see the tree like any brother (owner's call, 2026-11-02). Same test as the
+    // familyTree/private and familyTree/history .read rules.
     if (!profile) return false;
     if (profile.role === 'admin') return true;
-    if (Object.keys(profile.positions || {}).length) return true;
     return !!(profile.perms && profile.perms.tree === true);
   }
 
