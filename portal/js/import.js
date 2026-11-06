@@ -39,6 +39,9 @@
     var M = global.OpsMode;
     var held = typeof M.isSyncing === 'function' ? M.isSyncing(mode)
       : !!(rawMode && rawMode.syncing === true && typeof rawMode.syncingAt === 'number' && Date.now() - rawMode.syncingAt < PortalSync.LOCK_MS);
+    // My own lock from another page or tab (cut off, or still running there): Refresh may take it over
+    // (PortalSync, once the lock is 2 minutes old), so the button stays on.
+    var mine = held && !busy && !!me && !!rawMode && rawMode.syncingBy === me.uid;
     var last = mode && mode.lastSyncAt ? M.when(mode.lastSyncAt) + (mode.lastSyncByName ? ' by ' + mode.lastSyncByName : '') : 'Never';
     if (mode && mode.copyIncomplete && !held && !busy) {   // while a refresh runs, the flag is its own and the Now line says so
       last = mode.lastSyncAt ? last + '. A refresh after that one stopped partway, so part of the copy may be older than the rest. Refresh again.'
@@ -49,12 +52,14 @@
     $('sync-facts').innerHTML =
       '<dt>Term</dt><dd>' + esc(term()) + ' <span class="step-hint" style="margin:0;">(from Chapter Settings)</span></dd>' +
       '<dt>Last copy</dt><dd>' + esc(last) + '</dd>' +
-      (held ? '<dt>Now</dt><dd><strong>' + esc((rawMode.syncingByName || 'An admin') + ' is refreshing (started ' + M.when(rawMode.syncingAt) + ').') + '</strong></dd>' : '') +
+      (mine ? '<dt>Now</dt><dd><strong>' + esc('A refresh you started ' + M.when(rawMode.syncingAt) + ' on another page or tab is running.') + '</strong> ' +
+          esc('If you closed that page, press Refresh from sheet to take it over (possible ' + Math.round((PortalSync.TAKEOVER_MS || 120000) / 60000) + ' minutes after it started).') + '</dd>'
+        : (held ? '<dt>Now</dt><dd><strong>' + esc((rawMode.syncingByName || 'An admin') + ' is refreshing (started ' + M.when(rawMode.syncingAt) + ').') + '</strong></dd>' : '')) +
       '<dt>Gateway</dt><dd' + (gatewayV !== undefined && !(gatewayV >= 2) ? ' class="standing-bad"' : '') + '>' + esc(gw) + '</dd>';
     var sheet = isSheet();
     show('sec-refresh-actions', sheet);
     show('site-mode-note', !sheet);
-    $('btn-refresh').disabled = busy || held;
+    $('btn-refresh').disabled = busy || (held && !mine);
     $('btn-check').disabled = busy || held;
   }
 
@@ -223,6 +228,8 @@
       busy = false; renderFacts();
       if (err && err.code === 'shrink' && !dryRun && confirm(err.message + '\n\nCopy it anyway?')) { run(false, true); return; }
       status((err && err.message) || 'The refresh failed.', 'error');
+      // Taken over: the refresh that took over may have finished while this one waited, so show its report.
+      if (err && err.code === 'taken-over') Promise.all([loadMode(), loadReport()]).then(function () { renderFacts(); renderReport(report, false); }).catch(function () {});
     });
   }
 

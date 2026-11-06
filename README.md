@@ -125,5 +125,5 @@ Features: Google Sign-In, role-based access, live voting system (rush bids, moti
 
 - **Regent**: Jack Schmitt
 - **Vice Regent**: Nicole Hoeker
-- **Rush Chairs**: Bradley Alford, Kaylee Molitor
+- **Rush Chairs**: Bradley Alford, Giulio Siciliano
 - **Alumni Correspondent**: Carlos Arenas

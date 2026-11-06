@@ -25,7 +25,8 @@ your job this semester:
   the switch. Every page opens with a yellow note saying when the copy was made and by whom. There are no buttons
   that save anything: make every change on the sheet, and it shows on the site after the next refresh.
 - **Refresh**: an admin presses *Refresh from sheet*. The copy also refreshes itself when an admin opens a preview
-  page and it is more than a day old. If the copy looks out of date, ask an admin.
+  page and it is more than a day old. A refresh takes under a minute: stay on the page until it says it is done
+  (the browser asks before you leave). If the copy looks out of date, ask an admin.
 - **My Tracker (preview)** (Chapter Ops menu) shows your own record as the site computes it from the copy. Brothers
   do not see it.
 - Only officers see the **Officer preview** card on the portal home and the Chapter Ops menu.
@@ -214,6 +215,13 @@ After the switch:
   - **Roster status and User Management disagree**: if the Roster is right, fix the status on User Management. The
     refresh never changes accounts.
   - It also runs on its own when an admin opens a preview page and the copy is over a day old.
+  - Leaving a page while a refresh runs stops it partway (the browser asks first). The page lets go of it as it
+    closes, the yellow note says "The last refresh stopped partway", and the next visit to a preview page makes
+    the copy again. If the browser was killed or the connection was lost, the refresh keeps its hold for a while:
+    you can take it over after 2 minutes (below), anyone else after 10 minutes.
+  - "A refresh you started on another page or tab is running": if that page is closed, press the button again
+    once the refresh is 2 minutes old and this page takes it over. Another admin's refresh: wait for it to finish
+    (at most 10 minutes).
   - If the top card says "Old version. Redeploy Gateway.gs", follow `portal/apps-script/README.md` → Redeploy (a new
     version of the existing deployment, never a new deployment).
 - **Family Tree, first time**: the tree starts empty. The database rules for the family tree must be published first.

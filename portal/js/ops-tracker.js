@@ -131,7 +131,7 @@
     if (!global.OpsMode.isStale(mode)) return;
     setSync((mode && mode.copyIncomplete ? 'The last refresh stopped partway.' : (mode && mode.lastSyncAt ? 'The copy is more than a day old.' : 'Nothing has been copied yet.')) +
       ' Copying the latest from the Tracker sheet…');
-    global.PortalSync.refreshIfStale(me).then(function (summary) {
+    global.PortalSync.refreshIfStale(me, { onProgress: function (t) { setSync(t); } }).then(function (summary) {
       if (!summary) { setSync(''); return null; }
       return reloadAfterSync().then(function () { setSync('Copied the latest from the Tracker sheet.', 'success'); });
     }).catch(function (err) {

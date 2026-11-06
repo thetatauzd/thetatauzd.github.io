@@ -364,6 +364,8 @@ Chapter newsletters are published by admins from `/portal/newsletters-admin.html
 
 **Public page** (`/newsletter.html`, repo root): reads the `newsletters` node directly (public read, no auth) and lists newsletters newest-first with a link to each PDF.
 
+**Email list** (`js/newsletter-signup.js`, `js/newsletter-config.js`, `portal/apps-script/NewsletterGateway.gs`): the public page has a "Get the next issue by email" sign-up box. Addresses go to a private "Newsletter Subscribers" Google Sheet owned by thetatauusc@gmail.com, through its own Apps Script web app; no address is stored in Firebase or this repo. After publishing, an admin presses **Email subscribers** on the issue (in the table, or under the publish form); the script emails each active subscriber once, up to Gmail's ~100 a day, and the next press carries on. Every email links to `/newsletter?unsubscribe=<token>`, where the person presses Unsubscribe. Until `NEWSLETTER_GATEWAY_URL` is set, the page shows "Email sotheta@mailbox.sc.edu to get on the list" instead of the form. Setup, limits and Sheet upkeep: [apps-script/README.md, "Newsletter sign-up gateway"](apps-script/README.md#newsletter-sign-up-gateway).
+
 **Security model:** the Realtime Database `newsletters` node is publicly readable but only `admin`-writable (see [Security Rules](#security-rules)). Since there's no file upload, there's no separate Storage rules concern, the RTDB rule alone gates who can publish.
 
 If you'd rather have one-click file uploads instead of a Drive-link paste step, that's possible by switching back to Firebase Storage, it just requires upgrading the Firebase project to the Blaze plan (billing stays $0/month at this scale, but a card must be on file).

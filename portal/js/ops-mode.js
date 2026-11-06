@@ -9,9 +9,10 @@
  *
  * Node (readable by every approved member, writable by admins and settings holders):
  *   settings/mode = { source: 'sheet'|'site', forms: { excuse, service }, lastSyncAt, lastSyncBy,
- *                     lastSyncByName, syncing, syncingAt, copyIncomplete }
+ *                     lastSyncByName, syncing, syncingAt, syncingBy, syncingByName, copyIncomplete }
  * copyIncomplete is set before a refresh writes anything and cleared only after it finishes, so a
- * refresh that stopped partway is visible and is retried.
+ * refresh that stopped partway is visible and is retried. The lock (syncing, syncingAt/By/ByName) is
+ * taken and let go by js/sheet-sync.js; isSyncing treats a lock older than LOCK_MS as dead.
  * Depends on firebase-config.js. Plain ES5.
  */
 (function (global) {
@@ -40,6 +41,8 @@
       lastSyncByName: v.lastSyncByName || null,
       syncing: v.syncing === true,
       syncingAt: typeof v.syncingAt === 'number' ? v.syncingAt : null,
+      syncingBy: v.syncingBy || null,
+      syncingByName: v.syncingByName || null,
       copyIncomplete: v.copyIncomplete === true
     };
   }

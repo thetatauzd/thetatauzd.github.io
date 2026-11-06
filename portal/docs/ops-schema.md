@@ -20,13 +20,14 @@ Spring 2027).
 settings/mode   { source: 'sheet' | 'site',              -- missing or unreadable = 'sheet'
                   forms: { excuse, service },              -- optional; else OpsMode.FORMS in js/ops-mode.js
                   lastSyncAt, lastSyncBy, lastSyncByName,  -- the last finished Refresh from sheet
-                  syncing, syncingAt, syncingBy, syncingByName,   -- the refresh lock (10 minutes)
+                  syncing, syncingAt, syncingBy, syncingByName,   -- the refresh lock (10 minutes; see Refresh
+                                                           --   from sheet below)
                   copyIncomplete }                         -- true from a refresh's first write until it finishes
 ```
 - `js/ops-mode.js` (`OpsMode`) reads it: `load`, `isSheet`, `formUrl`, `isStale` (no copy, unfinished, or older
-  than a day), `isSyncing` (the lock is held and under 10 minutes old; an older lock is dead), `when`, `banner`
-  (it says when the last refresh stopped partway). Every page that shows the copy loads it. `js/auth.js` loads it
-  on demand on pages that do not.
+  than a day), `isSyncing` (`syncing` is true and the lock is under 10 minutes old; an older lock is dead), `when`,
+  `banner` (it says when the last refresh stopped partway). Every page that shows the copy loads it. `js/auth.js`
+  loads it on demand on pages that do not.
 - **Sheet mode** (the default):
   - Brothers see the live **Theta Tau Tracker** (`tracker`, `js/tracker.js`, Gateway.gs action `me`), exactly as
     before Chapter Ops. "Request an excuse" and "Log service hours" (menu and home tiles) open the Google Forms.
@@ -36,8 +37,15 @@ settings/mode   { source: 'sheet' | 'site',              -- missing or unreadabl
     `[data-readonly]` part, for admins too. Semester Setup shows a closed card. Chapter Settings is read-only
     except the admin-only switch. User Management still saves (accounts are not tracker data).
   - Admins get "Refresh from sheet now" in the banner. When an admin opens a preview page and the copy is more than
-    a day old or the last refresh stopped partway, `PortalSync.refreshIfStale` makes a new one by itself. The portal
-    home never does (`page: 'home'` is refused): a quiet refresh cut off by the next tap would leave a half-written copy.
+    a day old or the last refresh stopped partway, `PortalSync.refreshIfStale` makes a new one by itself, and the
+    banner shows its steps ("Reading the Tracker sheet…", "Saving …"). When the copy looks fresh the check runs
+    quietly (`st.silent`): the button stays "Refresh from sheet now", a press during the check runs as soon as it
+    ends, and the banner is drawn again when it ends. Before 2026-11-05 the quiet check set the page's busy flag
+    and did not draw the banner, so a live-mode redraw during the check (the real SDK answers the settings/mode
+    listener in the same message as the check's read, listener first) drew the button as "Copying from the
+    sheet…", disabled, and nothing drew it again when the check ended: the button stayed stuck until the page
+    was reloaded. The portal home never does (`page: 'home'` is refused): a quiet refresh cut off by the next tap
+    would leave a half-written copy.
   - Totals follow the sheet's own numbers: `PortalOps.termSettings` lays `settings/sheetPolicy` over the site settings
     for the sheet's term.
 - **Site mode** (after the switch): no banner, no refresh, the site's forms and officer pages work as written below.
@@ -227,6 +235,33 @@ Refresh from sheet (`portal/import.html`, admin only, and `PortalSync.refreshIfS
    write it sets `settings/mode/copyIncomplete` and waits for the server to confirm it; the flag is cleared with
    `lastSync*` only after a complete copy, so a refresh that failed or was cut off shows in the banner and is retried
    at the next admin visit to a preview page.
+   The lock (`syncing`, `syncingAt/By/ByName`, taken in a transaction):
+   - It is let go only by the run itself (done or failed), by its page on `pagehide`, by the same admin's
+     takeover (below), or by age (10 minutes). While a refresh runs the page asks before leaving
+     (`beforeunload`); on `pagehide` it lets go of the lock itself (best effort, the same conditional release)
+     and logs the run as `left-page`. A page that is killed, or whose connection drops, keeps the lock. The
+     server never lets go on its own: a dropped connection can come back while the run is still writing, and a
+     second refresh started in the gap would get the first run's later writes (a ledger clear, then entries) on
+     top of its finished copy.
+   - A live lock older than `PortalSync.TAKEOVER_MS` (2 minutes) held by the same admin, that this page did not
+     take, is that admin's own refresh from another page or tab: a button press takes it over (`tookOverLockAt` in
+     the `imports/` row). A refresh takes about 10 seconds, so a 2-minute-old lock is almost surely dead. Another
+     admin's live lock still gives `locked`, and `refreshIfStale` never takes over.
+   - A run confirms the lock is still its own (`syncingAt/By` are its token) before every write of the copy: the
+     first in the transaction that sets `copyIncomplete`, then before each node, each ledger chunk, the settings
+     and the report. One that was taken over stops (`taken-over`, logged as `partial` or `failed`) and writes
+     nothing more, not even `copyIncomplete`: it set the mark before its first write and only a finished copy
+     clears it, so the mark is either still set or was cleared by a newer finished copy that must not be
+     overwritten. A write already sent when the lock changed hands can still land: at most one per run.
+     The same checks stop a run (`site-mode`, nothing more written) when `settings/mode/source` turned to
+     `'site'` while it ran. The run's page watches `settings/mode`: once another refresh holds the lock it
+     drops its `beforeunload` and `pagehide` handlers, so leaving neither asks nor logs `left-page` for it.
+     If the final release does not commit (the lock changed hands after the last check), the run fails with
+     `release`: the copy is saved but not recorded as finished, so `copyIncomplete` stays and the next
+     refresh redoes it. After its own run ends, a preview page reloads its data if another refresh finished
+     meanwhile.
+   - The gateway call gives up after `PortalSync.GATEWAY_TIMEOUT_MS` (6.5 minutes; Apps Script stops a run at 6),
+     so a request that never answers fails with `gateway-timeout` and the lock is released.
 3. Guards (nothing is written): admins only, sheet mode only, one refresh at a time, an export older than version 2,
    a copied tab (Attendance, Payments_Fines, Excuses, Standards_Adjustments, Service_Hours) the gateway could not find
    ("missing-tab": renamed or deleted), and an export whose dates belong to another semester ("wrong-term": with at

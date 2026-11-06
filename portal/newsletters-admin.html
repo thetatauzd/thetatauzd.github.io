@@ -6,7 +6,7 @@
   <title>Newsletters: Upload and manage</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=32">
+  <link rel="stylesheet" href="css/portal.css?v=34">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -66,6 +66,51 @@
       font-size: 0.8rem;
       cursor: pointer;
     }
+
+    /* Email subscribers */
+    .btn-email-subscribers {
+      background: var(--color-gold);
+      color: var(--color-maroon);
+      border: none;
+      border-radius: 4px;
+      padding: 0.3rem 0.6rem;
+      margin-right: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .btn-email-subscribers:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .nl-subscribers-summary {
+      margin: 0;
+      font-weight: 500;
+    }
+    .nl-subscribers-summary.muted { color: #666; font-weight: 400; }
+    .nl-subscribers-summary.error { color: #c62828; }
+    .nl-mail-note {
+      margin-top: 0.35rem;
+      font-size: 0.85rem;
+      color: #555;
+      white-space: normal;
+      min-width: 14rem;
+      max-width: 26rem;
+    }
+    .nl-mail-note:empty { display: none; }
+    .nl-mail-note.error { color: #c62828; }
+    .nl-mail-note.success { color: #2e7d32; }
+    .nl-notify-offer {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+    .nl-notify-offer .nl-offer-text { margin: 0 0 0.5rem; }
+    .nl-notify-offer .btn-email-subscribers {
+      padding: 0.6rem 1.1rem;
+      font-size: 0.95rem;
+    }
   </style>
 </head>
 <body class="auth-pending">
@@ -114,6 +159,12 @@
 
   <main class="portal-container">
     <div class="portal-card">
+      <h2>Email list</h2>
+      <p>People sign up on the public <a href="/newsletter" target="_blank" rel="noopener">Newsletters page</a>. After you publish an issue, press <strong>Email subscribers</strong> next to it. Every email has an unsubscribe link: it opens the Newsletters page, where the person presses Unsubscribe.</p>
+      <p class="nl-subscribers-summary muted" id="nl-subscribers-summary">Loading the subscriber list...</p>
+    </div>
+
+    <div class="portal-card">
       <h2>Publish a newsletter</h2>
       <p>
         1. Upload the newsletter PDF to <a href="https://drive.google.com" target="_blank" rel="noopener">Google Drive</a> (chapter shared drive works well).<br>
@@ -136,6 +187,7 @@
         <button type="submit" id="nl-submit">Publish newsletter</button>
         <div class="newsletter-form-status" id="nl-status"></div>
       </form>
+      <div class="nl-notify-offer hidden" id="nl-notify-offer"></div>
     </div>
 
     <div class="portal-card">
@@ -157,8 +209,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=31"></script>
-  <script src="js/auth.js?v=32"></script>
-  <script src="js/newsletters.js?v=31"></script>
+  <script src="js/firebase-config.js?v=34"></script>
+  <script src="js/auth.js?v=34"></script>
+  <script src="../js/newsletter-config.js?v=34"></script>
+  <script src="js/newsletters.js?v=34"></script>
 </body>
 </html>

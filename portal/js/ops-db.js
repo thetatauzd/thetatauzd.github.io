@@ -98,6 +98,8 @@
       lastSyncByName: v.lastSyncByName || null,
       syncing: v.syncing === true,
       syncingAt: typeof v.syncingAt === 'number' ? v.syncingAt : null,
+      syncingBy: v.syncingBy || null,
+      syncingByName: v.syncingByName || null,
       copyIncomplete: v.copyIncomplete === true
     };
   }
@@ -134,6 +136,11 @@
 
   function isAdmin(profile) { return !!profile && profile.role === 'admin'; }
   function canSync(profile) { return isAdmin(profile) && !!global.PortalSync && typeof global.PortalSync.refresh === 'function'; }
+  /**
+   * True while this page shows a refresh as running: its own refresh, or a press waiting for the quiet check.
+   * The quiet check on page load (st.silent: the copy looked fresh, so nothing is shown) does not count.
+   */
+  function showsBusy(st) { return (!!st.busy && !st.silent) || !!st.queued; }
 
   function drawBanner(opts, st) {
     var el = opts.el;
@@ -150,7 +157,8 @@
     if (!st.readOnly) { el.hidden = true; el.innerHTML = ''; return; }
     // A refresh that is running now (another admin's, or this page's) sets copyIncomplete before its first
     // write, so "stopped partway" is only true once no live lock holds it.
-    var running = lockHeld(st.mode) || !!st.busy;
+    var busy = showsBusy(st);
+    var running = lockHeld(st.mode) || busy;
     var shown = running && st.mode.copyIncomplete ? Object.assign({}, st.mode, { copyIncomplete: false }) : st.mode;
     el.className = el.className.replace(/(^|\s)ops-mode-banner(?=\s|$)/g, ' ').replace(/\s+/g, ' ').trim();
     if (global.OpsMode && global.OpsMode.banner) global.OpsMode.banner(el, shown, { what: opts.what });
@@ -175,12 +183,17 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'btn ghost btn-small';
-      b.textContent = st.busy ? 'Copying from the sheet…' : 'Refresh from sheet now';
-      b.disabled = !!st.busy;
+      b.textContent = busy ? 'Copying from the sheet…' : 'Refresh from sheet now';
+      b.disabled = busy;
       b.addEventListener('click', function () { sync(opts, st, false); });
       row.appendChild(b);
     }
-    if (lockHeld(st.mode) && !st.busy) note('A refresh from the sheet is running now. This page updates when it is done.');
+    if (lockHeld(st.mode) && !busy) {
+      // The same admin's own lock from another page or tab: a press takes it over (PortalSync, after 2 minutes).
+      if (canSync(opts.profile) && st.mode.syncingBy && st.mode.syncingBy === opts.profile.uid) {
+        note('A refresh you started on another page or tab is running now. This page updates when it is done. If you closed that page, press Refresh from sheet now to take it over.');
+      } else note('A refresh from the sheet is running now. This page updates when it is done.');
+    }
     else if (!isAdmin(opts.profile)) note('If this copy looks out of date, ask an admin to refresh it.');
     if (st.msg) {
       var m = document.createElement('span');
@@ -196,7 +209,7 @@
   function watchLock(opts, st) {
     if (typeof setTimeout !== 'function') return;
     if (st.lockTimer) { clearTimeout(st.lockTimer); st.lockTimer = null; }
-    if (st.busy || !lockHeld(st.mode) || !st.mode.syncingAt) return;
+    if (showsBusy(st) || !lockHeld(st.mode) || !st.mode.syncingAt) return;
     var left = Math.max(0, st.mode.syncingAt + lockMs() - Date.now()) + 1000;
     st.lockTimer = setTimeout(function () {
       st.lockTimer = null;
@@ -214,25 +227,46 @@
     });
   }
 
-  /** Run PortalSync (admins only). auto = refreshIfStale on page load; otherwise the button's full refresh. */
+  /**
+   * Run PortalSync (admins only). auto = refreshIfStale on page load; otherwise the button's full refresh.
+   * When the copy looks fresh, the automatic check runs quietly (st.silent): the button stays "Refresh from
+   * sheet now", a press during the check is kept (st.queued) and runs as soon as the check ends (unless the
+   * check found the copy old after all and made a new one), and the banner is always drawn again when the
+   * check ends (a live-mode redraw during the check must not leave the button stuck on "Copying from the
+   * sheet…"). Both runs show PortalSync's progress steps.
+   */
   function sync(opts, st, auto) {
     var S = global.PortalSync;
-    if (st.busy || !canSync(opts.profile)) return;
+    if (!canSync(opts.profile)) return;
+    if (st.busy) {
+      if (!auto && st.silent && !st.queued) { st.queued = true; st.msg = ''; st.msgKind = ''; drawBanner(opts, st); }
+      return;
+    }
     var fn = auto ? S.refreshIfStale : S.refresh;
     if (typeof fn !== 'function') return;
     var M = global.OpsMode;
     var showBusy = !auto || !M || !M.isStale || M.isStale(st.mode);
-    st.busy = true;
+    st.busy = true; st.silent = !showBusy; st.queued = false;
     if (showBusy) {
       st.msg = !auto ? '' : (st.mode.copyIncomplete ? 'The last refresh stopped partway, so the copy is being made again.'
         : (st.mode.lastSyncAt ? 'This copy is more than a day old, so it is being refreshed.' : 'Making the first copy from the sheet.'));
       st.msgKind = '';
       drawBanner(opts, st);
     }
-    function progress(text) { st.msg = String(text || ''); st.msgKind = ''; drawBanner(opts, st); }
-    Promise.resolve().then(function () { return auto ? fn.call(S, opts.profile) : fn.call(S, opts.profile, { onProgress: progress }); }).then(function (summary) {
-      st.busy = false;
-      if (auto && !summary) { if (showBusy) { st.msg = ''; drawBanner(opts, st); } return; }
+    // The first step of a real refresh also ends the quiet part of an automatic check (the copy turned out old).
+    function progress(text) { st.silent = false; st.msg = String(text || ''); st.msgKind = ''; drawBanner(opts, st); }
+    /** The run is over: st.busy off; returns true when a press was waiting for the quiet check. */
+    function done() { var q = !!st.queued; st.busy = false; st.silent = false; st.queued = false; return q; }
+    /** Another refresh finished while this one was busy (watchMode only marked it dirty): load that copy now. */
+    function catchUp() { if (st.dirty && st.readOnly && !lockHeld(st.mode)) { st.dirty = false; refreshed(opts, st); } }
+    Promise.resolve().then(function () { return fn.call(S, opts.profile, { onProgress: progress }); }).then(function (summary) {
+      var queued = done();
+      if (auto && !summary) {
+        if (showBusy || queued) st.msg = '';
+        drawBanner(opts, st);
+        if (queued) sync(opts, st, false); else catchUp();
+        return;
+      }
       st.msg = 'Copied from the sheet just now.' + (summary && typeof summary.compared === 'number' && summary.compared
         ? ' ' + summary.matching + ' of ' + summary.compared + ' demerit totals match the sheet' + (summary.unmatched ? ', ' + summary.unmatched + ' names not matched' : '') + '. Details: Admin menu, Refresh from sheet.'
         : '');
@@ -243,10 +277,12 @@
         refreshed(opts, st);
       });
     }).catch(function (err) {
-      st.busy = false;
+      var queued = done();
       st.msg = 'Refresh failed. ' + ((err && err.message) || 'Unknown error.');
       st.msgKind = 'error';
       drawBanner(opts, st);
+      if (queued) sync(opts, st, false);   // the admin pressed during an automatic run that failed: try theirs
+      else catchUp();                      // for example taken over: the refresh that took over may be done
     });
   }
 
@@ -271,9 +307,9 @@
       if (st.changed) return;
       if (m.lastSyncAt !== st.seenSyncAt) { st.seenSyncAt = m.lastSyncAt; st.dirty = true; }
       st.mode = Object.assign({}, st.mode, { lastSyncAt: m.lastSyncAt, lastSyncBy: m.lastSyncBy, lastSyncByName: m.lastSyncByName,
-        syncing: m.syncing, syncingAt: m.syncingAt, copyIncomplete: m.copyIncomplete });
+        syncing: m.syncing, syncingAt: m.syncingAt, syncingBy: m.syncingBy, syncingByName: m.syncingByName, copyIncomplete: m.copyIncomplete });
       if (st.readOnly) drawBanner(opts, st);
-      if (st.dirty && st.readOnly && !lockHeld(m) && !st.busy) { st.dirty = false; refreshed(opts, st); }
+      if (st.dirty && st.readOnly && !lockHeld(m) && !showsBusy(st)) { st.dirty = false; refreshed(opts, st); }
     }, function () {});
   }
 
@@ -289,7 +325,7 @@
   function preview(opts) {
     opts = opts || {};
     return loadMode().then(function (mode) {
-      var st = { mode: mode, readOnly: isReadOnly(mode), seenSyncAt: mode.lastSyncAt, busy: false, dirty: false, changed: false, msg: '', msgKind: '' };
+      var st = { mode: mode, readOnly: isReadOnly(mode), seenSyncAt: mode.lastSyncAt, busy: false, silent: false, queued: false, dirty: false, changed: false, msg: '', msgKind: '' };
       if (st.readOnly) lockWrites();
       try { drawBanner(opts, st); } catch (e) {}
       try { watchMode(opts, st); } catch (e) {}

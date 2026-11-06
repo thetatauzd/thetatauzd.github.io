@@ -58,8 +58,28 @@
         padding: var(--space-7) var(--space-4);
         font-size: var(--fs-body);
     }
+
+    /* "Get new issues by email": a jump to the sign-up card at the end of the page. */
+    .newsletter-hero-actions {
+        margin-top: var(--space-5);
+    }
+
+    /* Unsubscribe result (js/newsletter-signup.js). Takes no space until it has a message. */
+    .newsletter-notice-wrap {
+        max-width: var(--container-mid);
+        margin: 0 auto;
+        padding: 0 var(--gutter);
+    }
+    .newsletter-notice-wrap:not(:empty) {
+        padding-top: var(--space-7);
+    }
+
+    /* Sign-up card (design.css 4.8). The archive above already gives the gap, so no top padding. */
+    .newsletter-subscribe-section {
+        padding: 0 var(--gutter) var(--section-y);
+    }
     </style>
-    <link rel="stylesheet" href="./css/design.css?v=1">
+    <link rel="stylesheet" href="./css/design.css?v=2">
 </head>
 
 <body id="collection-60f1b2b6e4c32d6f41f71ece" class="primary-button-style-solid primary-button-shape-square secondary-button-style-solid secondary-button-shape-square tertiary-button-style-solid tertiary-button-shape-square hide-opentable-icons">
@@ -181,7 +201,16 @@
         <section class="newsletter-hero has-watermark">
           <h1>Chapter Newsletter Archive</h1>
           <p class="lead">Chapter news on brotherhood, service and professional development, written by the brothers.</p>
+          <div class="btn-row newsletter-hero-actions">
+            <a class="btn-secondary" href="#subscribe">Get new issues by email</a>
+          </div>
         </section>
+
+        <div id="unsubscribe-notice" class="newsletter-notice-wrap" role="status" aria-live="polite" tabindex="-1"></div>
+        <!-- The unsubscribe button needs JavaScript. Outside the notice, so the notice stays empty (no space) when it is on. -->
+        <noscript>
+          <div class="newsletter-notice-wrap"><div class="signup-notice"><p>Came here to unsubscribe? This page needs JavaScript for that. Reply to any newsletter email, or email <a href="mailto:sotheta@mailbox.sc.edu?subject=Unsubscribe">sotheta@mailbox.sc.edu</a>, and we'll take you off the list.</p></div></div>
+        </noscript>
 
         <section class="newsletter-list-section">
           <h2 class="visually-hidden">All newsletters</h2>
@@ -191,6 +220,40 @@
           <div id="newsletter-error" class="newsletter-error" style="display:none;">Couldn't load newsletters right now. Please try again later.</div>
           </div>
           <div id="newsletter-grid" class="newsletter-grid"></div>
+        </section>
+
+        <!-- Email sign-up (design.css 4.8, js/newsletter-signup.js). The mailto line shows until
+             NEWSLETTER_GATEWAY_URL is set in js/newsletter-config.js, and whenever JavaScript is off. -->
+        <section id="subscribe" class="newsletter-subscribe-section" aria-labelledby="subscribe-title">
+          <div class="signup-card on-dark has-watermark">
+            <div class="section-head">
+              <p class="eyebrow">Newsletter</p>
+              <h2 id="subscribe-title">Get the next issue by email</h2>
+              <p class="lead">We send one email when a new issue is posted. Unsubscribe any time.</p>
+            </div>
+
+            <p id="signup-fallback" class="signup-fallback">Email <a href="mailto:sotheta@mailbox.sc.edu?subject=Newsletter%20email%20list">sotheta@mailbox.sc.edu</a> to get on the list.</p>
+
+            <form id="signup-form" class="signup-form" novalidate hidden>
+              <div class="signup-fields">
+                <div class="signup-field">
+                  <label for="signup-email">Email address</label>
+                  <input id="signup-email" name="email" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="name@example.com" required aria-describedby="signup-status">
+                </div>
+                <div class="signup-field">
+                  <label for="signup-name">First name <span class="signup-optional">(optional)</span></label>
+                  <input id="signup-name" name="name" type="text" autocomplete="given-name" maxlength="80">
+                </div>
+                <button type="submit" class="btn-primary signup-submit">Subscribe</button>
+              </div>
+              <div class="signup-hp" aria-hidden="true">
+                <label for="signup-website">Website</label>
+                <input id="signup-website" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+              </div>
+            </form>
+
+            <div id="signup-status" class="signup-status" role="status" aria-live="polite"></div>
+          </div>
         </section>
       </main>
 
@@ -208,7 +271,7 @@
             <h3>Contact</h3>
             <p><strong>Regent:</strong> Jack Schmitt</p>
             <p><strong>Vice Regent:</strong> Nicole Hoeker</p>
-            <p><strong>Rush Chairs:</strong> Bradley Alford, Kaylee Molitor</p>
+            <p><strong>Rush Chairs:</strong> Bradley Alford, Giulio Siciliano</p>
             <p><strong>Alumni Correspondent:</strong> Carlos Arenas</p>
                     <p><strong>Email:</strong> <a href="mailto:sotheta@mailbox.sc.edu">sotheta@mailbox.sc.edu</a></p>
                     <p><strong>Instagram DMs:</strong> <a href="https://www.instagram.com/thetatauzd/" target="_blank" rel="noopener">@thetatauzd</a></p>
@@ -230,6 +293,10 @@
       </footer>
 
       <script src="./js/nav.js?v=2"></script>
+
+      <!-- Newsletter email list: sign-up form and ?unsubscribe= links. No Firebase involved. -->
+      <script src="/js/newsletter-config.js?v=2"></script>
+      <script src="/js/newsletter-signup.js?v=1"></script>
 
       <!-- Firebase (public read-only: newsletter list) -->
       <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>

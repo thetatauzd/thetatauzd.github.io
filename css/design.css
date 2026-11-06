@@ -351,6 +351,42 @@ main>.cta-section{background:var(--surface)}                       /* index wrap
 .menu-close-btn{position:absolute;top:calc((var(--header-h) - 44px)/2);right:var(--gutter);width:44px;height:44px;display:flex;align-items:center;
   justify-content:center;background:none;border:0;border-radius:var(--radius-sm);color:#fff;font-size:1.75rem;cursor:pointer;z-index:1}
 
+/* 4.8 Email sign-up (newsletter.html, js/newsletter-signup.js). A solid dark red card: add .on-dark in the markup so
+   the heading, eyebrow, lead, links and solid button take the dark context (white 10:1, gold 6.6:1, muted 6.0:1 on
+   --maroon). Inputs are white with ink text (17.4:1) and a white edge on the red (10:1). Fields stack on phones and
+   sit in one row with the button from 768px. Every control is at least 48px tall. Messages are crisp boxes:
+   .signup-msg on the card (--maroon-950, white 19.7:1), .signup-notice on a light page (--maroon-50: ink 14.4:1, maroon link 8.3:1). */
+.signup-card{position:relative;max-width:var(--container-mid);margin:0 auto;padding:var(--space-7) var(--space-6);border-radius:var(--radius-lg);
+  background:var(--maroon);text-align:center}
+.signup-card .section-head{margin-bottom:var(--space-6)}
+.signup-card [hidden]{display:none}
+.signup-fallback{font-size:var(--fs-lead);line-height:var(--lh-snug);color:#fff;max-width:var(--prose);margin:0 auto;overflow-wrap:anywhere}
+.signup-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-4);max-width:44rem;margin:0 auto;text-align:left}
+@media (min-width:768px){.signup-fields{grid-template-columns:minmax(0,3fr) minmax(0,2fr) auto;align-items:end}}
+.signup-field label{display:block;margin:0 0 var(--space-2);font:600 var(--fs-small)/1.3 var(--font-sans);color:#fff}
+.signup-optional{font-weight:400;color:var(--on-dark-muted)}
+.signup-field input{display:block;width:100%;min-height:48px;margin:0;padding:10px 14px;border:2px solid #fff;border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--ink);font:400 var(--fs-body)/1.4 var(--font-sans);box-shadow:none;-webkit-appearance:none;appearance:none}
+.signup-field input::placeholder{color:var(--text-muted);opacity:1}
+.signup-field input[aria-invalid="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.signup-submit{cursor:pointer}
+.signup-submit:disabled{cursor:progress;opacity:.8}
+/* Honeypot: off-screen, not display:none (some bots skip hidden fields). The card clips it. */
+.signup-hp{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+.signup-status{max-width:44rem;margin:0 auto;text-align:left}
+.signup-status:not(:empty){margin-top:var(--space-5)}
+.signup-msg,.signup-notice{padding:var(--space-4) var(--space-5);border-left:4px solid var(--gold);border-radius:var(--radius-sm);font-size:var(--fs-body);text-align:left}
+.signup-msg{background:var(--maroon-950);color:#fff}
+.signup-msg--error{border-left-color:#fff}
+.signup-msg--pending{border-left-color:var(--on-dark-muted)}
+.signup-msg p,.signup-notice p{margin:0 0 var(--space-2)} .signup-msg p:last-child,.signup-notice p:last-child{margin-bottom:0}
+.signup-msg a,.signup-notice a{overflow-wrap:anywhere}
+.signup-notice{background:var(--maroon-50);color:var(--ink);border-left-color:var(--maroon)}
+.signup-notice--error{border-left-color:var(--ink)}
+.signup-notice strong{color:var(--ink)}
+.signup-notice .signup-retry{margin-top:var(--space-3);cursor:pointer}
+@media (max-width:479.98px){.signup-card{padding:var(--space-7) var(--space-5)}.signup-msg,.signup-notice{padding:var(--space-4)}}
+
 /* ==========================================================================
    5. Brand marks and media
    ========================================================================== */
