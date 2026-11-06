@@ -240,7 +240,17 @@
     eq('tree: parseSigns single letter = current, triple = grand', T.parseSigns('Y VVV'), { vice_regent: 'current', scribe: 'grand' });
     eq('tree: cleanRecord keeps a known status and drops an unknown one', [T.cleanRecord({ name: 'A', status: 'removed' }).status, T.cleanRecord({ name: 'A', status: 'ghost' }).status], ['removed', undefined]);
     eq('tree: cleanRecord keeps offices and the Brother List fields', T.cleanRecord({ name: 'Jo', offices: { regent: 'past', bogus: 'past', scribe: 'maybe' }, fullName: ' Jo Ann Smith ', grad: 'May 2024' }), { name: 'Jo', fullName: 'Jo Ann Smith', grad: 'May 2024', offices: { regent: 'past' } });
-    eq('tree: stats', (function () { var s = T.stats(ti); return [s.members, s.families, s.classes, s.largest.name]; })(), [6, 3, 5, 'Ava Lindqvist family']);
+    eq('tree: stats (a loner with no big is not counted as a family)', (function () { var s = T.stats(ti); return [s.members, s.families, s.classes, s.largest.name, s.missingBig, s.loners]; })(), [6, 2, 5, 'Ava Lindqvist family', 1, 1]);
+    eq('tree: only the first class has no big by right', T.missingBig(ti), ['f']);
+    var gaps = T.index({ a: { name: 'A', pledgeClass: 'Alpha' }, b: { name: 'B', pledgeClass: 'Beta', bigId: 'a' }, c: { name: 'C', pledgeClass: 'Gamma' }, d: { name: 'D', pledgeClass: 'Delta', bigId: 'c' },
+      e: { name: 'E', pledgeClass: 'Gamma' }, g: { name: 'G', pledgeClass: 'Gamma' }, h: { name: 'H', pledgeClass: 'Delta' } });
+    eq('tree: missing big covers a family whose top is unknown', T.missingBig(gaps), ['c', 'e', 'g', 'h']);
+    eq('tree: loners have no big and no littles', T.loners(gaps), ['e', 'g', 'h']);
+    var glo = T.layout(gaps);
+    eq('tree: loners are not drawn as families', glo.families.map(function (f) { return f.rootId; }), ['a', 'c']);
+    eq('tree: loners sit in one block right of every family', glo.loose.ids.every(function (id) { return glo.pos[id].x > glo.pos.d.x && glo.pos[id].x > glo.pos.b.x; }), true);
+    eq('tree: loners in one class sit side by side, the block starts in each class row', [glo.pos.e.x === glo.pos.h.x, glo.pos.g.x > glo.pos.e.x], [true, true]);
+    eq('tree: groupLoners false draws them as families', T.layout(gaps, null, { groupLoners: false }).families.length, 5);
 
     // Standing and notes are officers-only: they live in familyTree/private/{id}, never in familyTree/members.
     var gone = { name: 'Brother #900', pledgeClass: 'Omega', roll: 900, bigId: 'a', status: 'removed', note: 'Name withheld' };

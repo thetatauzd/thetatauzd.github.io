@@ -76,7 +76,7 @@
       var src = document.currentScript && document.currentScript.src;
       if (src && /sheet-sync\.js/.test(src)) return src.replace(/sheet-sync\.js/, 'sheet-sync-core.js');
     } catch (e) {}
-    return 'js/sheet-sync-core.js?v=34';
+    return 'js/sheet-sync-core.js?v=35';
   })();
 
   function db() { return firebase.database(); }

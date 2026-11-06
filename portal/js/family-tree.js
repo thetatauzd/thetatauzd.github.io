@@ -26,7 +26,9 @@
   var classes = T.DEFAULT_CLASSES;
   var fullIdx = null, idx = null, lay = null;           // fullIdx = everyone; idx/lay = what is drawn (a family or all)
   var familyFilter = '', selectedId = null, editing = null;
-  var view = { tx: 0, ty: 0, s: 1 };
+  var NOBIG = '__nobig';                                // family menu value: everyone whose big is not on record
+  var LOOSE_LABEL = 'No big recorded yet';
+  var view = { tx: 0, ty: 0, s: 0 };                     // s 0 = not placed yet, so the first fit does not animate
   var G = { unit: 168, nodeW: 150, nodeH: 46, rowH: 112, photoR: 25, padX: 60, padY: 30, labelW: 96 };
   var COLORS = { gold: { fill: '#E6B800', text: '#3a2a00', sub: '#5a4400' }, maroon: { fill: '#8B0000', text: '#fff', sub: '#f3d9d9' }, gone: { fill: '#2b2b2b', text: '#cfcfcf', sub: '#9a9a9a' } };
 
@@ -81,11 +83,16 @@
   function rebuild(keepView) {
     fullIdx = T.index(members, classes);
     var ids = fullIdx.list.map(function (m) { return m.id; });
-    if (familyFilter && fullIdx.byId[familyFilter]) ids = [familyFilter].concat(T.descendants(fullIdx, familyFilter));
+    if (familyFilter === NOBIG) {
+      ids = [];
+      T.missingBig(fullIdx, classes).forEach(function (r) { ids = ids.concat([r], T.descendants(fullIdx, r)); });
+      if (!ids.length) { familyFilter = ''; ids = fullIdx.list.map(function (m) { return m.id; }); }
+    } else if (familyFilter && !fullIdx.byId[familyFilter]) familyFilter = '';
+    else if (familyFilter) ids = [familyFilter].concat(T.descendants(fullIdx, familyFilter));
     var subset = {};
     ids.forEach(function (id) { subset[id] = members[id]; });
     idx = T.index(subset, classes);
-    if (familyFilter && idx.byId[familyFilter]) idx.byId[familyFilter].bigId = '';   // the family root is drawn as a root
+    if (familyFilter && familyFilter !== NOBIG && idx.byId[familyFilter]) idx.byId[familyFilter].bigId = '';   // the family root is drawn as a root
     idx.roots = idx.list.filter(function (m) { return !m.bigId; }).map(function (m) { return m.id; });
     lay = T.layout(idx, classes);
     fillFamilySelect();
@@ -102,8 +109,10 @@
     var st = T.stats(fullIdx, classes);
     var txt = st.members + ' brothers · ' + st.families + ' families · ' + st.classes + ' pledge classes';
     if (st.photos) txt += ' · ' + st.photos + ' photos';
+    if (st.missingBig) txt += ' · ' + st.missingBig + ' with no big recorded (dashed)';
     if (privState === 'ok' && fullIdx.list.some(function (m) { return m.status; })) txt += ' · black = resigned or removed (officers only)';
-    if (familyFilter && fullIdx.byId[familyFilter]) {
+    if (familyFilter === NOBIG) txt = 'No big recorded: ' + st.missingBig + ' brothers' + (canEdit ? ', tap one and Edit to set their big' : '') + ' · ' + txt;
+    else if (familyFilter && fullIdx.byId[familyFilter]) {
       var f = T.families(fullIdx).filter(function (x) { return x.rootId === familyFilter; })[0];
       if (f) txt = f.name + ': ' + f.size + ' brothers · ' + txt;
     }
@@ -114,11 +123,15 @@
 
   function fillFamilySelect() {
     var sel = $('ft-family');
-    var fams = T.families(fullIdx).slice().sort(function (a, b) { return b.size - a.size || a.name.localeCompare(b.name); });
+    var alone = {}; T.loners(fullIdx, classes).forEach(function (id) { alone[id] = true; });
+    var gaps = T.missingBig(fullIdx, classes).length;
+    var fams = T.families(fullIdx).filter(function (f) { return !alone[f.rootId]; }).sort(function (a, b) { return b.size - a.size || a.name.localeCompare(b.name); });
     var cur = sel.value;
-    sel.innerHTML = '<option value="">Whole chapter</option>' + fams.map(function (f) {
-      return '<option value="' + esc(f.rootId) + '">' + esc(f.name) + ' (' + f.size + ')</option>';
-    }).join('');
+    sel.innerHTML = '<option value="">Whole chapter</option>' +
+      (gaps ? '<option value="' + NOBIG + '">' + esc(LOOSE_LABEL) + ' (' + gaps + ')</option>' : '') +
+      fams.map(function (f) {
+        return '<option value="' + esc(f.rootId) + '">' + esc(f.name) + ' (' + f.size + ')</option>';
+      }).join('');
     sel.value = familyFilter || cur || '';
     if (sel.value !== familyFilter) sel.value = '';
   }
@@ -146,6 +159,12 @@
       var p = pt(f.rootId);
       parts.push('<text class="ft-famname" x="' + (p.x + G.nodeW / 2) + '" y="' + (p.y - (idx.byId[f.rootId].hasPhoto ? G.photoR * 2 + 14 : 14)) + '" text-anchor="middle">' + esc(f.name) + '</text>');
     });
+    if (lay.loose) {
+      var lx = G.padX + G.labelW + lay.loose.minX * G.unit - G.nodeW / 2;
+      parts.push('<rect class="ft-loose-box" x="' + (lx - 14) + '" y="' + (G.padY + 4) + '" width="' + ((lay.loose.maxX - lay.loose.minX) * G.unit + G.nodeW + 28) + '" height="' + (lay.rows * G.rowH - 8) + '" rx="14"/>');
+      parts.push('<text class="ft-famname" x="' + (lx - 4) + '" y="' + (G.padY + 24) + '">' + esc(LOOSE_LABEL) + '</text>');
+    }
+    var gap = {}; T.missingBig(idx, classes).forEach(function (id) { gap[id] = true; });
     // Lines big → little (elbows), co-big dashed
     idx.list.forEach(function (m) {
       if (m.bigId && idx.byId[m.bigId]) parts.push(line(m.bigId, m.id, false));
@@ -154,7 +173,7 @@
     // Nodes
     idx.list.forEach(function (m) {
       var p = pt(m.id), col = colorOf(m.id), ph = photos[m.id];
-      var cls = 'ft-node' + (m.id === selectedId ? ' selected' : '');
+      var cls = 'ft-node' + (m.id === selectedId ? ' selected' : '') + (gap[m.id] ? ' nobig' : '');
       var g = '<g class="' + cls + '" data-id="' + esc(m.id) + '" transform="translate(' + p.x + ',' + p.y + ')">';
       if (ph && ph.data) {
         g += '<circle class="ft-photo-ring" cx="' + (G.nodeW / 2) + '" cy="' + (-G.photoR + 10) + '" r="' + (G.photoR + 2) + '"/>' +
@@ -171,6 +190,7 @@
     svg.setAttribute('width', size.w); svg.setAttribute('height', size.h);
     svg.innerHTML = '<g id="ft-world" transform="' + transform() + '">' + parts.join('') + '</g>';
     drawLabels();
+    drawMini();
     applyView();
   }
   function clip(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
@@ -215,6 +235,7 @@
   function applyView() {
     var w = $('ft-world'); if (w) w.setAttribute('transform', transform());
     placeLabels();
+    drawMiniView();
   }
   function stageSize() { var st = $('ft-stage'); return { w: st.clientWidth, h: st.clientHeight }; }
   /** The stage takes whatever height is left under the toolbar (which wraps differently on each phone). */
@@ -222,32 +243,118 @@
     var st = $('ft-stage');
     st.style.height = Math.max(320, window.innerHeight - st.getBoundingClientRect().top - (window.innerWidth < 768 ? 8 : 16)) + 'px';
   }
+  // Zoom limits: out to a little past the whole tree, in to 2× (names are sharp well before that).
+  var MAX_S = 2;
+  function fitScale() {
+    if (!lay) return 0.1;
+    var size = contentSize(), st = stageSize();
+    return Math.min(st.w / size.w, st.h / size.h, 1.2);
+  }
+  function minScale() { return Math.min(0.5, fitScale() * 0.8); }
+  function clampS(s) { return Math.min(MAX_S, Math.max(minScale(), s)); }
+
+  // Smooth moves: every zoom step and jump eases over a short time instead of snapping,
+  // so you can see where you went. Any drag or pinch stops a move in progress.
+  var anim = null;
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function stopAnim() { if (anim) { cancelAnimationFrame(anim.raf); anim = null; } }
+  function animateTo(s, tx, ty, ms) {
+    stopAnim();
+    if (calm || !ms) { view.s = s; view.tx = tx; view.ty = ty; applyView(); return; }
+    var from = { s: view.s, tx: view.tx, ty: view.ty }, t0 = null;
+    anim = {};
+    function step(t) {
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3);   // ease out
+      // Zoom on a log scale so the speed feels even whether near or far.
+      view.s = Math.exp(Math.log(from.s) + (Math.log(s) - Math.log(from.s)) * e);
+      var f = (view.s - from.s) / ((s - from.s) || 1);
+      if (Math.abs(s - from.s) < 1e-6) f = e;
+      view.tx = from.tx + (tx - from.tx) * f; view.ty = from.ty + (ty - from.ty) * f;
+      applyView();
+      if (k < 1) anim.raf = requestAnimationFrame(step); else anim = null;
+    }
+    anim.raf = requestAnimationFrame(step);
+  }
+  /** Where the view lands when zooming to `ns` while keeping the point (cx, cy) on the stage still. */
+  function zoomTarget(ns, cx, cy, base) {
+    base = base || view;
+    return { s: ns, tx: cx - (cx - base.tx) * (ns / base.s), ty: cy - (cy - base.ty) * (ns / base.s) };
+  }
+
   function fit() {
     if (!lay) return;
     sizeStage();
-    var size = contentSize(), st = stageSize();
-    var s = Math.min(st.w / size.w, st.h / size.h, 1.2);
-    view.s = Math.max(s, 0.08);
-    view.tx = Math.max(0, (st.w - size.w * view.s) / 2); view.ty = Math.max(0, (st.h - size.h * view.s) / 2);
+    // Fit every pledge class top to bottom. A whole chapter is far wider than any screen, so it
+    // starts at the oldest families on the left; drag or use the overview map to go along it.
+    var size = contentSize(), st = stageSize(), s = Math.max(fitScale(), Math.min(st.h / size.h, 1.2));
+    var tx = Math.max(0, (st.w - size.w * s) / 2), ty = Math.max(0, (st.h - size.h * s) / 2);
     view.fitted = true;
-    applyView();
+    animateTo(s, tx, ty, view.s ? 350 : 0);
   }
-  function zoomAt(factor, cx, cy) {
-    var ns = Math.min(3, Math.max(0.08, view.s * factor));
-    view.tx = cx - (cx - view.tx) * (ns / view.s); view.ty = cy - (cy - view.ty) * (ns / view.s);
-    view.s = ns; applyView();
+  function zoomAt(factor, cx, cy, ms) {
+    var goal = anim && anim.goal ? anim.goal : view;          // a second click keeps stepping from where the first was going
+    var t = zoomTarget(clampS(goal.s * factor), cx, cy, goal);
+    view.fitted = false;
+    animateTo(t.s, t.tx, t.ty, ms == null ? 220 : ms);
+    if (anim) anim.goal = t;
   }
+  /** Bring a brother to the middle. Only zooms in when the tree is too small to read, and then only to a comfortable size. */
   function centerOn(id, scale) {
     var p = pt(id), st = stageSize();
-    view.s = scale || Math.max(view.s, 1);
-    view.tx = st.w / 2 - (p.x + G.nodeW / 2) * view.s; view.ty = st.h / 2 - (p.y + G.nodeH / 2) * view.s;
-    applyView();
+    var s = clampS(scale || view.s);
+    view.fitted = false;
+    animateTo(s, st.w / 2 - (p.x + G.nodeW / 2) * s, st.h / 2 - (p.y + G.nodeH / 2) * s, 450);
+  }
+  function readable() { return window.innerWidth < 768 ? 0.6 : 0.7; }
+
+  // ── Overview map (bottom left): the whole tree in miniature, the box is what is on screen. Tap or drag it to move. ──
+
+  var mini = { scale: 1, w: 0, h: 0, base: null };
+  function drawMini() {
+    var c = $('ft-mini'); if (!c || !lay) return;
+    var size = contentSize(), maxW = window.innerWidth < 768 ? 150 : 280, maxH = window.innerWidth < 768 ? 70 : 110;
+    var k = Math.min(maxW / size.w, maxH / size.h), dpr = window.devicePixelRatio || 1;
+    mini.scale = k; mini.w = Math.max(40, Math.round(size.w * k)); mini.h = Math.max(24, Math.round(size.h * k));
+    c.width = mini.w * dpr; c.height = mini.h * dpr; c.style.width = mini.w + 'px'; c.style.height = mini.h + 'px';
+    var base = document.createElement('canvas'); base.width = c.width; base.height = c.height;
+    var ctx = base.getContext('2d'); ctx.scale(dpr, dpr);
+    idx.list.forEach(function (m) {
+      var q = pt(m.id); ctx.fillStyle = colorOf(m.id).fill;
+      ctx.fillRect(q.x * k, q.y * k, Math.max(1.5, G.nodeW * k), Math.max(1.5, G.nodeH * k));
+    });
+    mini.base = base;
+    drawMiniView();
+  }
+  function drawMiniView() {
+    var c = $('ft-mini'); if (!c || !mini.base || !view.s) return;
+    var ctx = c.getContext('2d'), dpr = window.devicePixelRatio || 1, st = stageSize(), k = mini.scale;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(mini.base, 0, 0);
+    ctx.scale(dpr, dpr);
+    var x = -view.tx / view.s * k, y = -view.ty / view.s * k, w = st.w / view.s * k, h = st.h / view.s * k;
+    ctx.fillStyle = 'rgba(21,101,192,0.12)'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#1565c0'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
+  }
+  function wireMini() {
+    var c = $('ft-mini'); if (!c) return;
+    var dragging = false;
+    function go(e, ms) {
+      var r = c.getBoundingClientRect(), st = stageSize();
+      var wx = (e.clientX - r.left) / mini.scale, wy = (e.clientY - r.top) / mini.scale;   // tree coordinates
+      view.fitted = false;
+      animateTo(view.s, st.w / 2 - wx * view.s, st.h / 2 - wy * view.s, ms);
+    }
+    c.addEventListener('pointerdown', function (e) { e.stopPropagation(); dragging = true; c.setPointerCapture(e.pointerId); go(e, 250); });
+    c.addEventListener('pointermove', function (e) { if (dragging) { e.stopPropagation(); go(e, 0); } });
+    function end(e) { dragging = false; e.stopPropagation(); }
+    c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
   }
 
   function wireStage() {
     var st = $('ft-stage'), pointers = {}, start = null, pinch = null, moved = false;
     st.addEventListener('pointerdown', function (e) {
-      if (e.target.closest('.ft-zoom')) return;
+      if (e.target.closest('.ft-zoom') || e.target.closest('.ft-mini')) return;
+      stopAnim();
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
       st.setPointerCapture(e.pointerId);
       var ids = Object.keys(pointers);
@@ -261,13 +368,13 @@
       if (ids.length >= 2 && pinch) {
         var a = pointers[ids[0]], b = pointers[ids[1]], r = st.getBoundingClientRect();
         var f = dist(a, b) / (pinch.d || 1), mx = (a.x + b.x) / 2 - r.left, my = (a.y + b.y) / 2 - r.top;
-        var ns = Math.min(3, Math.max(0.08, pinch.s * f));
+        var ns = clampS(pinch.s * f);
         var px = pinch.mx - r.left, py = pinch.my - r.top;
         view.tx = mx - (px - pinch.tx) * (ns / pinch.s); view.ty = my - (py - pinch.ty) * (ns / pinch.s); view.s = ns;
-        moved = true; applyView();
+        moved = true; view.fitted = false; applyView();
       } else if (start) {
         var dx = e.clientX - start.x, dy = e.clientY - start.y;
-        if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+        if (Math.abs(dx) + Math.abs(dy) > 6) { moved = true; view.fitted = false; }
         view.tx = start.tx + dx; view.ty = start.ty + dy; applyView();
       }
     });
@@ -282,16 +389,48 @@
       if (!Object.keys(pointers).length) start = null;
     }
     st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+    // Scrolling: a trackpad's two-finger scroll moves the tree; pinching the trackpad, Ctrl/⌘ + scroll,
+    // or a mouse wheel zooms. The zoom follows how far you scrolled, so a trackpad that sends many
+    // small events no longer races in.
     st.addEventListener('wheel', function (e) {
       e.preventDefault();
-      var r = st.getBoundingClientRect();
-      zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX - r.left, e.clientY - r.top);
+      stopAnim();
+      var r = st.getBoundingClientRect(), cx = e.clientX - r.left, cy = e.clientY - r.top;
+      var dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1), dx = e.deltaX * (e.deltaMode === 1 ? 33 : 1);
+      var mouseNotch = e.deltaMode !== 0 || (dx === 0 && Math.abs(dy) >= 50 && dy === Math.round(dy));
+      if (e.ctrlKey || e.metaKey || mouseNotch) {
+        var k = e.ctrlKey && !mouseNotch ? 0.006 : 0.0012;        // a pinch sends small deltas; a wheel notch about 100
+        var f = Math.exp(-dy * k);
+        f = Math.min(1.12, Math.max(1 / 1.12, f));                // never more than 12 % per event
+        var t = zoomTarget(clampS(view.s * f), cx, cy);
+        view.s = t.s; view.tx = t.tx; view.ty = t.ty;
+      } else {
+        if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+        view.tx -= dx; view.ty -= dy;
+      }
+      view.fitted = false;
+      applyView();
     }, { passive: false });
-    $('ft-zoom-in').addEventListener('click', function () { var s = stageSize(); zoomAt(1.3, s.w / 2, s.h / 2); });
-    $('ft-zoom-out').addEventListener('click', function () { var s = stageSize(); zoomAt(1 / 1.3, s.w / 2, s.h / 2); });
+    $('ft-zoom-in').addEventListener('click', function () { var s = stageSize(); zoomAt(1.25, s.w / 2, s.h / 2); });
+    $('ft-zoom-out').addEventListener('click', function () { var s = stageSize(); zoomAt(1 / 1.25, s.w / 2, s.h / 2); });
     $('ft-fit').addEventListener('click', fit);
-    window.addEventListener('resize', function () { sizeStage(); if (view.fitted) fit(); });
+    // Keyboard: + and − zoom, 0 fits, arrows move (when the tree has focus).
+    st.addEventListener('keydown', function (e) {
+      var s = stageSize(), step = 120;
+      if (e.key === '+' || e.key === '=') zoomAt(1.25, s.w / 2, s.h / 2);
+      else if (e.key === '-' || e.key === '_') zoomAt(1 / 1.25, s.w / 2, s.h / 2);
+      else if (e.key === '0') fit();
+      else if (e.key === 'ArrowLeft') animateTo(view.s, view.tx + step, view.ty, 150);
+      else if (e.key === 'ArrowRight') animateTo(view.s, view.tx - step, view.ty, 150);
+      else if (e.key === 'ArrowUp') animateTo(view.s, view.tx, view.ty + step, 150);
+      else if (e.key === 'ArrowDown') animateTo(view.s, view.tx, view.ty - step, 150);
+      else return;
+      e.preventDefault();
+    });
+    window.addEventListener('resize', function () { sizeStage(); drawMini(); if (view.fitted) fit(); else applyView(); });
+    wireMini();
     sizeStage();
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) $('ft-hint').textContent = 'Drag to move · pinch to zoom · tap a brother';
     setTimeout(function () { var h = $('ft-hint'); if (h) h.classList.add('fade'); }, 6000);
   }
   function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
@@ -306,7 +445,7 @@
     var node = document.querySelector('.ft-node[data-id="' + id + '"]');
     if (node) { node.classList.add('selected'); node.parentNode.appendChild(node); }
     showCard(id);                                            // open first: on a desktop the page narrows to make room
-    centerOn(id, Math.max(view.s, window.innerWidth < 768 ? 0.9 : 1));
+    centerOn(id, Math.max(view.s, readable()));
   }
 
   function personLink(m) { return m ? '<button type="button" class="ft-link" data-go="' + esc(m.id) + '">' + esc(m.name) + '</button>' : '<span class="ft-muted">—</span>'; }
@@ -328,7 +467,7 @@
       '</div></div>';
     if (m.note) html += '<p class="ft-note"><b>Officers only:</b> ' + esc(m.note) + '</p>';   // notes reach the page only for officers
     html += '<dl class="ft-rel">' +
-      '<dt>Big</dt><dd>' + personLink(rel.big) + (rel.big2 ? ' &amp; ' + personLink(rel.big2) : '') + '</dd>' +
+      '<dt>Big</dt><dd>' + (rel.big ? personLink(rel.big) : (m.pledgeClass && m.pledgeClass !== classes[0] ? '<span class="ft-muted">not recorded yet' + (canEdit ? ' (Edit to add)' : '') + '</span>' : '<span class="ft-muted">none (founding class)</span>')) + (rel.big2 ? ' &amp; ' + personLink(rel.big2) : '') + '</dd>' +
       (rel.grandBig ? '<dt>Grand-big</dt><dd>' + personLink(rel.grandBig) + '</dd>' : '') +
       '<dt>Littles</dt><dd>' + list(rel.littles) + '</dd>' +
       (rel.grandLittles.length ? '<dt>Grand-littles</dt><dd>' + list(rel.grandLittles) + '</dd>' : '') +
@@ -631,6 +770,10 @@
           var p = P(f.rootId); ctx.fillStyle = dark ? '#ffd966' : '#8B0000'; ctx.font = '700 13px Poppins, Arial, sans-serif'; ctx.textAlign = 'center';
           ctx.fillText(f.name, p.x + G.nodeW / 2, p.y - (img[f.rootId] ? G.photoR * 2 + 14 : 14));
         });
+        if (scopeLay.loose) {
+          ctx.fillStyle = dark ? '#ffd966' : '#8B0000'; ctx.font = '700 13px Poppins, Arial, sans-serif'; ctx.textAlign = 'left';
+          ctx.fillText(LOOSE_LABEL, G.padX + G.labelW + scopeLay.loose.minX * G.unit - G.nodeW / 2 - 4, G.padY + 24);
+        }
         scopeIdx.list.forEach(function (m) {
           var p = P(m.id), col = colorOf(m.id, !o.standing);
           if (img[m.id]) {

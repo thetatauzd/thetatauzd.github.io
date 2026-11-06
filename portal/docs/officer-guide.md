@@ -176,6 +176,13 @@ After the switch:
   pledge class (**+ New class** adds it once for everyone) and a photo (any phone picture; it is cropped square and
   shrunk). A brother with two bigs gets a **Co-big** (dashed line).
 - **Fix a line**: open the person → **Edit** → change *Big*. A loop (someone their own grand-big) is refused.
+- **No big recorded**: anyone outside the founding class with no big has a dashed outline. Those with no littles
+  either sit together in the **No big recorded yet** box at the right end of the tree instead of each looking like a
+  family of one. Pick **No big recorded yet** in the family menu to see all of them, then Edit each one and set *Big*;
+  they join their family's line straight away.
+- **Getting around**: drag (or two-finger scroll on a trackpad) to move; pinch, Ctrl/⌘ + scroll, a mouse wheel or
+  **+ / −** to zoom; the small map in the bottom corner shows the whole tree, so tap or drag it to jump. **Fit** shows
+  every pledge class. Tapping a brother slides to them without zooming in further than needed to read the names.
 - **Family names**: open a family's root (the top person) → Edit → *Family name* and *Family colour*.
 - **Export picture**: whole chapter or one family, with a title and background, as a PNG for Instagram, the
   rush slideshow or a poster. On a phone, export one family at a time (iPhones cannot draw the whole chapter in one

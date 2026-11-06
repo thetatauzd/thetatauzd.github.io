@@ -6,7 +6,7 @@
   <title>Family Tree</title>
   <link rel="icon" type="image/x-icon" href="../Images/ThetaTau.png"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="css/portal.css?v=34">
+  <link rel="stylesheet" href="css/portal.css?v=35">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -42,7 +42,7 @@
       <select id="ft-family" class="field" aria-label="Show a family"><option value="">Whole chapter</option></select>
       <div class="ft-toolbar-btns">
         <button type="button" class="btn ghost btn-small" id="ft-me" title="Find me in the tree">Me</button>
-        <button type="button" class="btn ghost btn-small" id="ft-fit" title="Fit the tree on screen">Fit</button>
+        <button type="button" class="btn ghost btn-small" id="ft-fit" title="Show every pledge class (key 0)">Fit</button>
         <button type="button" class="btn ghost btn-small" id="ft-export">Export<span class="ft-long"> picture</span></button>
         <button type="button" class="btn btn-small hidden" id="ft-add">+ Add<span class="ft-long"> brother</span></button>
       </div>
@@ -50,14 +50,15 @@
     <p class="step-hint ft-summary" id="ft-summary">Loading the tree…</p>
 
     <!-- The tree: class labels pinned on the left, the drawing pans and zooms -->
-    <div class="ft-stage" id="ft-stage">
+    <div class="ft-stage" id="ft-stage" tabindex="0" aria-label="Family tree. Arrow keys move, plus and minus zoom, 0 fits.">
       <div class="ft-rowlabels" id="ft-rowlabels"></div>
       <svg id="ft-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Family tree"></svg>
       <div class="ft-zoom">
         <button type="button" id="ft-zoom-in" aria-label="Zoom in">+</button>
         <button type="button" id="ft-zoom-out" aria-label="Zoom out">−</button>
       </div>
-      <div class="ft-hint" id="ft-hint">Drag to move · pinch or scroll to zoom · tap a brother</div>
+      <canvas class="ft-mini" id="ft-mini" aria-label="Overview: tap to jump"></canvas>
+      <div class="ft-hint" id="ft-hint">Drag or scroll to move · pinch, Ctrl + scroll or +/− to zoom · tap a brother</div>
     </div>
 
     <!-- First fill (admins, only while the tree is empty): restore the private backup file. Standing and notes go to the officers-only part. -->
@@ -83,12 +84,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="js/firebase-config.js?v=34"></script>
-  <script src="js/auth.js?v=34"></script>
-  <script src="js/ops-core.js?v=34"></script>
-  <script src="js/ops-db.js?v=34"></script>
-  <script src="js/ops-photos.js?v=34"></script>
-  <script src="js/family-tree-core.js?v=34"></script>
-  <script src="js/family-tree.js?v=34"></script>
+  <script src="js/firebase-config.js?v=35"></script>
+  <script src="js/auth.js?v=35"></script>
+  <script src="js/ops-core.js?v=35"></script>
+  <script src="js/ops-db.js?v=35"></script>
+  <script src="js/ops-photos.js?v=35"></script>
+  <script src="js/family-tree-core.js?v=35"></script>
+  <script src="js/family-tree.js?v=35"></script>
 </body>
 </html>

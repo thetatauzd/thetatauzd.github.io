@@ -415,7 +415,7 @@
     if (opsModeScript) return opsModeScript;
     opsModeScript = new Promise(function(resolve) {
       var s = document.createElement('script');
-      s.src = 'js/ops-mode.js?v=34';
+      s.src = 'js/ops-mode.js?v=35';
       s.onload = function() { resolve(global.OpsMode || null); };
       s.onerror = function() { resolve(null); };
       document.head.appendChild(s);

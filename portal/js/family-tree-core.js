@@ -161,6 +161,20 @@
     });
   }
 
+  /**
+   * Brothers with no big on record. Only the first class (the founders) has no big by
+   * right; anyone else at the top of a family is a gap in the record, not a family of
+   * their own. `loners` are the ones with no littles either: they would each be a
+   * one-person "family", so the layout groups them in one labelled block instead.
+   */
+  function missingBig(idx, classes) {
+    var first = (classes || DEFAULT_CLASSES)[0];
+    return idx.roots.filter(function (id) { return (idx.byId[id].pledgeClass || '') !== first; });
+  }
+  function loners(idx, classes) {
+    return missingBig(idx, classes).filter(function (id) { return !(idx.children[id] || []).length; });
+  }
+
   /** What a person's card shows: big, co-big, grand-big, littles, grand-littles, family. */
   function relations(idx, id) {
     var m = idx.byId[id]; if (!m) return null;
@@ -183,7 +197,9 @@
   function layout(idx, classes, opts) {
     opts = opts || {};
     var gap = opts.gap || 0.25, familyGap = opts.familyGap || 0.9;
-    var pos = {}, fams = families(idx), bounds = [];
+    var pos = {}, bounds = [], alone = {};
+    if (opts.groupLoners !== false) loners(idx, classes).forEach(function (id) { alone[id] = true; });
+    var fams = families(idx).filter(function (f) { return !alone[f.rootId]; });
     var cursor = 0, totalCont = {};
     fams.forEach(function (f) {
       var r = place(f.rootId);
@@ -203,9 +219,22 @@
       bounds.push({ rootId: f.rootId, name: f.name, color: f.color, minX: minX, maxX: maxX, size: f.size });
       cursor = maxX + 1;
     });
+    // Brothers with no big and no littles: one block on the right, a tight column per class,
+    // packed side by side, so they read as "still to connect" and not as dozens of families.
+    var loose = null, ids = Object.keys(alone);
+    if (ids.length) {
+      var start = cursor + 0.6, perRow = {};
+      ids.sort(memberSorter(idx.byId, classes)).forEach(function (id) {
+        var row = rowOf(id), k = perRow[row] || 0;
+        perRow[row] = k + 1;
+        pos[id] = { x: start + 0.5 + k * (1 + gap), row: row };
+      });
+      var most = Math.max.apply(null, Object.keys(perRow).map(function (r) { return perRow[r]; }));
+      loose = { ids: ids, minX: start + 0.5, maxX: start + 0.5 + (most - 1) * (1 + gap) };
+    }
     var width = 0, maxRow = 0;
     Object.keys(pos).forEach(function (id) { width = Math.max(width, pos[id].x + 0.5); maxRow = Math.max(maxRow, pos[id].row); });
-    return { pos: pos, families: bounds, width: width, rows: maxRow + 1 };
+    return { pos: pos, families: bounds, loose: loose, width: width, rows: maxRow + 1 };
 
     function rowOf(id) { return classIndex(idx.byId[id].pledgeClass, classes); }
 
@@ -417,7 +446,9 @@
   function stats(idx, classes) {
     var fams = families(idx), photos = 0, cls = {};
     idx.list.forEach(function (m) { if (m.hasPhoto) photos++; if (m.pledgeClass) cls[m.pledgeClass] = true; });
-    return { members: idx.list.length, families: fams.length, classes: Object.keys(cls).length, photos: photos,
+    var alone = loners(idx, classes).length;
+    return { members: idx.list.length, families: fams.length - alone, classes: Object.keys(cls).length, photos: photos,
+      missingBig: missingBig(idx, classes).length, loners: alone,
       largest: fams.reduce(function (a, f) { return !a || f.size > a.size ? f : a; }, null) };
   }
 
@@ -425,6 +456,7 @@
     GREEK: GREEK, DEFAULT_CLASSES: DEFAULT_CLASSES, LIMITS: LIMITS, OFFICES: OFFICES, OFFICE_LEVELS: OFFICE_LEVELS, STATUSES: STATUSES,
     classList: classList, nextClass: nextClass, classIndex: classIndex, signs: signs, signText: signText, parseSigns: parseSigns,
     index: index, descendants: descendants, rootOf: rootOf, wouldCycle: wouldCycle, families: families, relations: relations,
+    missingBig: missingBig, loners: loners,
     layout: layout, search: search, validate: validate, cleanRecord: cleanRecord, stats: stats,
     PRIVATE_FIELDS: PRIVATE_FIELDS, splitMember: splitMember, mergeMember: mergeMember, splitAll: splitAll, mergeAll: mergeAll,
     viewMembers: viewMembers, isOfficer: isOfficer, restorePlan: restorePlan, backupFile: backupFile
